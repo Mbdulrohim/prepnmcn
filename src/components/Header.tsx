@@ -1,0 +1,228 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  BarChart3,
+  Calendar,
+  Trophy,
+  Home,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  institution: string;
+  role: string;
+  points: number;
+}
+
+export default function Header() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch("/api/user/me");
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData.user);
+      }
+    } catch (error) {
+      // User not authenticated
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-2xl font-bold text-[#1e40af] hover:text-[#1d4ed8] transition-colors"
+            >
+              <Image src="/preplogo.png" alt="O'Prep" width={32} height={32} />
+              O'Prep
+            </Link>
+            <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  return (
+    <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-2xl font-bold text-[#1e40af] hover:text-[#1d4ed8] transition-colors"
+          >
+            <Image src="/preplogo.png" alt="O'Prep" width={32} height={32} />
+            O'Prep
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-1">
+            {user ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                >
+                  <Home size={18} />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/study-planner"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                >
+                  <Calendar size={18} />
+                  <span>Study Planner</span>
+                </Link>
+                <Link
+                  href="/leaderboard"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                >
+                  <Trophy size={18} />
+                  <span>Leaderboard</span>
+                </Link>
+
+                {/* User Menu */}
+                <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <User size={16} />
+                    <span className="hidden lg:inline">
+                      Welcome, {user.name}
+                    </span>
+                  </div>
+                  <Button
+                    onClick={handleLogout}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <LogOut size={16} />
+                    <span>Logout</span>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Button asChild className="bg-[#1e40af] hover:bg-[#1d4ed8]">
+                <Link href="/auth/signin" className="flex items-center gap-2">
+                  <User size={16} />
+                  <span>Sign In</span>
+                </Link>
+              </Button>
+            )}
+          </nav>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-colors"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-100 py-4 space-y-2">
+            {user ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Home size={20} />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/study-planner"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Calendar size={20} />
+                  <span>Study Planner</span>
+                </Link>
+                <Link
+                  href="/leaderboard"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Trophy size={20} />
+                  <span>Leaderboard</span>
+                </Link>
+
+                <div className="px-4 py-2 border-t border-gray-100 mt-4 pt-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                    <User size={16} />
+                    <span>Welcome, {user.name}</span>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    variant="outline"
+                    className="w-full flex items-center gap-2 justify-center"
+                  >
+                    <LogOut size={16} />
+                    <span>Logout</span>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="px-4">
+                <Button
+                  asChild
+                  className="w-full bg-[#1e40af] hover:bg-[#1d4ed8]"
+                >
+                  <Link
+                    href="/auth/signin"
+                    className="flex items-center gap-2 justify-center"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User size={16} />
+                    <span>Sign In</span>
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
