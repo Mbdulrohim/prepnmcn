@@ -97,42 +97,39 @@ export default function Header() {
               <>
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  title="Dashboard"
                 >
-                  <Home size={18} />
-                  <span>Dashboard</span>
+                  <Home size={20} />
                 </Link>
                 <Link
                   href="/study-planner"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  title="Study Planner"
                 >
-                  <Calendar size={18} />
-                  <span>Study Planner</span>
+                  <Calendar size={20} />
                 </Link>
                 <Link
                   href="/leaderboard"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  title="Leaderboard"
                 >
-                  <Trophy size={18} />
-                  <span>Leaderboard</span>
+                  <Trophy size={20} />
                 </Link>
 
                 {/* User Menu */}
-                <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <User size={16} />
-                    <span className="hidden lg:inline">
-                      Welcome, {user.name}
-                    </span>
+                <div className="flex items-center space-x-2 ml-4 pl-4 border-l border-gray-200">
+                  <div className="w-8 h-8 bg-[#1e40af]/10 rounded-full flex items-center justify-center">
+                    <User size={16} className="text-[#1e40af]" />
                   </div>
                   <Button
                     onClick={handleLogout}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2"
+                    className="w-8 h-8 p-0"
+                    title="Logout"
                   >
                     <LogOut size={16} />
-                    <span>Logout</span>
                   </Button>
                 </div>
               </>
@@ -186,21 +183,23 @@ export default function Header() {
                 </Link>
 
                 <div className="px-4 py-2 border-t border-gray-100 mt-4 pt-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                    <User size={16} />
-                    <span>Welcome, {user.name}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 bg-[#1e40af]/10 rounded-full flex items-center justify-center">
+                      <User size={16} className="text-[#1e40af]" />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="w-8 h-8 p-0"
+                      title="Logout"
+                    >
+                      <LogOut size={16} />
+                    </Button>
                   </div>
-                  <Button
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                    variant="outline"
-                    className="w-full flex items-center gap-2 justify-center"
-                  >
-                    <LogOut size={16} />
-                    <span>Logout</span>
-                  </Button>
                 </div>
               </>
             ) : (

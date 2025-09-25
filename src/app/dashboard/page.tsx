@@ -108,7 +108,7 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">{user.points}</div>
               <p className="text-xs text-muted-foreground">
-                +12% from last month
+                Start earning points!
               </p>
             </CardContent>
           </Card>
@@ -119,9 +119,9 @@ export default function Dashboard() {
               <Target className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">7 days</div>
+              <div className="text-2xl font-bold text-green-600">0 days</div>
               <p className="text-xs text-muted-foreground">
-                Keep it up!
+                Start your streak!
               </p>
             </CardContent>
           </Card>
@@ -132,7 +132,7 @@ export default function Dashboard() {
               <Clock className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600">24.5h</div>
+              <div className="text-2xl font-bold text-purple-600">0h</div>
               <p className="text-xs text-muted-foreground">
                 This week
               </p>
@@ -145,8 +145,8 @@ export default function Dashboard() {
               <TrendingUp className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">68%</div>
-              <Progress value={68} className="mt-2" />
+              <div className="text-2xl font-bold text-orange-600">0%</div>
+              <Progress value={0} className="mt-2" />
             </CardContent>
           </Card>
         </div>
@@ -198,31 +198,12 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Completed Biology Quiz</p>
-                        <p className="text-xs text-muted-foreground">2 hours ago</p>
-                      </div>
-                      <Badge variant="secondary">+50 pts</Badge>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Study Session: Chemistry</p>
-                        <p className="text-xs text-muted-foreground">1 day ago</p>
-                      </div>
-                      <Badge variant="secondary">2h</Badge>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Joined Study Group</p>
-                        <p className="text-xs text-muted-foreground">3 days ago</p>
-                      </div>
-                      <Badge variant="secondary">New</Badge>
-                    </div>
+                  <div className="text-center py-8">
+                    <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No activity yet</h3>
+                    <p className="text-muted-foreground">
+                      Start studying to see your activity here.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -269,30 +250,30 @@ export default function Dashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Overall Progress</span>
-                      <span>68%</span>
+                      <span>0%</span>
                     </div>
-                    <Progress value={68} />
+                    <Progress value={0} />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Biology</span>
-                      <span>85%</span>
+                      <span>0%</span>
                     </div>
-                    <Progress value={85} />
+                    <Progress value={0} />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Chemistry</span>
-                      <span>72%</span>
+                      <span>0%</span>
                     </div>
-                    <Progress value={72} />
+                    <Progress value={0} />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Physics</span>
-                      <span>45%</span>
+                      <span>0%</span>
                     </div>
-                    <Progress value={45} />
+                    <Progress value={0} />
                   </div>
                 </div>
               </CardContent>
@@ -311,28 +292,12 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-3 p-4 border rounded-lg">
-                    <Trophy className="h-8 w-8 text-yellow-500" />
-                    <div>
-                      <h4 className="font-semibold">First Quiz</h4>
-                      <p className="text-sm text-muted-foreground">Completed your first quiz</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-4 border rounded-lg">
-                    <Target className="h-8 w-8 text-green-500" />
-                    <div>
-                      <h4 className="font-semibold">Study Streak</h4>
-                      <p className="text-sm text-muted-foreground">7 day study streak</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-4 border rounded-lg opacity-50">
-                    <Award className="h-8 w-8 text-gray-400" />
-                    <div>
-                      <h4 className="font-semibold">Perfect Score</h4>
-                      <p className="text-sm text-muted-foreground">Get 100% on a quiz</p>
-                    </div>
-                  </div>
+                <div className="text-center py-8">
+                  <Award className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No achievements yet</h3>
+                  <p className="text-muted-foreground">
+                    Complete quizzes and study sessions to unlock achievements.
+                  </p>
                 </div>
               </CardContent>
             </Card>
