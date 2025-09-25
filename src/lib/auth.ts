@@ -31,7 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const userRepo = AppDataSource.getRepository(User);
         const user = await userRepo.findOne({ where: { email: credentials.email as string } });
 
-        if (user && await bcrypt.compare(credentials.password as string, user.password)) {
+        if (user && user.password && await bcrypt.compare(credentials.password as string, user.password)) {
           // Check institution compliance
           if (!user.institution || !/^[A-Z\s]+$/.test(user.institution)) {
             throw new Error('Institution name must be in full uppercase letters.');
