@@ -41,18 +41,28 @@ interface AutomationRule {
 const notifications: Notification[] = [];
 
 // Validation schemas
-const sendEmailSchema = z.object({
-  recipientEmails: z.array(z.string().email()).optional(),
-  subject: z.string().min(1).max(200),
-  body: z.string().min(1).max(10000),
-  recipientRole: z.enum(["all", "student", "admin", "super_admin"]).optional(),
-}).refine((data) => {
-  // Either recipientEmails must be provided, or recipientRole must be provided
-  return (data.recipientEmails && data.recipientEmails.length > 0) || data.recipientRole;
-}, {
-  message: "Either recipientEmails or recipientRole must be provided",
-  path: ["recipientEmails"],
-});
+const sendEmailSchema = z
+  .object({
+    recipientEmails: z.array(z.string().email()).optional(),
+    subject: z.string().min(1).max(200),
+    body: z.string().min(1).max(10000),
+    recipientRole: z
+      .enum(["all", "student", "admin", "super_admin"])
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // Either recipientEmails must be provided, or recipientRole must be provided
+      return (
+        (data.recipientEmails && data.recipientEmails.length > 0) ||
+        data.recipientRole
+      );
+    },
+    {
+      message: "Either recipientEmails or recipientRole must be provided",
+      path: ["recipientEmails"],
+    }
+  );
 
 const createAutomationRuleSchema = z.object({
   name: z.string().min(1).max(100),
@@ -140,7 +150,10 @@ export async function POST(request: NextRequest) {
     // Validate that type is provided
     if (!type || !["automation", "email"].includes(type)) {
       return NextResponse.json(
-        { error: "Invalid or missing 'type' field. Must be 'automation' or 'email'" },
+        {
+          error:
+            "Invalid or missing 'type' field. Must be 'automation' or 'email'",
+        },
         { status: 400 }
       );
     }

@@ -7,7 +7,10 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json(
         { message: "Unauthorized - Admin access required" },
         { status: 401 }
@@ -28,7 +31,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json(
         { message: "Unauthorized - Admin access required" },
         { status: 401 }

@@ -8,7 +8,10 @@ export const runtime = "nodejs"; // Force Node.js runtime
 export async function GET() {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json(
         { message: "Unauthorized - Admin access required" },
         { status: 401 }
@@ -42,7 +45,10 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json(
         { message: "Unauthorized - Admin access required" },
         { status: 401 }

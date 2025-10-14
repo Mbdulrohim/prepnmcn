@@ -12,5 +12,13 @@ export default new DataSource({
   url: process.env.DATABASE_URL,
   synchronize: true,
   logging: process.env.NODE_ENV === "development",
-  entities: [User, EmailCode, Feedback, Institution, Resource, Payment, AutomationRule],
+  entities: [
+    User,
+    EmailCode,
+    Feedback,
+    Institution,
+    Resource,
+    Payment,
+    AutomationRule,
+  ],
 });

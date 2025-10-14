@@ -561,7 +561,9 @@ export default function NotificationsPage() {
                       <SelectItem value="all_users">All Users</SelectItem>
                       <SelectItem value="students">All Students</SelectItem>
                       <SelectItem value="admins">All Admins</SelectItem>
-                      <SelectItem value="super_admins">Super Admins Only</SelectItem>
+                      <SelectItem value="super_admins">
+                        Super Admins Only
+                      </SelectItem>
                       <SelectItem value="inactive_users">
                         Inactive Users (30+ days)
                       </SelectItem>

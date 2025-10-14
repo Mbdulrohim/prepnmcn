@@ -201,7 +201,9 @@ export default function AdminLayout({
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {["admin", "super_admin"].includes((session?.user as any)?.role) && (
+                {["admin", "super_admin"].includes(
+                  (session?.user as any)?.role
+                ) && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
@@ -215,7 +217,9 @@ export default function AdminLayout({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}
-                {["admin", "super_admin"].includes((session?.user as any)?.role) && (
+                {["admin", "super_admin"].includes(
+                  (session?.user as any)?.role
+                ) && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild

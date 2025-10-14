@@ -11,7 +11,10 @@ interface RouteParams {
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json(
         { message: "Unauthorized - Admin access required" },
         { status: 401 }
@@ -40,7 +43,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 export async function PUT(req: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json(
         { message: "Unauthorized - Admin access required" },
         { status: 401 }
@@ -77,7 +83,10 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json(
         { message: "Unauthorized - Admin access required" },
         { status: 401 }

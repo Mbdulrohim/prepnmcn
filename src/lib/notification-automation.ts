@@ -26,7 +26,10 @@ export class NotificationAutomation {
     return await ruleRepository.find({ order: { createdAt: "DESC" } });
   }
 
-  static async updateRule(id: string, updates: Partial<AutomationRule>): Promise<AutomationRule | null> {
+  static async updateRule(
+    id: string,
+    updates: Partial<AutomationRule>
+  ): Promise<AutomationRule | null> {
     const AppDataSource = await getDataSource();
     const ruleRepository = AppDataSource.getRepository(AutomationRule);
     await ruleRepository.update(id, updates as any);

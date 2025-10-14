@@ -64,7 +64,7 @@ async function processEmailQueue() {
     }
 
     // Small delay between emails to respect rate limits
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   isProcessingQueue = false;

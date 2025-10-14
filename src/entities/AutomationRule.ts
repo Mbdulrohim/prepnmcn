@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 @Entity("automation_rules")
 export class AutomationRule {
@@ -10,9 +16,18 @@ export class AutomationRule {
 
   @Column({
     type: "enum",
-    enum: ["user_registration", "feedback_submitted", "study_plan_created", "custom"],
+    enum: [
+      "user_registration",
+      "feedback_submitted",
+      "study_plan_created",
+      "custom",
+    ],
   })
-  trigger!: "user_registration" | "feedback_submitted" | "study_plan_created" | "custom";
+  trigger!:
+    | "user_registration"
+    | "feedback_submitted"
+    | "study_plan_created"
+    | "custom";
 
   @Column({ type: "json" })
   conditions!: Record<string, unknown>;

@@ -440,7 +440,7 @@ export default function AdminsPage() {
                               {admin.email}
                             </div>
                           </div>
-                          {admin.email === "doyextech@gmail.com" && (
+                          {admin.role === "super_admin" && (
                             <Crown className="h-4 w-4 text-yellow-500" />
                           )}
                         </div>
