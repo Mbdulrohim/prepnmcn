@@ -33,6 +33,7 @@ export async function GET() {
         institution: user.institution ? user.institution.name : "N/A",
         role: user.role,
         points: user.points,
+        permissions: user.permissions || [],
       },
     });
   } catch (error) {

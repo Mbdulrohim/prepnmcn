@@ -112,10 +112,11 @@ export default function AdminsPage() {
   };
 
   const calculateStats = (adminData: Admin[]) => {
+    const superAdmin = adminData.find(admin => admin.role === "super_admin");
     const stats = {
       totalAdmins: adminData.length,
       activeAdmins: adminData.filter((a) => a.isActive).length,
-      superAdmin: "doyextech@gmail.com",
+      superAdmin: superAdmin?.email || "Not assigned",
     };
     setStats(stats);
   };
@@ -160,7 +161,9 @@ export default function AdminsPage() {
     adminId: string,
     adminEmail: string
   ) => {
-    if (action === "remove" && adminEmail === "doyextech@gmail.com") {
+    // Find the admin to check their role
+    const admin = admins.find(a => a.id === adminId);
+    if (action === "remove" && admin?.role === "super_admin") {
       toast.error("Cannot remove the super admin.");
       return;
     }
@@ -241,7 +244,7 @@ export default function AdminsPage() {
     );
   }
 
-  if (session?.user?.email !== "doyextech@gmail.com") {
+  if ((session?.user as any)?.role !== "super_admin") {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center space-y-4">
@@ -527,7 +530,7 @@ export default function AdminsPage() {
                             >
                               {admin.isActive ? "Deactivate" : "Activate"}
                             </DropdownMenuItem>
-                            {admin.email !== "doyextech@gmail.com" && (
+                            {admin.role !== "super_admin" && (
                               <DropdownMenuItem
                                 onClick={() =>
                                   handleAdminAction(
@@ -541,7 +544,7 @@ export default function AdminsPage() {
                                 Demote to User
                               </DropdownMenuItem>
                             )}
-                            {admin.email !== "doyextech@gmail.com" && (
+                            {admin.role !== "super_admin" && (
                               <DropdownMenuItem
                                 onClick={() =>
                                   handleAdminAction(

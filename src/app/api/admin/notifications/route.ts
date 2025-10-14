@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     // Fetch notifications from database
     const AppDataSource = await getDataSource();
     const notificationRepo = AppDataSource.getRepository(Notification);
-    
+
     const notifications = await notificationRepo.find({
       order: { createdAt: "DESC" },
       take: 100, // Limit to last 100 notifications
@@ -105,7 +105,9 @@ export async function GET(request: NextRequest) {
         notifications,
         automationRules,
         stats: {
-          totalEmails: notifications.filter((n: Notification) => n.type === "email").length,
+          totalEmails: notifications.filter(
+            (n: Notification) => n.type === "email"
+          ).length,
           sentEmails: notifications.filter(
             (n: Notification) => n.type === "email" && n.status === "sent"
           ).length,
@@ -259,7 +261,7 @@ export async function POST(request: NextRequest) {
           });
 
           await notificationRepo.save(notification);
-          
+
           results.push({
             email,
             status: "sent",
@@ -275,11 +277,12 @@ export async function POST(request: NextRequest) {
             recipientEmail: email,
             recipientRole: recipientRole || undefined,
             status: "failed",
-            errorMessage: error instanceof Error ? error.message : "Unknown error",
+            errorMessage:
+              error instanceof Error ? error.message : "Unknown error",
           });
 
           await notificationRepo.save(notification);
-          
+
           results.push({
             email,
             status: "failed",

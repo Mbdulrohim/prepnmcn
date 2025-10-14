@@ -279,7 +279,7 @@ export default function PaymentsPage() {
     );
   }
 
-  if (session?.user?.email !== "doyextech@gmail.com") {
+  if ((session?.user as any)?.role !== "super_admin") {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center space-y-4">

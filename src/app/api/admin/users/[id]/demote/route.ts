@@ -33,7 +33,7 @@ export async function POST(
     }
 
     // Prevent demoting super admin
-    if (user.email === "doyextech@gmail.com") {
+    if (user.role === "super_admin") {
       return NextResponse.json(
         { message: "Cannot demote super admin" },
         { status: 403 }

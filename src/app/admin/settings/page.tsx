@@ -172,7 +172,7 @@ export default function AdminSettings() {
 
   useEffect(() => {
     if (status === "loading") return;
-    if (!session || session.user?.email !== "doyextech@gmail.com") {
+    if (!session || (session.user as any)?.role !== "super_admin") {
       router.push("/admin");
       return;
     }
@@ -521,8 +521,7 @@ export default function AdminSettings() {
                               </Button>
                             </div>
                           )}
-                          {user.role === "admin" &&
-                            user.email !== "doyextech@gmail.com" && (
+                          {user.role === "admin" && (
                               <Button
                                 size="sm"
                                 variant="outline"

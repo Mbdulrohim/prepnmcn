@@ -50,12 +50,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email,
             role: user.role,
             name: user.name,
+            permissions: user.permissions,
           });
           return {
             id: user.id.toString(),
             email: user.email,
             name: user.name,
             role: user.role,
+            permissions: user.permissions || [],
           };
         } else {
           // Return a special user object to indicate new user
@@ -84,7 +86,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (user) {
-          return user;
+          return {
+            id: user.id.toString(),
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            permissions: user.permissions || [],
+          };
         }
         return null;
       },
@@ -114,6 +122,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email,
             name: user.name,
             role: user.role,
+            permissions: user.permissions || [],
           };
         }
         return null;

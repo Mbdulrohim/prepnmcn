@@ -42,6 +42,7 @@ export const authConfig: NextAuthConfig = {
         token.role = (user as any).role;
         token.email = user.email;
         token.name = user.name;
+        token.permissions = (user as any).permissions || [];
       }
       return token;
     },
@@ -52,7 +53,13 @@ export const authConfig: NextAuthConfig = {
         (session.user as any).role = token.role as string;
         (session.user as any).email = token.email as string;
         (session.user as any).name = token.name as string;
-        console.log("Session created for user:", token.email);
+        (session.user as any).permissions = token.permissions || [];
+        console.log("Session callback - Token data:", {
+          email: token.email,
+          role: token.role,
+          permissions: token.permissions,
+        });
+        console.log("Session callback - Session user:", session.user);
       }
       return session;
     },
