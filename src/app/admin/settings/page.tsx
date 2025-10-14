@@ -522,14 +522,14 @@ export default function AdminSettings() {
                             </div>
                           )}
                           {user.role === "admin" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => demoteFromAdmin(user.id)}
-                              >
-                                Demote
-                              </Button>
-                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => demoteFromAdmin(user.id)}
+                            >
+                              Demote
+                            </Button>
+                          )}
                           {user.permissions && (
                             <Button
                               size="sm"

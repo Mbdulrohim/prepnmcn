@@ -22,12 +22,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
   MessageSquare,
   MoreHorizontal,
   Eye,
   Trash2,
   Search,
   Filter,
+  CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -56,6 +66,10 @@ export default function FeedbackPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
+  const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
+  const [responseMessage, setResponseMessage] = useState("");
+  const [isSendingResponse, setIsSendingResponse] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -121,6 +135,34 @@ export default function FeedbackPage() {
       }
     } catch (error) {
       toast.error("An error occurred while deleting feedback.");
+    }
+  };
+
+  const sendResponse = async () => {
+    if (!selectedFeedback || !responseMessage.trim()) return;
+
+    setIsSendingResponse(true);
+    try {
+      const response = await fetch(`/api/admin/feedback/${selectedFeedback.id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response: responseMessage.trim() }),
+      });
+
+      if (response.ok) {
+        toast.success("Response sent successfully!");
+        setIsResponseDialogOpen(false);
+        setResponseMessage("");
+        setSelectedFeedback(null);
+        fetchFeedback(); // Refresh the list
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Failed to send response.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while sending response.");
+    } finally {
+      setIsSendingResponse(false);
     }
   };
 
@@ -319,6 +361,15 @@ export default function FeedbackPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedFeedback(item);
+                            setIsResponseDialogOpen(true);
+                          }}
+                        >
+                          <MessageSquare className="mr-2 h-4 w-4" />
+                          Respond
+                        </DropdownMenuItem>
                         {item.status === "unread" && (
                           <DropdownMenuItem
                             onClick={() =>
@@ -335,7 +386,7 @@ export default function FeedbackPage() {
                               updateFeedbackStatus(item.id, "responded")
                             }
                           >
-                            <MessageSquare className="mr-2 h-4 w-4" />
+                            <CheckCircle className="mr-2 h-4 w-4" />
                             Mark as Responded
                           </DropdownMenuItem>
                         )}
@@ -360,6 +411,74 @@ export default function FeedbackPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Response Dialog */}
+      <Dialog open={isResponseDialogOpen} onOpenChange={setIsResponseDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Respond to Feedback</DialogTitle>
+            <DialogDescription>
+              Send a response to {selectedFeedback?.userName}'s feedback
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedFeedback && (
+            <div className="space-y-4">
+              {/* Original Feedback */}
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm font-medium text-gray-700 mb-1">
+                  Original Feedback:
+                </p>
+                <p className="text-sm text-gray-600">{selectedFeedback.message}</p>
+              </div>
+
+              {/* Response Input */}
+              <div className="space-y-2">
+                <Label htmlFor="response">Your Response</Label>
+                <Textarea
+                  id="response"
+                  placeholder="Type your response to the user..."
+                  value={responseMessage}
+                  onChange={(e) => setResponseMessage(e.target.value)}
+                  rows={4}
+                  disabled={isSendingResponse}
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsResponseDialogOpen(false);
+                    setResponseMessage("");
+                    setSelectedFeedback(null);
+                  }}
+                  disabled={isSendingResponse}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={sendResponse}
+                  disabled={isSendingResponse || !responseMessage.trim()}
+                >
+                  {isSendingResponse ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Send Response
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

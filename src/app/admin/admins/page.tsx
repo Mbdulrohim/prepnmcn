@@ -112,7 +112,7 @@ export default function AdminsPage() {
   };
 
   const calculateStats = (adminData: Admin[]) => {
-    const superAdmin = adminData.find(admin => admin.role === "super_admin");
+    const superAdmin = adminData.find((admin) => admin.role === "super_admin");
     const stats = {
       totalAdmins: adminData.length,
       activeAdmins: adminData.filter((a) => a.isActive).length,
@@ -162,7 +162,7 @@ export default function AdminsPage() {
     adminEmail: string
   ) => {
     // Find the admin to check their role
-    const admin = admins.find(a => a.id === adminId);
+    const admin = admins.find((a) => a.id === adminId);
     if (action === "remove" && admin?.role === "super_admin") {
       toast.error("Cannot remove the super admin.");
       return;

@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { User } from "@/entities/User";
 
-export const runtime = 'nodejs'; // Force Node.js runtime
+export const runtime = "nodejs"; // Force Node.js runtime
 
 export async function GET() {
   try {

@@ -25,8 +25,6 @@ export async function GET() {
       order: { name: "ASC" },
     });
 
-    console.log(`Found ${users.length} users for export`);
-
     if (users.length === 0) {
       return NextResponse.json(
         { message: "No users found to export" },

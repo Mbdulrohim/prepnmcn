@@ -2025,7 +2025,6 @@ const institutions = [
 async function seedUniversities() {
   try {
     await SeederDataSource.initialize();
-    console.log("Database connected");
 
     const institutionRepository = SeederDataSource.getRepository(Institution);
 

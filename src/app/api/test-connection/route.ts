@@ -5,7 +5,6 @@ export async function GET() {
   try {
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
-      console.log("✅ Database connected successfully!");
     }
 
     // Test a simple query

@@ -37,10 +37,6 @@ export async function GET(request: NextRequest) {
 
     const [institutions, total] = await query.getManyAndCount();
 
-    console.log(
-      `Returning ${institutions.length} out of ${total} total institutions`
-    );
-
     return NextResponse.json({
       success: true,
       institutions: institutions.map((inst: Institution) => ({

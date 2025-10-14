@@ -13,8 +13,8 @@ export class Feedback {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: "int" })
-  userId!: number;
+  @Column({ type: "uuid" })
+  userId!: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: "userId" })
