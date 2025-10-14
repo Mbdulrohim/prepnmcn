@@ -31,6 +31,11 @@ export const authConfig: NextAuthConfig = {
     },
     jwt: ({ token, user }) => {
       if (user) {
+        // Don't create token for new users (they need to complete profile first)
+        if ((user as any).newUser) {
+          console.log("Skipping JWT creation for new user");
+          return token;
+        }
         token.id = user.id;
         token.role = (user as any).role;
         token.email = user.email;
@@ -47,6 +52,18 @@ export const authConfig: NextAuthConfig = {
         (session.user as any).name = token.name as string;
       }
       return session;
+    },
+    signIn: async ({ user, account, profile }) => {
+      // Handle NEW_USER case from email-code provider
+      if (account?.provider === "email-code" && user && (user as any).newUser) {
+        // This is a new user, don't complete signin yet
+        // The signin page will handle redirecting to profile completion
+        return (
+          "/auth/signin?new_user=true&email=" +
+          encodeURIComponent(user.email || "")
+        );
+      }
+      return true;
     },
   },
   providers: [], // Add providers with an empty array for now

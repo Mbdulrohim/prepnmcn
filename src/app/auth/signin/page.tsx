@@ -33,7 +33,22 @@ export default function SignIn() {
 
   useEffect(() => {
     checkAuthStatus();
+    checkForNewUser();
   }, []);
+
+  const checkForNewUser = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isNewUser = urlParams.get("new_user");
+    const userEmail = urlParams.get("email");
+
+    if (isNewUser === "true" && userEmail) {
+      setEmail(userEmail);
+      setStep(3);
+      setMessage("Code verified! Please complete your profile.");
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  };
 
   const checkAuthStatus = async () => {
     try {
@@ -94,23 +109,22 @@ export default function SignIn() {
         redirect: false,
       });
 
-      if (result?.error === "NEW_USER") {
+      console.log("SignIn result:", result);
+
+      // Check if the result contains a URL (for new users)
+      if (result?.url && result.url.includes("new_user=true")) {
+        // New user - show profile completion form
         setStep(3);
         setMessage("Code verified! Please complete your profile.");
       } else if (result?.ok) {
-        // Sign in successful, redirect to dashboard
+        // Existing user - sign in successful, redirect to dashboard
         router.push("/dashboard");
       } else {
         setError("Invalid or expired code");
       }
     } catch (error) {
-      // If signIn throws an error (like NEW_USER), handle it
-      if (error === "NEW_USER") {
-        setStep(3);
-        setMessage("Code verified! Please complete your profile.");
-      } else {
-        setError("Invalid or expired code");
-      }
+      console.error("SignIn error:", error);
+      setError("Invalid or expired code");
     }
 
     setLoading(false);
@@ -149,19 +163,28 @@ export default function SignIn() {
       });
 
       const data = await response.json();
+      console.log("Complete profile response:", data);
 
       if (data.success) {
-        // Now that the user is created, sign them in
-        const result = await signIn("email-code", {
+        // User profile created successfully, now sign them in
+        // Use the profile-completed provider to sign in the newly created user
+        const result = await signIn("profile-completed", {
           email,
-          code,
           redirect: false,
         });
+
+        console.log("Profile-completed signin result:", result);
 
         if (result?.ok) {
           router.push("/dashboard");
         } else {
-          setError("Failed to sign in after profile creation");
+          // If direct signin fails, try the normal flow
+          setError("Profile created! Please sign in again.");
+          setStep(1);
+          setEmail("");
+          setCode("");
+          setName("");
+          setInstitution("");
         }
       } else {
         setError(data.error || "Failed to complete profile");

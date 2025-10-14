@@ -41,14 +41,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         await emailCodeRepo.save(emailCodeRecord);
 
         const user = await userRepo.findOne({
-          where: { email: credentials.email as string },
+          where: { email: (credentials.email as string).toLowerCase() },
         });
 
         if (user) {
           return user;
         } else {
-          throw new Error("NEW_USER");
+          // Return a special user object to indicate new user
+          // The signIn callback will handle the redirect
+          return {
+            id: "new_user",
+            email: credentials.email as string,
+            newUser: true,
+          } as any;
         }
+      },
+    }),
+    Credentials({
+      id: "profile-completed",
+      credentials: {
+        email: { label: "Email" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email) return null;
+
+        const AppDataSource = await getDataSource();
+        const userRepo = AppDataSource.getRepository(User);
+
+        const user = await userRepo.findOne({
+          where: { email: (credentials.email as string).toLowerCase() },
+        });
+
+        if (user) {
+          return user;
+        }
+        return null;
       },
     }),
     Credentials({

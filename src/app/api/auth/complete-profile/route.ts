@@ -25,11 +25,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
+      console.log("User already exists:", email);
       return NextResponse.json(
         { error: "User already exists" },
         { status: 400 }
       );
     }
+
+    console.log("Creating new user with email:", email.toLowerCase());
 
     const institutionEntity = await institutionRepo.findOne({
       where: { name: institution },
@@ -51,6 +54,13 @@ export async function POST(request: NextRequest) {
     });
 
     await userRepo.save(user);
+
+    console.log("New user created successfully:", {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    });
 
     return NextResponse.json({
       success: true,

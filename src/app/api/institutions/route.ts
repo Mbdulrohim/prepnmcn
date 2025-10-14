@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AppDataSource } from "@/lib/database";
+import { getDataSource } from "@/lib/database";
 import { Institution } from "@/entities/Institution";
+
+export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const limitParam = searchParams.get("limit");
+    const limit = limitParam ? parseInt(limitParam) : null; // null = no limit
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    // Initialize database if not already
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
-
+    // Get database connection
+    const AppDataSource = await getDataSource();
     const institutionRepo = AppDataSource.getRepository(Institution);
 
     let query = institutionRepo
@@ -27,11 +27,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const [institutions, total] = await query
-      .orderBy("institution.name", "ASC")
-      .limit(limit)
-      .offset(offset)
-      .getManyAndCount();
+    // Apply ordering
+    query = query.orderBy("institution.name", "ASC");
+
+    // Apply pagination only if limit is specified
+    if (limit !== null) {
+      query = query.limit(limit).offset(offset);
+    }
+
+    const [institutions, total] = await query.getManyAndCount();
+
+    console.log(
+      `Returning ${institutions.length} out of ${total} total institutions`
+    );
 
     return NextResponse.json({
       success: true,
@@ -45,9 +53,9 @@ export async function GET(request: NextRequest) {
       })),
       pagination: {
         total,
-        limit,
+        limit: limit || total,
         offset,
-        hasMore: offset + limit < total,
+        hasMore: limit !== null ? offset + limit < total : false,
       },
     });
   } catch (error) {
