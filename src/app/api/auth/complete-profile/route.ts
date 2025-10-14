@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AppDataSource } from "../../../../lib/database";
-import { User } from "../../../../entities/User";
-import { generateToken } from "../../../../lib/jwt";
-import { cookies } from "next/headers";
+import { getDataSource } from "@/lib/database";
+import { User } from "@/entities/User";
+import { Institution } from "@/entities/Institution";
+
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,14 +16,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize database if not already
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
-
+    const AppDataSource = await getDataSource();
     const userRepo = AppDataSource.getRepository(User);
+    const institutionRepo = AppDataSource.getRepository(Institution);
 
-    // Check if user already exists
     const existingUser = await userRepo.findOne({
       where: { email: email.toLowerCase() },
     });
@@ -34,32 +31,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new user
+    const institutionEntity = await institutionRepo.findOne({
+      where: { name: institution },
+    });
+
+    if (!institutionEntity) {
+      return NextResponse.json(
+        { error: "Institution not found" },
+        { status: 400 }
+      );
+    }
+
     const user = userRepo.create({
       email: email.toLowerCase(),
       name: name.trim(),
-      institution: institution.toUpperCase().trim(),
+      institution: institutionEntity,
       role: "student",
       points: 0,
     });
 
     await userRepo.save(user);
-
-    // Generate JWT token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    // Set HTTP-only cookie
-    const cookieStore = await cookies();
-    cookieStore.set("auth-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-    });
 
     return NextResponse.json({
       success: true,
@@ -67,7 +58,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
-        institution: user.institution,
+        institution: user.institution?.name || null,
         role: user.role,
         points: user.points,
       },

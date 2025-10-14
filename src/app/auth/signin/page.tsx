@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InstitutionSelect } from "@/components/InstitutionSelect";
 import {
   Card,
   CardContent,
@@ -85,34 +88,32 @@ export default function SignIn() {
     setError("");
 
     try {
-      const response = await fetch("/api/auth/verify-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          code,
-        }),
+      const result = await signIn("email-code", {
+        email,
+        code,
+        redirect: false,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        if (data.isNewUser) {
-          // New user - go to profile setup
-          setStep(3);
-          setMessage("Code verified! Please complete your profile.");
-        } else {
-          // Existing user - redirect to dashboard
-          router.push("/dashboard");
-        }
+      if (result?.error === "NEW_USER") {
+        setStep(3);
+        setMessage("Code verified! Please complete your profile.");
+      } else if (result?.ok) {
+        // Sign in successful, redirect to dashboard
+        router.push("/dashboard");
       } else {
-        setError(data.error || "Invalid code");
+        setError("Invalid or expired code");
       }
-    } catch (err) {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      // If signIn throws an error (like NEW_USER), handle it
+      if (error === "NEW_USER") {
+        setStep(3);
+        setMessage("Code verified! Please complete your profile.");
+      } else {
+        setError("Invalid or expired code");
+      }
     }
+
+    setLoading(false);
   };
 
   const completeProfile = async () => {
@@ -125,20 +126,43 @@ export default function SignIn() {
     setError("");
 
     try {
+      // Get institution name from ID
+      const institutionResponse = await fetch(`/api/institutions`);
+      const institutionData = await institutionResponse.json();
+      const selectedInstitution = institutionData.institutions?.find(
+        (inst: any) => inst.id === institution
+      );
+
+      if (!selectedInstitution) {
+        setError("Invalid institution selected");
+        return;
+      }
+
       const response = await fetch("/api/auth/complete-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
           name,
-          institution,
+          institution: selectedInstitution.name,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        router.push("/dashboard");
+        // Now that the user is created, sign them in
+        const result = await signIn("email-code", {
+          email,
+          code,
+          redirect: false,
+        });
+
+        if (result?.ok) {
+          router.push("/dashboard");
+        } else {
+          setError("Failed to sign in after profile creation");
+        }
       } else {
         setError(data.error || "Failed to complete profile");
       }
@@ -155,13 +179,18 @@ export default function SignIn() {
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
           <CardHeader className="space-y-4 pb-6">
             <div className="text-center space-y-2">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-4">
-                <span className="text-2xl font-bold text-white">P</span>
+              <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                <Image
+                  src="/preplogo.png"
+                  alt="O'Prep"
+                  width={40}
+                  height={40}
+                />
               </div>
               <CardTitle className="text-2xl font-bold">
                 Welcome to{" "}
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  PREPNMCN
+                  O'Prep
                 </span>
               </CardTitle>
               <CardDescription className="text-sm">
@@ -293,18 +322,12 @@ export default function SignIn() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="institution">Institution</Label>
-                  <Input
-                    id="institution"
-                    type="text"
-                    value={institution}
-                    onChange={(e) => setInstitution(e.target.value)}
-                    placeholder="University/College name"
-                    disabled={loading}
-                    className="h-12"
-                  />
-                </div>
+                <InstitutionSelect
+                  value={institution}
+                  onValueChange={setInstitution}
+                  placeholder="Select your institution"
+                  disabled={loading}
+                />
 
                 <Button
                   onClick={completeProfile}

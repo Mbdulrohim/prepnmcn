@@ -8,12 +8,12 @@ import {
 } from "typeorm";
 import { User } from "./User";
 
-@Entity()
+@Entity("feedbacks")
 export class Feedback {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ type: "int" })
   userId!: number;
 
   @ManyToOne(() => User)
@@ -22,6 +22,9 @@ export class Feedback {
 
   @Column("text")
   message!: string;
+
+  @Column({ type: "varchar", length: 20, default: "unread" })
+  status!: string;
 
   @CreateDateColumn()
   createdAt!: Date;

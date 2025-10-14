@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { AppDataSource } from "../../../../lib/database";
 import { User } from "../../../../entities/User";
 import bcrypt from "bcryptjs";
+import { NotificationAutomation } from "../../../../lib/notification-automation";
 
 export async function POST(request: NextRequest) {
   const { name, email, password, institution } = await request.json();
@@ -32,6 +33,19 @@ export async function POST(request: NextRequest) {
     institution,
   });
   await userRepo.save(user);
+
+  // Trigger automation for user registration
+  try {
+    await NotificationAutomation.triggerAutomation("user_registration", {
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+      institution: user.institution,
+    });
+  } catch (error) {
+    console.error("Failed to trigger user registration automation:", error);
+    // Don't fail the registration if automation fails
+  }
 
   return NextResponse.json({ message: "User registered successfully" });
 }

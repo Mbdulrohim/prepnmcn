@@ -9,12 +9,11 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import Header from "@/components/Header";
+
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
-      <Header />
 
       {/* Hero Section */}
       <section className="min-h-screen flex items-center px-8 md:px-16 lg:px-24">
@@ -537,7 +536,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-12 px-4">
         <div className="max-w-6xl mx-auto text-center space-y-4">
-          <h3 className="text-2xl font-bold">O'PREP.COM</h3>
+          <h3 className="text-2xl font-bold">O'Prep</h3>
           <p className="text-slate-400">
             Empowering Students Through Our Proven Study Methodology
           </p>
@@ -563,7 +562,7 @@ export default function Home() {
           </div>
           <Separator className="my-8" />
           <p className="text-sm text-slate-500">
-            © 2025 O'PREP.COM - All rights reserved
+            © 2025 O'Prep - All rights reserved
           </p>
         </div>
       </footer>

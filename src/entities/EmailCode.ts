@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
 } from "typeorm";
 
-@Entity()
+@Entity("email_codes")
 export class EmailCode {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
@@ -19,7 +19,7 @@ export class EmailCode {
   @Column({ type: "timestamp" })
   expiresAt!: Date; // Codes expire after 10 minutes
 
-  @Column({ default: false })
+  @Column({ type: "boolean", default: false })
   used!: boolean; // Mark as used after successful login
 
   @CreateDateColumn()

@@ -12,51 +12,23 @@ import {
   Calendar,
   Trophy,
   Home,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  institution: string;
-  role: string;
-  points: number;
-}
+import { useSession, signOut } from "next-auth/react";
 
 export default function Header() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const loading = status === "loading";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch("/api/user/me");
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData.user);
-      }
-    } catch (error) {
-      // User not authenticated
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      setUser(null);
-      router.push("/");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    await signOut({ redirect: false });
+    router.push("/");
   };
 
   if (loading) {
@@ -68,8 +40,8 @@ export default function Header() {
               href="/"
               className="flex items-center gap-2 text-2xl font-bold text-[#1e40af] hover:text-[#1d4ed8] transition-colors"
             >
-              <Image src="/preplogo.png" alt="O'Prep" width={32} height={32} />
-              O'Prep
+              <Image src="/preplogo.png" alt="O/Prep" width={32} height={32} />
+              O/Prep
             </Link>
             <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
           </div>
@@ -87,8 +59,8 @@ export default function Header() {
             href="/"
             className="flex items-center gap-2 text-2xl font-bold text-[#1e40af] hover:text-[#1d4ed8] transition-colors"
           >
-            <Image src="/preplogo.png" alt="O'Prep" width={32} height={32} />
-            O'Prep
+            <Image src="/preplogo.png" alt="O/Prep" width={32} height={32} />
+            O/Prep
           </Link>
 
           {/* Desktop Navigation */}
@@ -115,6 +87,13 @@ export default function Header() {
                   title="Leaderboard"
                 >
                   <Trophy size={20} />
+                </Link>
+                <Link
+                  href="/forums"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  title="Forums"
+                >
+                  <MessageSquare size={20} />
                 </Link>
 
                 {/* User Menu */}
@@ -180,6 +159,14 @@ export default function Header() {
                 >
                   <Trophy size={20} />
                   <span>Leaderboard</span>
+                </Link>
+                <Link
+                  href="/forums"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:text-[#1e40af] hover:bg-[#1e40af]/5 transition-all duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <MessageSquare size={20} />
+                  <span>Forums</span>
                 </Link>
 
                 <div className="px-4 py-2 border-t border-gray-100 mt-4 pt-4">

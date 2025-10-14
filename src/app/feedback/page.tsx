@@ -63,7 +63,7 @@ export default function Feedback() {
           Share Your Feedback
         </h1>
         <p className="text-xl text-gray-600 text-center mb-12">
-          Help us improve PREPNMCN.COM by sharing your thoughts and suggestions.
+          Help us improve O'Prep by sharing your thoughts and suggestions.
         </p>
 
         {!isAuthenticated ? (
@@ -91,18 +91,14 @@ export default function Feedback() {
                 id="message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us what you think about PREPNMCN.COM..."
+                placeholder="Tell us what you think about O'Prep..."
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-vertical"
                 rows={6}
                 required
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!message.trim()}
-            >
+            <Button type="submit" className="w-full" disabled={!message.trim()}>
               Submit Feedback
             </Button>
             {status && (

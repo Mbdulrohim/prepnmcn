@@ -1,29 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "../../../../lib/jwt";
-import { AppDataSource } from "../../../../lib/database";
-import { User } from "../../../../entities/User";
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { getDataSource } from "@/lib/database";
+import { User } from "@/entities/User";
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs'; // Force Node.js runtime
+
+export async function GET() {
   try {
-    const token = request.cookies.get("auth-token")?.value;
+    const session = await auth();
 
-    if (!token) {
-      return NextResponse.json({ error: "No token provided" }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
-    // Initialize database if not already
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
+    const AppDataSource = await getDataSource();
 
     const userRepo = AppDataSource.getRepository(User);
     const user = await userRepo.findOne({
-      where: { id: payload.userId },
+      where: { id: (session.user as any).id },
+      relations: ["institution"],
     });
 
     if (!user) {
@@ -35,7 +30,7 @@ export async function GET(request: NextRequest) {
         id: user.id,
         name: user.name,
         email: user.email,
-        institution: user.institution,
+        institution: user.institution ? user.institution.name : "N/A",
         role: user.role,
         points: user.points,
       },

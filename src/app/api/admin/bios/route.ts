@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "../../../../lib/auth";
 import { AppDataSource } from "../../../../lib/database";
 import { User } from "../../../../entities/User";
 
+export const runtime = "nodejs";
+
 export async function GET() {
-  // TODO: Check if admin
+  const session = await auth();
+  if (
+    !session ||
+    !["admin", "super_admin"].includes((session.user as any)?.role)
+  ) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   if (!AppDataSource.isInitialized) {
     await AppDataSource.initialize();
   }

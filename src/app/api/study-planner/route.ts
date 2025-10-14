@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { NotificationAutomation } from "../../../lib/notification-automation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,6 +27,22 @@ export async function POST(request: NextRequest) {
       studyHours,
       knowledgeLevel
     );
+
+    // Trigger automation for study plan creation
+    try {
+      await NotificationAutomation.triggerAutomation("study_plan_created", {
+        userId: parseInt(userId),
+        examType,
+        examDate,
+        studyHours,
+        knowledgeLevel,
+        daysUntilExam,
+        planGenerated: true,
+      });
+    } catch (error) {
+      console.error("Failed to trigger study plan creation automation:", error);
+      // Don't fail the study plan generation if automation fails
+    }
 
     return NextResponse.json({ studyPlan });
   } catch (error) {

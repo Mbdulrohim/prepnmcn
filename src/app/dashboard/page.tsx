@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -19,8 +25,9 @@ import {
   CheckCircle,
   BarChart3,
   Users,
-  Award
+  Award,
 } from "lucide-react";
+import Link from "next/link";
 
 interface User {
   id: string;
@@ -75,7 +82,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
@@ -84,12 +90,19 @@ export default function Dashboard() {
             <Avatar className="h-16 w-16">
               <AvatarImage src="" alt={user.name} />
               <AvatarFallback className="bg-blue-100 text-blue-600 text-xl">
-                {user.name.split(' ').map(n => n[0]).join('')}
+                {user.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.name}!</h1>
-              <p className="text-gray-600">{user.institution} • {user.role}</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Welcome back, {user.name}!
+              </h1>
+              <p className="text-gray-600">
+                {user.institution} • {user.role}
+              </p>
             </div>
           </div>
           <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -102,11 +115,15 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Points</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Points
+              </CardTitle>
               <Trophy className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{user.points}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {user.points}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Start earning points!
               </p>
@@ -115,7 +132,9 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Study Streak</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Study Streak
+              </CardTitle>
               <Target className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
@@ -128,14 +147,14 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Hours Studied</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Hours Studied
+              </CardTitle>
               <Clock className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">0h</div>
-              <p className="text-xs text-muted-foreground">
-                This week
-              </p>
+              <p className="text-xs text-muted-foreground">This week</p>
             </CardContent>
           </Card>
 
@@ -186,6 +205,12 @@ export default function Dashboard() {
                     <Users className="mr-2 h-4 w-4" />
                     Join Study Group
                   </Button>
+                  <Link href="/resources" passHref>
+                    <Button className="w-full justify-start" variant="outline">
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Browse Resources
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
 
@@ -200,7 +225,9 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-center py-8">
                     <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No activity yet</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No activity yet
+                    </h3>
                     <p className="text-muted-foreground">
                       Start studying to see your activity here.
                     </p>
@@ -224,9 +251,12 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-center py-8">
                   <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Study Planner Coming Soon</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Study Planner Coming Soon
+                  </h3>
                   <p className="text-muted-foreground mb-4">
-                    We&apos;re working on an advanced study planning system to help you organize your exam preparation.
+                    We&apos;re working on an advanced study planning system to
+                    help you organize your exam preparation.
                   </p>
                   <Button>Get Notified</Button>
                 </div>
@@ -294,7 +324,9 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-center py-8">
                   <Award className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No achievements yet</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No achievements yet
+                  </h3>
                   <p className="text-muted-foreground">
                     Complete quizzes and study sessions to unlock achievements.
                   </p>

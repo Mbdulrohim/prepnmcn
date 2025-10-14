@@ -4,9 +4,12 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
+import { Institution } from "./Institution";
 
-@Entity()
+@Entity("users")
 export class User {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
@@ -20,14 +23,21 @@ export class User {
   @Column({ type: "varchar", length: 255, nullable: true })
   password?: string;
 
-  @Column({ type: "varchar", length: 255 })
-  institution!: string; // Full uppercase name
+  @ManyToOne(() => Institution, { nullable: true })
+  @JoinColumn({ name: "institutionId" })
+  institution?: Institution;
 
-  @Column({ default: 0 })
+  @Column({ type: "uuid", nullable: true })
+  institutionId?: string;
+
+  @Column({ type: "int", default: 0 })
   points!: number;
 
-  @Column({ type: "varchar", length: 50, default: "student" })
-  role!: string; // 'student' or 'admin'
+  @Column({ type: "varchar", length: 50, default: "user" })
+  role!: string; // 'user', 'admin', 'super_admin'
+
+  @Column({ type: "json", nullable: true, default: [] })
+  permissions!: string[];
 
   @CreateDateColumn()
   createdAt!: Date;

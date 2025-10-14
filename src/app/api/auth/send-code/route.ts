@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AppDataSource } from "../../../../lib/database";
+import { getDataSource } from "@/lib/database";
+export const runtime = 'nodejs'; // Force Node.js runtime
 import { EmailCode } from "../../../../entities/EmailCode";
 import {
   sendVerificationEmail,
@@ -17,10 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize database if not already
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
+    const AppDataSource = await getDataSource();
 
     const emailCodeRepo = AppDataSource.getRepository(EmailCode);
 
