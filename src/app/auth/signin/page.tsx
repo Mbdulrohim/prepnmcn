@@ -114,11 +114,17 @@ export default function SignIn() {
       // Check if the result contains a URL (for new users)
       if (result?.url && result.url.includes("new_user=true")) {
         // New user - show profile completion form
+        console.log("New user detected, showing profile form");
         setStep(3);
         setMessage("Code verified! Please complete your profile.");
       } else if (result?.ok) {
         // Existing user - sign in successful, redirect to dashboard
-        router.push("/dashboard");
+        console.log("Existing user signed in successfully");
+        setMessage("Signed in successfully! Redirecting...");
+        setTimeout(() => router.push("/dashboard"), 500);
+      } else if (result?.error) {
+        console.error("SignIn failed with error:", result.error);
+        setError(result.error || "Invalid or expired code");
       } else {
         setError("Invalid or expired code");
       }
@@ -274,6 +280,11 @@ export default function SignIn() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !loading && email) {
+                        sendCode();
+                      }
+                    }}
                     placeholder="your.email@example.com"
                     disabled={loading}
                     className="h-12"
@@ -298,10 +309,16 @@ export default function SignIn() {
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !loading && code) {
+                        verifyCode();
+                      }
+                    }}
                     placeholder="000000"
                     maxLength={6}
                     disabled={loading}
                     className="text-center text-2xl tracking-widest font-mono h-16"
+                    autoFocus
                   />
                   <p className="text-sm text-muted-foreground text-center">
                     Check your email for the 6-digit code
@@ -339,9 +356,20 @@ export default function SignIn() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        !loading &&
+                        name &&
+                        institution
+                      ) {
+                        completeProfile();
+                      }
+                    }}
                     placeholder="Your full name"
                     disabled={loading}
                     className="h-12"
+                    autoFocus
                   />
                 </div>
 

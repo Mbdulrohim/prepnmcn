@@ -1,23 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { User } from "@/entities/User";
+import { Notification } from "@/entities/Notification";
 import { sendEmail } from "@/lib/email";
 import { NotificationAutomation } from "@/lib/notification-automation";
+import { getDataSource } from "@/lib/database";
 import { z } from "zod";
 
-// Types for notifications
-interface Notification {
-  id: string;
-  type: "email" | "automation";
-  title: string;
-  content: string;
-  recipientEmail?: string;
-  recipientRole?: string;
-  sentAt?: Date;
-  status: "sent" | "pending" | "failed";
-  createdAt: Date;
-  updatedAt: Date;
-}
+export const runtime = "nodejs";
 
 interface AutomationRule {
   id: string;
@@ -36,9 +26,6 @@ interface AutomationRule {
   createdAt: Date;
   updatedAt: Date;
 }
-
-// In-memory storage for notifications (in production, use database)
-const notifications: Notification[] = [];
 
 // Validation schemas
 const sendEmailSchema = z
@@ -101,6 +88,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Fetch notifications from database
+    const AppDataSource = await getDataSource();
+    const notificationRepo = AppDataSource.getRepository(Notification);
+    
+    const notifications = await notificationRepo.find({
+      order: { createdAt: "DESC" },
+      take: 100, // Limit to last 100 notifications
+    });
+
     // Return both email notifications and automation rules
     const automationRules = await NotificationAutomation.getRules();
     return NextResponse.json({
@@ -109,15 +105,15 @@ export async function GET(request: NextRequest) {
         notifications,
         automationRules,
         stats: {
-          totalEmails: notifications.filter((n) => n.type === "email").length,
+          totalEmails: notifications.filter((n: Notification) => n.type === "email").length,
           sentEmails: notifications.filter(
-            (n) => n.type === "email" && n.status === "sent"
+            (n: Notification) => n.type === "email" && n.status === "sent"
           ).length,
           pendingEmails: notifications.filter(
-            (n) => n.type === "email" && n.status === "pending"
+            (n: Notification) => n.type === "email" && n.status === "pending"
           ).length,
           failedEmails: notifications.filter(
-            (n) => n.type === "email" && n.status === "failed"
+            (n: Notification) => n.type === "email" && n.status === "failed"
           ).length,
           activeAutomationRules: automationRules.filter((r) => r.isActive)
             .length,
@@ -239,6 +235,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Get database connection
+      const AppDataSource = await getDataSource();
+      const notificationRepo = AppDataSource.getRepository(Notification);
+
       const results = [];
       for (const email of finalRecipientEmails) {
         try {
@@ -248,19 +248,18 @@ export async function POST(request: NextRequest) {
             html: emailBody,
           });
 
-          const notification: Notification = {
-            id: Date.now().toString() + Math.random(),
+          const notification = notificationRepo.create({
             type: "email",
             title: subject,
             content: emailBody,
             recipientEmail: email,
+            recipientRole: recipientRole || undefined,
             sentAt: new Date(),
             status: "sent",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
+          });
 
-          notifications.push(notification);
+          await notificationRepo.save(notification);
+          
           results.push({
             email,
             status: "sent",
@@ -269,18 +268,18 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           console.error(`Failed to send email to ${email}:`, error);
 
-          const notification: Notification = {
-            id: Date.now().toString() + Math.random(),
+          const notification = notificationRepo.create({
             type: "email",
             title: subject,
             content: emailBody,
             recipientEmail: email,
+            recipientRole: recipientRole || undefined,
             status: "failed",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
+            errorMessage: error instanceof Error ? error.message : "Unknown error",
+          });
 
-          notifications.push(notification);
+          await notificationRepo.save(notification);
+          
           results.push({
             email,
             status: "failed",
@@ -384,15 +383,18 @@ export async function DELETE(request: NextRequest) {
         message: "Automation rule deleted successfully",
       });
     } else if (type === "notification") {
-      const notificationIndex = notifications.findIndex((n) => n.id === id);
-      if (notificationIndex === -1) {
+      const AppDataSource = await getDataSource();
+      const notificationRepo = AppDataSource.getRepository(Notification);
+
+      const notification = await notificationRepo.findOne({ where: { id } });
+      if (!notification) {
         return NextResponse.json(
           { error: "Notification not found" },
           { status: 404 }
         );
       }
 
-      notifications.splice(notificationIndex, 1);
+      await notificationRepo.remove(notification);
 
       return NextResponse.json({
         success: true,

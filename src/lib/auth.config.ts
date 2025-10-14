@@ -36,6 +36,8 @@ export const authConfig: NextAuthConfig = {
           console.log("Skipping JWT creation for new user");
           return token;
         }
+        // For existing users, populate token with user data
+        console.log("Creating JWT for existing user:", user.email);
         token.id = user.id;
         token.role = (user as any).role;
         token.email = user.email;
@@ -50,6 +52,7 @@ export const authConfig: NextAuthConfig = {
         (session.user as any).role = token.role as string;
         (session.user as any).email = token.email as string;
         (session.user as any).name = token.name as string;
+        console.log("Session created for user:", token.email);
       }
       return session;
     },

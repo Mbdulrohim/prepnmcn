@@ -45,7 +45,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (user) {
-          return user;
+          console.log("Existing user found:", {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            name: user.name,
+          });
+          return {
+            id: user.id.toString(),
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
         } else {
           // Return a special user object to indicate new user
           // The signIn callback will handle the redirect

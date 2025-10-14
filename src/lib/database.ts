@@ -7,6 +7,7 @@ import { Institution } from "../entities/Institution";
 import { Resource } from "../entities/Resource";
 import { Payment } from "../entities/Payment";
 import { AutomationRule } from "../entities/AutomationRule";
+import { Notification } from "../entities/Notification";
 
 let AppDataSource: DataSource;
 
@@ -28,6 +29,7 @@ export async function getDataSource(): Promise<DataSource> {
       Resource,
       Payment,
       AutomationRule,
+      Notification,
     ],
     ssl:
       process.env.NODE_ENV === "production"
