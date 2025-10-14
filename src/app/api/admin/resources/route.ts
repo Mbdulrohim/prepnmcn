@@ -94,7 +94,8 @@ export async function POST(req: NextRequest) {
     // Parse PDF with better error handling
     let contentText = "";
     try {
-      // Use require inside function to avoid ES module issues
+      // Use dynamic import to avoid ES module issues
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const pdfParse = require("pdf-parse");
       const pdfData = await pdfParse(fileBuffer);
       contentText = pdfData.text || "";

@@ -31,8 +31,19 @@ interface ForumTopic {
   createdAt: string;
 }
 
+interface ExtendedUser {
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+}
+
+interface ExtendedSession {
+  user?: ExtendedUser;
+}
+
 export default function AdminForumsPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession() as { data: ExtendedSession | null; status: string };
   const router = useRouter();
   const [stats, setStats] = useState<ForumStats | null>(null);
   const [topics, setTopics] = useState<ForumTopic[]>([]);
@@ -43,7 +54,7 @@ export default function AdminForumsPage() {
       router.push("/auth/signin");
     } else if (
       status === "authenticated" &&
-      !["admin", "super_admin"].includes((session?.user as any)?.role)
+      !["admin", "super_admin"].includes(session?.user?.role || "")
     ) {
       router.push("/dashboard");
     } else if (status === "authenticated") {
