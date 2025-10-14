@@ -96,7 +96,7 @@ export default function PaymentsPage() {
       router.push("/auth/signin");
     } else if (
       status === "authenticated" &&
-      (session?.user as any)?.role !== "super_admin"
+      !["admin", "super_admin"].includes((session?.user as any)?.role)
     ) {
       router.push("/admin");
     } else if (status === "authenticated") {

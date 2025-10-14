@@ -1,50 +1,42 @@
-import { AppDataSource } from "@/lib/database";
+import { getDataSource } from "@/lib/database";
 import { User } from "@/entities/User";
+import { AutomationRule } from "@/entities/AutomationRule";
 import { sendEmail } from "@/lib/email";
 
-interface AutomationRule {
-  id: string;
-  name: string;
-  trigger:
-    | "user_registration"
-    | "feedback_submitted"
-    | "study_plan_created"
-    | "custom";
-  conditions: Record<string, unknown>;
-  template: {
-    subject: string;
-    body: string;
-  };
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// In-memory storage for automation rules (in production, use database)
-let automationRules: AutomationRule[] = [];
-
 export class NotificationAutomation {
-  static addRule(rule: AutomationRule) {
-    automationRules.push(rule);
+  static async addRule(
+    rule: Omit<AutomationRule, "id" | "createdAt" | "updatedAt">
+  ) {
+    const AppDataSource = await getDataSource();
+    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    const newRule = ruleRepository.create(rule);
+    await ruleRepository.save(newRule);
+    return newRule;
   }
 
-  static removeRule(ruleId: string) {
-    automationRules = automationRules.filter((r) => r.id !== ruleId);
+  static async removeRule(ruleId: string) {
+    const AppDataSource = await getDataSource();
+    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    await ruleRepository.delete(ruleId);
   }
 
-  static getRules(): AutomationRule[] {
-    return automationRules;
+  static async getRules(): Promise<AutomationRule[]> {
+    const AppDataSource = await getDataSource();
+    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    return await ruleRepository.find({ order: { createdAt: "DESC" } });
   }
 
-  static updateRule(ruleId: string, updates: Partial<AutomationRule>) {
-    const index = automationRules.findIndex((r) => r.id === ruleId);
-    if (index !== -1) {
-      automationRules[index] = {
-        ...automationRules[index],
-        ...updates,
-        updatedAt: new Date(),
-      };
-    }
+  static async updateRule(id: string, updates: Partial<AutomationRule>): Promise<AutomationRule | null> {
+    const AppDataSource = await getDataSource();
+    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    await ruleRepository.update(id, updates as any);
+    return await ruleRepository.findOneBy({ id });
+  }
+
+  static async getRuleById(id: string): Promise<AutomationRule | null> {
+    const AppDataSource = await getDataSource();
+    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    return await ruleRepository.findOneBy({ id });
   }
 
   // Trigger automation based on events
@@ -52,9 +44,11 @@ export class NotificationAutomation {
     trigger: string,
     data: Record<string, unknown>
   ) {
-    const relevantRules = automationRules.filter(
-      (rule) => rule.isActive && rule.trigger === trigger
-    );
+    const AppDataSource = await getDataSource();
+    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    const relevantRules = await ruleRepository.find({
+      where: { isActive: true, trigger: trigger as any },
+    });
 
     for (const rule of relevantRules) {
       try {
@@ -124,6 +118,7 @@ export class NotificationAutomation {
     rule: AutomationRule,
     data: Record<string, unknown>
   ): Promise<{ email: string }[]> {
+    const AppDataSource = await getDataSource();
     const userRepository = AppDataSource.getRepository(User);
 
     switch (rule.trigger) {
@@ -186,4 +181,4 @@ export class NotificationAutomation {
 }
 
 // Export functions to be used in API routes
-export { automationRules };
+// Note: automationRules is no longer exported as it's now stored in database

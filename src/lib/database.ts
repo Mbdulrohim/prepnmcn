@@ -6,6 +6,7 @@ import { Feedback } from "../entities/Feedback";
 import { Institution } from "../entities/Institution";
 import { Resource } from "../entities/Resource";
 import { Payment } from "../entities/Payment";
+import { AutomationRule } from "../entities/AutomationRule";
 
 let AppDataSource: DataSource;
 
@@ -19,7 +20,7 @@ export async function getDataSource(): Promise<DataSource> {
     url: process.env.DATABASE_URL,
     synchronize: true,
     logging: process.env.NODE_ENV === "development",
-    entities: [User, EmailCode, Feedback, Institution, Resource, Payment],
+    entities: [User, EmailCode, Feedback, Institution, Resource, Payment, AutomationRule],
     ssl:
       process.env.NODE_ENV === "production"
         ? true

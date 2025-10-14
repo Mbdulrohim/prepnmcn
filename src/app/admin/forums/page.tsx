@@ -43,7 +43,10 @@ interface ExtendedSession {
 }
 
 export default function AdminForumsPage() {
-  const { data: session, status } = useSession() as { data: ExtendedSession | null; status: string };
+  const { data: session, status } = useSession() as {
+    data: ExtendedSession | null;
+    status: string;
+  };
   const router = useRouter();
   const [stats, setStats] = useState<ForumStats | null>(null);
   const [topics, setTopics] = useState<ForumTopic[]>([]);

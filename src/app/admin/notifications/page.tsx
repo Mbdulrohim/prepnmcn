@@ -100,6 +100,11 @@ export default function NotificationsPage() {
     name: "",
     trigger: "user_registration",
     action: "send_welcome_email",
+    conditions: {},
+    template: {
+      subject: "",
+      body: "",
+    },
   });
 
   useEffect(() => {
@@ -173,6 +178,7 @@ export default function NotificationsPage() {
     try {
       // Transform form data to match API expectations
       let requestBody: any = {
+        type: "email",
         subject: emailForm.subject,
         body: emailForm.message,
       };
@@ -183,10 +189,16 @@ export default function NotificationsPage() {
         // Map recipient types to API expected values
         switch (emailForm.recipientType) {
           case "all_users":
-            requestBody.recipientRole = "user";
+            requestBody.recipientRole = "all";
+            break;
+          case "students":
+            requestBody.recipientRole = "student";
             break;
           case "admins":
             requestBody.recipientRole = "admin";
+            break;
+          case "super_admins":
+            requestBody.recipientRole = "super_admin";
             break;
           case "inactive_users":
             // For now, send to all users (API doesn't support activity filtering yet)
@@ -233,6 +245,16 @@ export default function NotificationsPage() {
       return;
     }
 
+    if (!automationForm.template.subject) {
+      toast.error("Email subject is required");
+      return;
+    }
+
+    if (!automationForm.template.body) {
+      toast.error("Email body is required");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/admin/notifications", {
@@ -251,6 +273,11 @@ export default function NotificationsPage() {
           name: "",
           trigger: "user_registration",
           action: "send_welcome_email",
+          conditions: {},
+          template: {
+            subject: "",
+            body: "",
+          },
         });
         fetchAutomationRules();
       } else {
@@ -448,6 +475,41 @@ export default function NotificationsPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="template-subject">Email Subject</Label>
+                  <Input
+                    id="template-subject"
+                    value={automationForm.template.subject}
+                    onChange={(e) =>
+                      setAutomationForm((prev) => ({
+                        ...prev,
+                        template: {
+                          ...prev.template,
+                          subject: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="e.g., Welcome to PrepP!"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="template-body">Email Body</Label>
+                  <Textarea
+                    id="template-body"
+                    value={automationForm.template.body}
+                    onChange={(e) =>
+                      setAutomationForm((prev) => ({
+                        ...prev,
+                        template: {
+                          ...prev.template,
+                          body: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="e.g., Welcome {{userName}}! Your account has been created successfully."
+                    rows={4}
+                  />
+                </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button
@@ -497,7 +559,9 @@ export default function NotificationsPage() {
                         Individual User
                       </SelectItem>
                       <SelectItem value="all_users">All Users</SelectItem>
+                      <SelectItem value="students">All Students</SelectItem>
                       <SelectItem value="admins">All Admins</SelectItem>
+                      <SelectItem value="super_admins">Super Admins Only</SelectItem>
                       <SelectItem value="inactive_users">
                         Inactive Users (30+ days)
                       </SelectItem>
@@ -745,7 +809,7 @@ export default function NotificationsPage() {
                     <TableRow key={rule.id}>
                       <TableCell className="font-medium">{rule.name}</TableCell>
                       <TableCell>{rule.trigger.replace(/_/g, " ")}</TableCell>
-                      <TableCell>{rule.action.replace(/_/g, " ")}</TableCell>
+                      <TableCell>Send Email</TableCell>
                       <TableCell>
                         <Badge
                           variant={rule.isActive ? "default" : "secondary"}

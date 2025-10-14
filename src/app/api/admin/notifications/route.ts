@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { AppDataSource } from "@/lib/database";
 import { User } from "@/entities/User";
 import { sendEmail } from "@/lib/email";
-import {
-  NotificationAutomation,
-  automationRules,
-} from "@/lib/notification-automation";
+import { NotificationAutomation } from "@/lib/notification-automation";
 import { z } from "zod";
 
 // Types for notifications
@@ -46,10 +42,16 @@ const notifications: Notification[] = [];
 
 // Validation schemas
 const sendEmailSchema = z.object({
-  recipientEmails: z.array(z.string().email()).min(1),
+  recipientEmails: z.array(z.string().email()).optional(),
   subject: z.string().min(1).max(200),
   body: z.string().min(1).max(10000),
-  recipientRole: z.enum(["all", "admin", "user"]).optional(),
+  recipientRole: z.enum(["all", "student", "admin", "super_admin"]).optional(),
+}).refine((data) => {
+  // Either recipientEmails must be provided, or recipientRole must be provided
+  return (data.recipientEmails && data.recipientEmails.length > 0) || data.recipientRole;
+}, {
+  message: "Either recipientEmails or recipientRole must be provided",
+  path: ["recipientEmails"],
 });
 
 const createAutomationRuleSchema = z.object({
@@ -82,13 +84,15 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type"); // 'email' | 'automation' | null
 
     if (type === "automation") {
+      const rules = await NotificationAutomation.getRules();
       return NextResponse.json({
         success: true,
-        data: automationRules,
+        data: rules,
       });
     }
 
     // Return both email notifications and automation rules
+    const automationRules = await NotificationAutomation.getRules();
     return NextResponse.json({
       success: true,
       data: {
@@ -133,6 +137,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { type } = body;
 
+    // Validate that type is provided
+    if (!type || !["automation", "email"].includes(type)) {
+      return NextResponse.json(
+        { error: "Invalid or missing 'type' field. Must be 'automation' or 'email'" },
+        { status: 400 }
+      );
+    }
+
     if (type === "automation") {
       // Create automation rule
       const validation = createAutomationRuleSchema.safeParse(body);
@@ -146,18 +158,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const newRule: AutomationRule = {
-        id: Date.now().toString(),
+      const newRule = await NotificationAutomation.addRule({
         name: validation.data.name,
         trigger: validation.data.trigger,
         conditions: validation.data.conditions,
         template: validation.data.template,
         isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      NotificationAutomation.addRule(newRule);
+      });
 
       return NextResponse.json({
         success: true,
@@ -165,7 +172,7 @@ export async function POST(request: NextRequest) {
         data: newRule,
       });
     } else {
-      // Send email
+      // Handle email sending (type === "email")
       const validation = sendEmailSchema.safeParse(body);
       if (!validation.success) {
         return NextResponse.json(
@@ -184,18 +191,41 @@ export async function POST(request: NextRequest) {
         recipientRole,
       } = validation.data;
 
-      // If recipientRole is specified, get users with that role
-      let finalRecipientEmails = recipientEmails;
-      if (recipientRole && recipientRole !== "all") {
+      // Determine final recipient emails
+      let finalRecipientEmails: string[] = [];
+
+      if (recipientRole) {
+        const { getDataSource } = await import("@/lib/database");
+        const AppDataSource = await getDataSource();
         const userRepository = AppDataSource.getRepository(User);
-        const users = await userRepository.find({
-          where: { role: recipientRole },
-          select: ["email"],
-        });
-        finalRecipientEmails = users.map((u) => u.email);
+
+        if (recipientRole === "all") {
+          // Get all users
+          const users = await userRepository.find({
+            select: ["email"],
+          });
+          finalRecipientEmails = users.map((u) => u.email);
+        } else {
+          // Get users with specific role
+          const users = await userRepository.find({
+            where: { role: recipientRole },
+            select: ["email"],
+          });
+          finalRecipientEmails = users.map((u) => u.email);
+        }
+      } else if (recipientEmails) {
+        // Use provided recipient emails
+        finalRecipientEmails = recipientEmails;
       }
 
       // Send emails
+      if (finalRecipientEmails.length === 0) {
+        return NextResponse.json(
+          { error: "No recipients found for the specified criteria" },
+          { status: 400 }
+        );
+      }
+
       const results = [];
       for (const email of finalRecipientEmails) {
         try {
@@ -277,8 +307,8 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, ...updates } = body;
 
-    const ruleIndex = automationRules.findIndex((r) => r.id === id);
-    if (ruleIndex === -1) {
+    const existingRule = await NotificationAutomation.getRuleById(id);
+    if (!existingRule) {
       return NextResponse.json(
         { error: "Automation rule not found" },
         { status: 404 }
@@ -286,12 +316,13 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update the rule
-    NotificationAutomation.updateRule(id, updates);
+    await NotificationAutomation.updateRule(id, updates);
 
+    const updatedRule = await NotificationAutomation.getRuleById(id);
     return NextResponse.json({
       success: true,
       message: "Automation rule updated successfully",
-      data: automationRules[ruleIndex],
+      data: updatedRule,
     });
   } catch (error) {
     console.error("Error updating automation rule:", error);
@@ -325,15 +356,15 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (type === "automation") {
-      const ruleIndex = automationRules.findIndex((r) => r.id === id);
-      if (ruleIndex === -1) {
+      const existingRule = await NotificationAutomation.getRuleById(id);
+      if (!existingRule) {
         return NextResponse.json(
           { error: "Automation rule not found" },
           { status: 404 }
         );
       }
 
-      NotificationAutomation.removeRule(id);
+      await NotificationAutomation.removeRule(id);
 
       return NextResponse.json({
         success: true,
