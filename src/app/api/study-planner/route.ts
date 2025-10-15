@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { NotificationAutomation } from "../../../lib/notification-automation";
 import { getDataSource } from "../../../lib/database";
 
 export async function POST(request: NextRequest) {
@@ -31,36 +32,19 @@ export async function POST(request: NextRequest) {
     // Trigger automation for study plan creation
     try {
       const AppDataSource = await getDataSource();
-      // Dynamically import the automation module to avoid cyclic import issues
-      setImmediate(() => {
-        import("../../../lib/notification-automation")
-          .then(({ NotificationAutomation }) => {
-            NotificationAutomation.triggerAutomation(
-              AppDataSource,
-              "study_plan_created",
-              {
-                userId: userId as string,
-                examType,
-                examDate,
-                studyHours,
-                knowledgeLevel,
-                daysUntilExam,
-                planGenerated: true,
-              }
-            ).catch((error) => {
-              console.error(
-                "Failed to trigger study plan creation automation:",
-                error
-              );
-            });
-          })
-          .catch((error) => {
-            console.error(
-              "Failed to load notification automation module:",
-              error
-            );
-          });
-      });
+      await NotificationAutomation.triggerAutomation(
+        AppDataSource,
+        "study_plan_created",
+        {
+          userId: parseInt(userId),
+          examType,
+          examDate,
+          studyHours,
+          knowledgeLevel,
+          daysUntilExam,
+          planGenerated: true,
+        }
+      );
     } catch (error) {
       console.error("Failed to trigger study plan creation automation:", error);
       // Don't fail the study plan generation if automation fails

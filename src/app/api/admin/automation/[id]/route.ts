@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { getDataSource } from "@/lib/database";
+import { NotificationAutomation } from "@/lib/notification-automation";
 
 export const runtime = "nodejs";
 
@@ -21,10 +23,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const { NotificationAutomation } = await import(
-      "@/lib/notification-automation"
-    );
-    const rule = await NotificationAutomation.getRuleById(id);
+    const AppDataSource = await getDataSource();
+    const rule = await NotificationAutomation.getRuleById(AppDataSource, id);
     if (!rule) {
       return NextResponse.json(
         { message: "Automation rule not found" },
@@ -57,10 +57,11 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
     const updates = await req.json();
-    const { NotificationAutomation } = await import(
-      "@/lib/notification-automation"
+    const AppDataSource = await getDataSource();
+    const existingRule = await NotificationAutomation.getRuleById(
+      AppDataSource,
+      id
     );
-    const existingRule = await NotificationAutomation.getRuleById(id);
 
     if (!existingRule) {
       return NextResponse.json(
@@ -69,9 +70,12 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    await NotificationAutomation.updateRule(id, updates);
+    await NotificationAutomation.updateRule(AppDataSource, id, updates);
 
-    const updatedRule = await NotificationAutomation.getRuleById(id);
+    const updatedRule = await NotificationAutomation.getRuleById(
+      AppDataSource,
+      id
+    );
     return NextResponse.json({
       message: "Automation rule updated successfully",
       rule: updatedRule,
@@ -99,10 +103,11 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const { NotificationAutomation } = await import(
-      "@/lib/notification-automation"
+    const AppDataSource = await getDataSource();
+    const existingRule = await NotificationAutomation.getRuleById(
+      AppDataSource,
+      id
     );
-    const existingRule = await NotificationAutomation.getRuleById(id);
     if (!existingRule) {
       return NextResponse.json(
         { message: "Automation rule not found" },
@@ -110,7 +115,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    await NotificationAutomation.removeRule(id);
+    await NotificationAutomation.removeRule(AppDataSource, id);
     return NextResponse.json({
       message: "Automation rule deleted successfully",
     });

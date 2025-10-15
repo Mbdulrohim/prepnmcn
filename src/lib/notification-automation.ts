@@ -1,50 +1,50 @@
-import { getDataSource } from "@/lib/database";
+import { DataSource } from "typeorm";
 import { User } from "@/entities/User";
 import { AutomationRule } from "@/entities/AutomationRule";
 import { sendEmail } from "@/lib/email";
 
 export class NotificationAutomation {
   static async addRule(
+    dataSource: DataSource,
     rule: Omit<AutomationRule, "id" | "createdAt" | "updatedAt">
   ) {
-    const AppDataSource = await getDataSource();
-    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    const ruleRepository = dataSource.getRepository(AutomationRule);
     const newRule = ruleRepository.create(rule);
     await ruleRepository.save(newRule);
     return newRule;
   }
 
-  static async removeRule(ruleId: string) {
-    const AppDataSource = await getDataSource();
-    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+  static async removeRule(dataSource: DataSource, ruleId: string) {
+    const ruleRepository = dataSource.getRepository(AutomationRule);
     await ruleRepository.delete(ruleId);
   }
 
-  static async getRules(): Promise<AutomationRule[]> {
-    const AppDataSource = await getDataSource();
-    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+  static async getRules(dataSource: DataSource): Promise<AutomationRule[]> {
+    const ruleRepository = dataSource.getRepository(AutomationRule);
     return await ruleRepository.find({ order: { createdAt: "DESC" } });
   }
 
   static async updateRule(
+    dataSource: DataSource,
     id: string,
     updates: Partial<AutomationRule>
   ): Promise<AutomationRule | null> {
-    const AppDataSource = await getDataSource();
-    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    const ruleRepository = dataSource.getRepository(AutomationRule);
     await ruleRepository.update(id, updates as any);
     return await ruleRepository.findOneBy({ id });
   }
 
-  static async getRuleById(id: string): Promise<AutomationRule | null> {
-    const AppDataSource = await getDataSource();
-    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+  static async getRuleById(
+    dataSource: DataSource,
+    id: string
+  ): Promise<AutomationRule | null> {
+    const ruleRepository = dataSource.getRepository(AutomationRule);
     return await ruleRepository.findOneBy({ id });
   }
 
   // Trigger automation based on events
   static async triggerAutomation(
-    dataSource: any, // Pass DataSource instance
+    dataSource: DataSource,
     trigger: string,
     data: Record<string, unknown>
   ) {
@@ -63,7 +63,7 @@ export class NotificationAutomation {
   }
 
   private static async executeRule(
-    dataSource: any, // Pass DataSource instance
+    dataSource: DataSource,
     rule: AutomationRule,
     data: Record<string, unknown>
   ) {
@@ -119,7 +119,7 @@ export class NotificationAutomation {
   }
 
   private static async getRecipients(
-    dataSource: any, // Pass DataSource instance
+    dataSource: DataSource,
     rule: AutomationRule,
     data: Record<string, unknown>
   ): Promise<{ email: string }[]> {
@@ -183,6 +183,3 @@ export class NotificationAutomation {
     return result;
   }
 }
-
-// Export functions to be used in API routes
-// Note: automationRules is no longer exported as it's now stored in database

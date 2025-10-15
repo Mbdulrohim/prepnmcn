@@ -5,26 +5,9 @@ import { Notification } from "@/entities/Notification";
 import { sendEmail } from "@/lib/email";
 import { getDataSource } from "@/lib/database";
 import { z } from "zod";
+import { NotificationAutomation } from "@/lib/notification-automation";
 
 export const runtime = "nodejs";
-
-interface AutomationRule {
-  id: string;
-  name: string;
-  trigger:
-    | "user_registration"
-    | "feedback_submitted"
-    | "study_plan_created"
-    | "custom";
-  conditions: Record<string, unknown>;
-  template: {
-    subject: string;
-    body: string;
-  };
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 // Validation schemas
 const sendEmailSchema = z
@@ -76,14 +59,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const AppDataSource = await getDataSource();
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type"); // 'email' | 'automation' | null
 
     if (type === "automation") {
-      const { NotificationAutomation } = await import(
-        "@/lib/notification-automation"
-      );
-      const rules = await NotificationAutomation.getRules();
+      const rules = await NotificationAutomation.getRules(AppDataSource);
       return NextResponse.json({
         success: true,
         data: rules,
@@ -91,7 +72,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch notifications from database
-    const AppDataSource = await getDataSource();
     const notificationRepo = AppDataSource.getRepository(Notification);
 
     const notifications = await notificationRepo.find({
@@ -100,10 +80,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Return both email notifications and automation rules
-    const { NotificationAutomation } = await import(
-      "@/lib/notification-automation"
-    );
-    const automationRules = await NotificationAutomation.getRules();
+    const automationRules = await NotificationAutomation.getRules(AppDataSource);
     return NextResponse.json({
       success: true,
       data: {
@@ -161,6 +138,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const AppDataSource = await getDataSource();
+
     if (type === "automation") {
       // Create automation rule
       const validation = createAutomationRuleSchema.safeParse(body);
@@ -174,10 +153,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const { NotificationAutomation } = await import(
-        "@/lib/notification-automation"
-      );
-      const newRule = await NotificationAutomation.addRule({
+      const newRule = await NotificationAutomation.addRule(AppDataSource, {
         name: validation.data.name,
         trigger: validation.data.trigger,
         conditions: validation.data.conditions,
@@ -214,8 +190,6 @@ export async function POST(request: NextRequest) {
       let finalRecipientEmails: string[] = [];
 
       if (recipientRole) {
-        const { getDataSource } = await import("@/lib/database");
-        const AppDataSource = await getDataSource();
         const userRepository = AppDataSource.getRepository(User);
 
         if (recipientRole === "all") {
@@ -245,8 +219,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Get database connection
-      const AppDataSource = await getDataSource();
       const notificationRepo = AppDataSource.getRepository(Notification);
 
       const results = [];
@@ -329,11 +301,12 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     const { id, ...updates } = body;
+    const AppDataSource = await getDataSource();
 
-    const { NotificationAutomation } = await import(
-      "@/lib/notification-automation"
+    const existingRule = await NotificationAutomation.getRuleById(
+      AppDataSource,
+      id
     );
-    const existingRule = await NotificationAutomation.getRuleById(id);
     if (!existingRule) {
       return NextResponse.json(
         { error: "Automation rule not found" },
@@ -342,9 +315,12 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update the rule
-    await NotificationAutomation.updateRule(id, updates);
+    await NotificationAutomation.updateRule(AppDataSource, id, updates);
 
-    const updatedRule = await NotificationAutomation.getRuleById(id);
+    const updatedRule = await NotificationAutomation.getRuleById(
+      AppDataSource,
+      id
+    );
     return NextResponse.json({
       success: true,
       message: "Automation rule updated successfully",
@@ -381,11 +357,13 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const AppDataSource = await getDataSource();
+
     if (type === "automation") {
-      const { NotificationAutomation } = await import(
-        "@/lib/notification-automation"
+      const existingRule = await NotificationAutomation.getRuleById(
+        AppDataSource,
+        id
       );
-      const existingRule = await NotificationAutomation.getRuleById(id);
       if (!existingRule) {
         return NextResponse.json(
           { error: "Automation rule not found" },
@@ -393,14 +371,13 @@ export async function DELETE(request: NextRequest) {
         );
       }
 
-      await NotificationAutomation.removeRule(id);
+      await NotificationAutomation.removeRule(AppDataSource, id);
 
       return NextResponse.json({
         success: true,
         message: "Automation rule deleted successfully",
       });
     } else if (type === "notification") {
-      const AppDataSource = await getDataSource();
       const notificationRepo = AppDataSource.getRepository(Notification);
 
       const notification = await notificationRepo.findOne({ where: { id } });

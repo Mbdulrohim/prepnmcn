@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const feedback = feedbackRepo.create({ userId: session.user.id, message });
     await feedbackRepo.save(feedback);
 
-    // Trigger automation asynchronously to avoid cyclic dependency issues
+    // Trigger automation asynchronously to avoid blocking the response
     setImmediate(() => {
       import("@/lib/notification-automation")
         .then(({ NotificationAutomation }) => {

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { getDataSource } from "@/lib/database";
+import { NotificationAutomation } from "@/lib/notification-automation";
 
 export const runtime = "nodejs";
 
@@ -16,10 +18,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { NotificationAutomation } = await import(
-      "@/lib/notification-automation"
-    );
-    const rules = await NotificationAutomation.getRules();
+    const AppDataSource = await getDataSource();
+    const rules = await NotificationAutomation.getRules(AppDataSource);
     return NextResponse.json({ rules });
   } catch (error) {
     console.error("Error fetching automation rules:", error);
@@ -52,10 +52,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { NotificationAutomation } = await import(
-      "@/lib/notification-automation"
-    );
-    const rule = await NotificationAutomation.addRule({
+    const AppDataSource = await getDataSource();
+    const rule = await NotificationAutomation.addRule(AppDataSource, {
       name,
       trigger,
       conditions: conditions || {},
