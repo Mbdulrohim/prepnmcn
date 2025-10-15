@@ -36,12 +36,16 @@ export async function POST(request: NextRequest) {
 
   // Trigger automation for user registration
   try {
-    await NotificationAutomation.triggerAutomation("user_registration", {
-      userId: user.id,
-      userName: user.name,
-      userEmail: user.email,
-      institution: user.institution,
-    });
+    await NotificationAutomation.triggerAutomation(
+      AppDataSource,
+      "user_registration",
+      {
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+        institution: user.institution,
+      }
+    );
   } catch (error) {
     console.error("Failed to trigger user registration automation:", error);
     // Don't fail the registration if automation fails
