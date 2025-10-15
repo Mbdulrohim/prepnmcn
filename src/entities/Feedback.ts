@@ -16,9 +16,9 @@ export class Feedback {
   @Column({ type: "uuid" })
   userId!: string;
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: "userId" })
-  user!: User;
+  // @ManyToOne(() => User)
+  // @JoinColumn({ name: "userId" })
+  // user!: User;
 
   @Column("text")
   message!: string;

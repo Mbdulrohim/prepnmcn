@@ -35,7 +35,6 @@ export async function POST(
     // Get the feedback with user relation
     const feedback = await feedbackRepo.findOne({
       where: { id: parseInt(id) },
-      relations: ["user"],
     });
 
     if (!feedback) {
@@ -45,13 +44,10 @@ export async function POST(
       );
     }
 
-    // Get user details if not loaded via relation
-    let userDetails: User | null = feedback.user;
-    if (!userDetails) {
-      userDetails = await userRepo.findOne({
-        where: { id: feedback.userId },
-      });
-    }
+    // Get user details by userId
+    const userDetails = await userRepo.findOne({
+      where: { id: feedback.userId },
+    });
 
     if (!userDetails) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

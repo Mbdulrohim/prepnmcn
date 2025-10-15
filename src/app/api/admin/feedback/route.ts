@@ -21,7 +21,6 @@ export async function GET() {
     const userRepo = AppDataSource.getRepository(User);
 
     const feedback = await feedbackRepo.find({
-      relations: ["user"],
       order: { createdAt: "DESC" },
     });
 
@@ -30,22 +29,17 @@ export async function GET() {
         let userName = "Unknown User";
         let userEmail = "unknown@example.com";
 
-        if (item.user) {
-          userName = item.user.name;
-          userEmail = item.user.email;
-        } else {
-          // Try to find user by userId if relation failed
-          try {
-            const user = await userRepo.findOne({
-              where: { id: item.userId.toString() },
-            });
-            if (user) {
-              userName = user.name;
-              userEmail = user.email;
-            }
-          } catch (error) {
-            console.error("Error finding user for feedback:", error);
+        // Try to find user by userId
+        try {
+          const user = await userRepo.findOne({
+            where: { id: item.userId.toString() },
+          });
+          if (user) {
+            userName = user.name;
+            userEmail = user.email;
           }
+        } catch (error) {
+          console.error("Error finding user for feedback:", error);
         }
 
         return {
