@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AppDataSource } from "../../../../lib/database";
+import { getDataSource } from "../../../../lib/database";
 import { User } from "../../../../entities/User";
 import bcrypt from "bcryptjs";
-import { NotificationAutomation } from "../../../../lib/notification-automation";
 
 export async function POST(request: NextRequest) {
   const { name, email, password, institution } = await request.json();
@@ -15,9 +14,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
-  }
+  const AppDataSource = await getDataSource();
   const userRepo = AppDataSource.getRepository(User);
 
   const existingUser = await userRepo.findOne({ where: { email } });
@@ -35,21 +32,23 @@ export async function POST(request: NextRequest) {
   await userRepo.save(user);
 
   // Trigger automation for user registration
-  try {
-    await NotificationAutomation.triggerAutomation(
-      AppDataSource,
-      "user_registration",
-      {
-        userId: user.id,
-        userName: user.name,
-        userEmail: user.email,
-        institution: user.institution,
-      }
-    );
-  } catch (error) {
-    console.error("Failed to trigger user registration automation:", error);
-    // Don't fail the registration if automation fails
-  }
+  // Trigger automation for user registration dynamically to avoid module cycles
+  setImmediate(() => {
+    import("../../../../lib/notification-automation")
+      .then(({ NotificationAutomation }) => {
+        NotificationAutomation.triggerAutomation(AppDataSource, "user_registration", {
+          userId: user.id,
+          userName: user.name,
+          userEmail: user.email,
+          institution: user.institution,
+        }).catch((error) => {
+          console.error("Failed to trigger user registration automation:", error);
+        });
+      })
+      .catch((error) => {
+        console.error("Failed to load notification automation module:", error);
+      });
+  });
 
   return NextResponse.json({ message: "User registered successfully" });
 }
