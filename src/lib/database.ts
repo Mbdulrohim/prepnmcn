@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { DataSource } from "typeorm";
 
 let AppDataSource: DataSource;
@@ -7,6 +6,9 @@ export async function getDataSource(): Promise<DataSource> {
   if (AppDataSource && AppDataSource.isInitialized) {
     return AppDataSource;
   }
+
+  // Import reflect-metadata dynamically to avoid bundling issues
+  await import("reflect-metadata");
 
   // Lazy load entities to avoid circular dependencies
   const entities = await Promise.all([

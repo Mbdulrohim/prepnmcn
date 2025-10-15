@@ -12,8 +12,8 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  // Move typeorm to server external packages to avoid bundling issues
-  serverExternalPackages: ['typeorm'],
+  // Move problematic packages to server external packages to avoid bundling issues
+  serverExternalPackages: ['typeorm', 'reflect-metadata', '@types/node'],
 };
 
 export default nextConfig;

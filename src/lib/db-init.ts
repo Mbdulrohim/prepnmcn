@@ -1,8 +1,10 @@
-import "reflect-metadata";
 import { AppDataSource } from "./database";
 
 export default async function handler() {
   try {
+    // Import reflect-metadata dynamically
+    await import("reflect-metadata");
+
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
     }
