@@ -1,13 +1,5 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { User } from "../entities/User";
-import { EmailCode } from "../entities/EmailCode";
-import { Feedback } from "../entities/Feedback";
-import { Institution } from "../entities/Institution";
-import { Resource } from "../entities/Resource";
-import { Payment } from "../entities/Payment";
-import { AutomationRule } from "../entities/AutomationRule";
-import { Notification } from "../entities/Notification";
 
 let AppDataSource: DataSource;
 
@@ -16,21 +8,24 @@ export async function getDataSource(): Promise<DataSource> {
     return AppDataSource;
   }
 
+  // Lazy load entities to avoid circular dependencies
+  const entities = await Promise.all([
+    import("../entities/User").then(m => m.User),
+    import("../entities/EmailCode").then(m => m.EmailCode),
+    import("../entities/Feedback").then(m => m.Feedback),
+    import("../entities/Institution").then(m => m.Institution),
+    import("../entities/Resource").then(m => m.Resource),
+    import("../entities/Payment").then(m => m.Payment),
+    import("../entities/AutomationRule").then(m => m.AutomationRule),
+    import("../entities/Notification").then(m => m.Notification),
+  ]);
+
   AppDataSource = new DataSource({
     type: "postgres",
     url: process.env.DATABASE_URL,
     synchronize: true,
     logging: process.env.NODE_ENV === "development",
-    entities: [
-      User,
-      EmailCode,
-      Feedback,
-      Institution,
-      Resource,
-      Payment,
-      AutomationRule,
-      Notification,
-    ],
+    entities: entities,
     ssl:
       process.env.NODE_ENV === "production"
         ? true
