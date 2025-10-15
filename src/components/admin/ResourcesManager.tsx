@@ -29,6 +29,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
   FileText,
@@ -84,6 +95,7 @@ export default function ResourcesManager() {
   const [limit, setLimit] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [deleteResourceId, setDeleteResourceId] = useState<number | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -353,13 +365,31 @@ export default function ResourcesManager() {
   };
 
   const handleDelete = async (resourceId: number) => {
-    if (!confirm("Are you sure you want to delete this resource?")) return;
+    setDeleteResourceId(resourceId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteResourceId) return;
 
     try {
-      // This would need a DELETE endpoint in the API
-      toast.info("Delete functionality would be implemented here");
+      const response = await fetch(`/api/admin/resources/${deleteResourceId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Resource deleted successfully");
+        // Refresh the resources list
+        fetchResources();
+        // Refresh stats
+        calculateStats();
+      } else {
+        toast.error("Failed to delete resource");
+      }
     } catch (error) {
+      console.error("Error deleting resource:", error);
       toast.error("Failed to delete resource");
+    } finally {
+      setDeleteResourceId(null);
     }
   };
 
@@ -751,17 +781,34 @@ export default function ResourcesManager() {
                       >
                         <Download className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(resource.id);
-                        }}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete the resource.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={confirmDelete}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>

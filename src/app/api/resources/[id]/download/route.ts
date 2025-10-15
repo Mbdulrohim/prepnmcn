@@ -33,7 +33,12 @@ export async function GET(
       );
     }
 
-    // Create a new PDF
+    // If the resource has a file URL, redirect to it
+    if (resource.fileUrl) {
+      return NextResponse.redirect(resource.fileUrl);
+    }
+
+    // Generate PDF from content
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage();
     const { width, height } = page.getSize();
@@ -49,16 +54,26 @@ export async function GET(
       color: rgb(0.5, 0.5, 0.5),
     });
 
-    // Add content
-    page.drawText(resource.contentText, {
-      x: 50,
-      y: height - 100,
-      font,
-      size: fontSize,
-      color: rgb(0, 0, 0),
-      maxWidth: width - 100,
-      lineHeight: 14,
-    });
+    // Add content if available
+    if (resource.contentText && resource.contentText.trim()) {
+      page.drawText(resource.contentText, {
+        x: 50,
+        y: height - 100,
+        font,
+        size: fontSize,
+        color: rgb(0, 0, 0),
+        maxWidth: width - 100,
+        lineHeight: 14,
+      });
+    } else {
+      page.drawText("No content available", {
+        x: 50,
+        y: height - 100,
+        font,
+        size: fontSize,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+    }
 
     // Add footer
     page.drawText(`Page 1 of 1`, {

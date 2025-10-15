@@ -36,7 +36,7 @@ interface EmailJob {
   reject: (reason: any) => void;
 }
 
-let emailQueue: EmailJob[] = [];
+const emailQueue: EmailJob[] = [];
 let isProcessingQueue = false;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second

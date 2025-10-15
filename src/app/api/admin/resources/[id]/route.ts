@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../../../lib/auth";
 import { getDataSource } from "../../../../../lib/database";
 import { Resource } from "../../../../../entities/Resource";
-import { promises as fs } from "fs";
-import path from "path";
 
 export async function GET(
   request: NextRequest,
@@ -42,35 +40,16 @@ export async function GET(
       );
     }
 
-    // Check if file exists
-    try {
-      await fs.access(resource.originalFilePath);
-    } catch (fileError) {
+    // Check if resource has a file URL
+    if (!resource.fileUrl) {
       return NextResponse.json(
-        { message: "File not found on disk" },
+        { message: "File not available" },
         { status: 404 }
       );
     }
 
-    // Read the file
-    const fileBuffer = await fs.readFile(resource.originalFilePath);
-
-    // Set content disposition based on request type
-    const contentDisposition = isDownload
-      ? `attachment; filename="${resource.name}.pdf"`
-      : `inline; filename="${resource.name}.pdf"`;
-
-    // Return the file with proper headers
-    const response = new NextResponse(new Uint8Array(fileBuffer), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": contentDisposition,
-        "Content-Length": fileBuffer.length.toString(),
-      },
-    });
-
-    return response;
+    // Redirect to the S3 URL
+    return NextResponse.redirect(resource.fileUrl);
   } catch (error) {
     console.error("Error serving resource:", error);
     return NextResponse.json(
@@ -122,6 +101,52 @@ export async function PATCH(
     console.error("Error toggling resource type:", error);
     return NextResponse.json(
       { message: "Failed to update resource type" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (
+    !session ||
+    !["admin", "super_admin"].includes((session.user as any)?.role)
+  ) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const resourceId = parseInt(id);
+  if (isNaN(resourceId)) {
+    return NextResponse.json(
+      { message: "Invalid resource ID" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const AppDataSource = await getDataSource();
+    const resourceRepo = AppDataSource.getRepository(Resource);
+
+    const resource = await resourceRepo.findOne({ where: { id: resourceId } });
+    if (!resource) {
+      return NextResponse.json(
+        { message: "Resource not found" },
+        { status: 404 }
+      );
+    }
+
+    // Delete the resource from database
+    await resourceRepo.delete(resourceId);
+
+    return NextResponse.json({ message: "Resource deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting resource:", error);
+    return NextResponse.json(
+      { message: "Failed to delete resource" },
       { status: 500 }
     );
   }

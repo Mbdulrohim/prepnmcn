@@ -66,10 +66,15 @@ export default function FeedbackPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(
+    null
+  );
   const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
   const [isSendingResponse, setIsSendingResponse] = useState(false);
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [fullMessageFeedback, setFullMessageFeedback] =
+    useState<Feedback | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -143,11 +148,14 @@ export default function FeedbackPage() {
 
     setIsSendingResponse(true);
     try {
-      const response = await fetch(`/api/admin/feedback/${selectedFeedback.id}/respond`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ response: responseMessage.trim() }),
-      });
+      const response = await fetch(
+        `/api/admin/feedback/${selectedFeedback.id}/respond`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ response: responseMessage.trim() }),
+        }
+      );
 
       if (response.ok) {
         toast.success("Response sent successfully!");
@@ -177,6 +185,11 @@ export default function FeedbackPage() {
 
     return matchesSearch && matchesStatus;
   });
+
+  const truncateMessage = (message: string, maxLength: number = 100) => {
+    if (message.length <= maxLength) return message;
+    return message.substring(0, maxLength) + "...";
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -345,8 +358,15 @@ export default function FeedbackPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="max-w-md truncate" title={item.message}>
-                      {item.message}
+                    <div
+                      className="max-w-md cursor-pointer hover:text-blue-600 transition-colors"
+                      onClick={() => {
+                        setFullMessageFeedback(item);
+                        setIsMessageDialogOpen(true);
+                      }}
+                      title="Click to view full message"
+                    >
+                      {truncateMessage(item.message)}
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(item.status)}</TableCell>
@@ -413,7 +433,10 @@ export default function FeedbackPage() {
       </Card>
 
       {/* Response Dialog */}
-      <Dialog open={isResponseDialogOpen} onOpenChange={setIsResponseDialogOpen}>
+      <Dialog
+        open={isResponseDialogOpen}
+        onOpenChange={setIsResponseDialogOpen}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Respond to Feedback</DialogTitle>
@@ -429,7 +452,9 @@ export default function FeedbackPage() {
                 <p className="text-sm font-medium text-gray-700 mb-1">
                   Original Feedback:
                 </p>
-                <p className="text-sm text-gray-600">{selectedFeedback.message}</p>
+                <p className="text-sm text-gray-600">
+                  {selectedFeedback.message}
+                </p>
               </div>
 
               {/* Response Input */}
@@ -473,6 +498,78 @@ export default function FeedbackPage() {
                       Send Response
                     </>
                   )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Message Dialog */}
+      <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Feedback Message</DialogTitle>
+            <DialogDescription>
+              Full message from {fullMessageFeedback?.userName}
+            </DialogDescription>
+          </DialogHeader>
+
+          {fullMessageFeedback && (
+            <div className="space-y-4">
+              {/* User Info */}
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-blue-700">
+                      {fullMessageFeedback.userName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {fullMessageFeedback.userName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {fullMessageFeedback.userEmail}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  {getStatusBadge(fullMessageFeedback.status)}
+                  <span className="text-sm text-gray-500">
+                    {new Date(fullMessageFeedback.createdAt).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Full Message */}
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-2">Message:</h4>
+                <div className="text-gray-700 whitespace-pre-wrap">
+                  {fullMessageFeedback.message}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsMessageDialogOpen(false);
+                    setFullMessageFeedback(null);
+                  }}
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSelectedFeedback(fullMessageFeedback);
+                    setIsResponseDialogOpen(true);
+                    setIsMessageDialogOpen(false);
+                    setFullMessageFeedback(null);
+                  }}
+                >
+                  Respond
                 </Button>
               </div>
             </div>

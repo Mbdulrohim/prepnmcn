@@ -20,8 +20,8 @@ export class Resource {
   @Column({ type: "boolean", default: true })
   isFree!: boolean;
 
-  @Column({ type: "varchar", length: 500 })
-  originalFilePath!: string;
+  @Column({ type: "varchar", length: 500, nullable: true })
+  fileUrl!: string;
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -115,7 +115,7 @@ export default function UsersPage() {
     const stats = {
       totalUsers: userData.length,
       activeUsers: userData.filter((u) => u.isActive).length,
-      adminUsers: userData.filter((u) => u.role === "admin").length,
+      adminUsers: userData.filter((u) => u.role === "admin" || u.role === "super_admin").length,
       totalPoints: userData.reduce((sum, u) => sum + u.points, 0),
     };
     setStats(stats);
@@ -155,8 +155,58 @@ export default function UsersPage() {
   };
 
   const handleUserAction = async (action: string, userId: string) => {
-    // Placeholder for user actions - would implement API calls
-    toast.info(`${action} functionality would be implemented here`);
+    if (action === "Promote to Admin") {
+      try {
+        const response = await fetch(`/api/admin/users/${userId}/promote-admin`, {
+          method: "POST",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          toast.success(data.message);
+          if (data.requiresSignOut) {
+            toast.info("The user needs to sign out and sign back in to access new permissions", {
+              duration: 10000,
+            });
+          }
+          // Refresh the users list
+          fetchUsers();
+        } else {
+          const error = await response.json();
+          toast.error(error.message || "Failed to promote user");
+        }
+      } catch (error) {
+        console.error("Failed to promote user:", error);
+        toast.error("Failed to promote user");
+      }
+    } else if (action === "Promote to Super Admin") {
+      try {
+        const response = await fetch(`/api/admin/users/${userId}/promote-super`, {
+          method: "POST",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          toast.success(data.message);
+          if (data.requiresSignOut) {
+            toast.info("The user needs to sign out and sign back in to access new permissions", {
+              duration: 10000,
+            });
+          }
+          // Refresh the users list
+          fetchUsers();
+        } else {
+          const error = await response.json();
+          toast.error(error.message || "Failed to promote user");
+        }
+      } catch (error) {
+        console.error("Failed to promote user:", error);
+        toast.error("Failed to promote user");
+      }
+    } else {
+      // Placeholder for other actions
+      toast.info(`${action} functionality would be implemented here`);
+    }
   };
 
   if (isLoading || status === "loading") {
@@ -337,6 +387,7 @@ export default function UsersPage() {
                   <SelectItem value="all">All roles</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="super_admin">Super Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -416,10 +467,12 @@ export default function UsersPage() {
                       <TableCell>
                         <Badge
                           variant={
-                            user.role === "admin" ? "destructive" : "default"
+                            user.role === "admin" || user.role === "super_admin"
+                              ? "destructive"
+                              : "default"
                           }
                         >
-                          {user.role}
+                          {user.role === "super_admin" ? "Super Admin" : user.role}
                         </Badge>
                       </TableCell>
                       <TableCell>{user.institution || "Not set"}</TableCell>
@@ -470,6 +523,28 @@ export default function UsersPage() {
                             >
                               Reset Password
                             </DropdownMenuItem>
+                            {user.role !== "admin" && user.role !== "super_admin" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleUserAction("Promote to Admin", user.id)
+                                }
+                                className="text-blue-600"
+                              >
+                                <Shield className="mr-2 h-4 w-4" />
+                                Promote to Admin
+                              </DropdownMenuItem>
+                            )}
+                            {user.role !== "super_admin" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleUserAction("Promote to Super Admin", user.id)
+                                }
+                                className="text-purple-600"
+                              >
+                                <Crown className="mr-2 h-4 w-4" />
+                                Promote to Super Admin
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               onClick={() =>
                                 handleUserAction(

@@ -70,7 +70,9 @@ export async function POST(
             <p>Thank you for your feedback on O'Prep. We've received your message:</p>
 
             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af;">
-              <p style="margin: 0; font-style: italic;">"${feedback.message}"</p>
+              <p style="margin: 0; font-style: italic;">"${
+                feedback.message
+              }"</p>
             </div>
 
             <p><strong>Our Response:</strong></p>

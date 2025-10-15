@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../../lib/auth";
 import { getDataSource } from "../../../../lib/database";
 import { Resource } from "../../../../entities/Resource";
-import { promises as fs } from "fs";
-import path from "path";
+import { uploadToS3 } from "../../../../lib/s3-upload";
 
 export const runtime = "nodejs"; // Force Node.js runtime
 
@@ -95,7 +94,7 @@ export async function POST(req: NextRequest) {
     let contentText = "";
     try {
       // Use dynamic import to avoid ES module issues
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const pdfParse = require("pdf-parse");
       const pdfData = await pdfParse(fileBuffer);
       contentText = pdfData.text || "";
@@ -108,25 +107,15 @@ export async function POST(req: NextRequest) {
       contentText = "";
     }
 
-    // Save file
-    const uploadsDir = path.join(process.cwd(), "uploads");
+    // Upload file to S3
+    const s3Key = `resources/${Date.now()}-${file.name}`;
+    let fileUrl: string;
     try {
-      await fs.mkdir(uploadsDir, { recursive: true });
-    } catch (dirError) {
-      console.error("Directory creation error:", dirError);
+      fileUrl = await uploadToS3(fileBuffer, s3Key, file.type);
+    } catch (s3Error) {
+      console.error("S3 upload error:", s3Error);
       return NextResponse.json(
-        { message: "Failed to create upload directory" },
-        { status: 500 }
-      );
-    }
-
-    const filePath = path.join(uploadsDir, `${Date.now()}-${file.name}`);
-    try {
-      await fs.writeFile(filePath, fileBuffer);
-    } catch (fileError) {
-      console.error("File write error:", fileError);
-      return NextResponse.json(
-        { message: "Failed to save file" },
+        { message: "Failed to upload file to storage" },
         { status: 500 }
       );
     }
@@ -139,19 +128,14 @@ export async function POST(req: NextRequest) {
         name,
         isFree,
         contentText,
-        originalFilePath: filePath,
+        fileUrl,
       });
       await resourceRepo.save(newResource);
 
       return NextResponse.json(newResource, { status: 201 });
     } catch (dbError) {
       console.error("Database error:", dbError);
-      // Clean up the file if DB save fails
-      try {
-        await fs.unlink(filePath);
-      } catch (cleanupError) {
-        console.error("Cleanup error:", cleanupError);
-      }
+      // Note: S3 file is already uploaded, we don't need to clean it up
       return NextResponse.json(
         { message: "Failed to save resource to database" },
         { status: 500 }

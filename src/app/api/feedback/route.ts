@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Feedback } from "@/entities/Feedback";
-import { NotificationAutomation } from "@/lib/notification-automation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +12,10 @@ export async function POST(request: NextRequest) {
 
     const { message } = await request.json();
     if (!message) {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Message is required" },
+        { status: 400 }
+      );
     }
 
     const AppDataSource = await getDataSource();
@@ -23,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Trigger automation for feedback submission
     try {
+      const { NotificationAutomation } = await import("@/lib/notification-automation");
       await NotificationAutomation.triggerAutomation("feedback_submitted", {
         userId: session.user.id,
         feedbackId: feedback.id,
@@ -37,6 +40,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Feedback submitted successfully" });
   } catch (error) {
     console.error("Error submitting feedback:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

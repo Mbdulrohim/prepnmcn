@@ -26,7 +26,8 @@ export default function ForumsPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
-                Forums feature coming soon! Check back later for community discussions.
+                Forums feature coming soon! Check back later for community
+                discussions.
               </p>
             </CardContent>
           </Card>

@@ -177,7 +177,7 @@ export default function NotificationsPage() {
     setIsSubmitting(true);
     try {
       // Transform form data to match API expectations
-      let requestBody: any = {
+      const requestBody: any = {
         type: "email",
         subject: emailForm.subject,
         body: emailForm.message,

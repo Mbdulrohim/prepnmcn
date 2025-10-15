@@ -113,11 +113,16 @@ export default function Header() {
                 <div className="ml-4 pl-4 border-l border-gray-200">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center gap-2 h-10 px-3">
+                      <Button
+                        variant="ghost"
+                        className="flex items-center gap-2 h-10 px-3"
+                      >
                         <Avatar className="h-8 w-8">
                           <AvatarImage src="" alt={user?.name || ""} />
                           <AvatarFallback className="bg-blue-100 text-blue-700 text-sm">
-                            {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
+                            {(user?.name || user?.email || "U")
+                              .charAt(0)
+                              .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="hidden lg:flex flex-col items-start">
@@ -140,13 +145,19 @@ export default function Header() {
                       </div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href="/profile" className="flex items-center gap-2">
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-2"
+                        >
                           <User size={16} />
                           Profile Settings
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/settings" className="flex items-center gap-2">
+                        <Link
+                          href="/settings"
+                          className="flex items-center gap-2"
+                        >
                           <Settings size={16} />
                           Preferences
                         </Link>
@@ -195,7 +206,9 @@ export default function Header() {
                     <Avatar className="h-10 w-10">
                       <AvatarImage src="" alt={user?.name || ""} />
                       <AvatarFallback className="bg-blue-100 text-blue-700">
-                        {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
+                        {(user?.name || user?.email || "U")
+                          .charAt(0)
+                          .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -263,13 +276,23 @@ export default function Header() {
                 </>
               ) : (
                 <div className="px-3 py-2 space-y-2">
-                  <Button variant="ghost" className="w-full justify-start" asChild>
-                    <Link href="/auth/signin" onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    asChild
+                  >
+                    <Link
+                      href="/auth/signin"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
                       Sign In
                     </Link>
                   </Button>
                   <Button className="w-full" asChild>
-                    <Link href="/auth/signin" onClick={() => setMobileMenuOpen(false)}>
+                    <Link
+                      href="/auth/signin"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
                       Get Started
                     </Link>
                   </Button>
