@@ -301,19 +301,16 @@ export default function ResourcesManager() {
       );
 
       if (response.ok) {
-        // Create a blob from the response
-        const blob = await response.blob();
+        const data = await response.json();
+        const downloadUrl = data.downloadUrl;
 
-        // Create a download link
-        const url = window.URL.createObjectURL(blob);
+        // Create a download link and trigger download
         const a = document.createElement("a");
-        a.href = url;
+        a.href = downloadUrl;
         a.download = `${resource.name}.pdf`;
+        a.target = "_blank"; // Open in new tab as fallback
         document.body.appendChild(a);
         a.click();
-
-        // Clean up
-        window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
         toast.success("Download started");

@@ -48,8 +48,13 @@ export async function GET(
       );
     }
 
-    // Redirect to the S3 URL
-    return NextResponse.redirect(resource.fileUrl);
+    if (isDownload) {
+      // Return the S3 URL directly for downloads
+      return NextResponse.json({ downloadUrl: resource.fileUrl });
+    }
+
+    // For non-download requests, return resource data
+    return NextResponse.json(resource);
   } catch (error) {
     console.error("Error serving resource:", error);
     return NextResponse.json(
