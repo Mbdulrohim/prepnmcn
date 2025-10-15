@@ -61,7 +61,7 @@ interface Resource {
   name: string;
   contentText: string;
   isFree: boolean;
-  originalFilePath: string;
+  fileUrl: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -357,8 +357,12 @@ export default function ResourcesManager() {
   };
 
   const handleView = (resource: Resource) => {
-    // Open PDF in new tab using the download endpoint
-    window.open(`/api/admin/resources/${resource.id}`, "_blank");
+    // Open PDF directly using the S3 presigned URL
+    if (resource.fileUrl) {
+      window.open(resource.fileUrl, "_blank");
+    } else {
+      toast.error("File not available for viewing");
+    }
   };
 
   const handleDelete = async (resourceId: number) => {

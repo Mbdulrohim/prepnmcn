@@ -23,21 +23,23 @@ export async function POST(request: NextRequest) {
     const feedback = feedbackRepo.create({ userId: session.user.id, message });
     await feedbackRepo.save(feedback);
 
-    // Trigger automation for feedback submission
-    try {
-      const { NotificationAutomation } = await import(
-        "@/lib/notification-automation"
-      );
-      await NotificationAutomation.triggerAutomation("feedback_submitted", {
-        userId: session.user.id,
-        feedbackId: feedback.id,
-        message: feedback.message,
-        submittedAt: feedback.createdAt,
-      });
-    } catch (error) {
-      console.error("Failed to trigger feedback submission automation:", error);
-      // Don't fail the feedback submission if automation fails
-    }
+    // Trigger automation asynchronously to avoid cyclic dependency issues
+    setImmediate(async () => {
+      try {
+        const { NotificationAutomation } = await import(
+          "@/lib/notification-automation"
+        );
+        await NotificationAutomation.triggerAutomation("feedback_submitted", {
+          userId: session.user!.id,
+          feedbackId: feedback.id,
+          message: feedback.message,
+          submittedAt: feedback.createdAt,
+        });
+      } catch (error) {
+        console.error("Failed to trigger feedback submission automation:", error);
+        // Don't fail the feedback submission if automation fails
+      }
+    });
 
     return NextResponse.json({ message: "Feedback submitted successfully" });
   } catch (error) {

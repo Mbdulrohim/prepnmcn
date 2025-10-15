@@ -23,7 +23,7 @@ export async function uploadToS3(
   });
 
   const signedUrl = await getSignedUrl(s3Client, getCommand, {
-    expiresIn: 3600, // 1 hour
+    expiresIn: 900, // 15 minutes (reduced from 1 hour for better security)
   });
 
   return signedUrl;
@@ -36,6 +36,6 @@ export async function getSignedUrlForS3(key: string): Promise<string> {
   });
 
   return await getSignedUrl(s3Client, command, {
-    expiresIn: 3600, // 1 hour
+    expiresIn: 900, // 15 minutes (reduced from 1 hour for better security)
   });
 }
