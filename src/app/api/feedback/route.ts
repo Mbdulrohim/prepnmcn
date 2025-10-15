@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Feedback } from "@/entities/Feedback";
+import { NotificationAutomation } from "@/lib/notification-automation";
+
+// Initialize AppDataSource early to prevent cyclic dependency issues
+getDataSource().catch((error) => {
+  console.error("Error initializing DataSource:", error);
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,22 +29,19 @@ export async function POST(request: NextRequest) {
     const feedback = feedbackRepo.create({ userId: session.user.id, message });
     await feedbackRepo.save(feedback);
 
-    // Trigger automation asynchronously to avoid cyclic dependency issues
-    setImmediate(async () => {
-      try {
-        const { NotificationAutomation } = await import(
-          "@/lib/notification-automation"
+    // Trigger automation asynchronously
+    setImmediate(() => {
+      NotificationAutomation.triggerAutomation("feedback_submitted", {
+        userId: session.user!.id,
+        feedbackId: feedback.id,
+        message: feedback.message,
+        submittedAt: feedback.createdAt,
+      }).catch((error) => {
+        console.error(
+          "Failed to trigger feedback submission automation:",
+          error
         );
-        await NotificationAutomation.triggerAutomation("feedback_submitted", {
-          userId: session.user!.id,
-          feedbackId: feedback.id,
-          message: feedback.message,
-          submittedAt: feedback.createdAt,
-        });
-      } catch (error) {
-        console.error("Failed to trigger feedback submission automation:", error);
-        // Don't fail the feedback submission if automation fails
-      }
+      });
     });
 
     return NextResponse.json({ message: "Feedback submitted successfully" });
