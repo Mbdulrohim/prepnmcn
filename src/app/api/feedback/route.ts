@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
 
     // Trigger automation for feedback submission
     try {
-      const { NotificationAutomation } = await import("@/lib/notification-automation");
+      const { NotificationAutomation } = await import(
+        "@/lib/notification-automation"
+      );
       await NotificationAutomation.triggerAutomation("feedback_submitted", {
         userId: session.user.id,
         feedbackId: feedback.id,

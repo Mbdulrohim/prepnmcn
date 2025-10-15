@@ -115,7 +115,9 @@ export default function UsersPage() {
     const stats = {
       totalUsers: userData.length,
       activeUsers: userData.filter((u) => u.isActive).length,
-      adminUsers: userData.filter((u) => u.role === "admin" || u.role === "super_admin").length,
+      adminUsers: userData.filter(
+        (u) => u.role === "admin" || u.role === "super_admin"
+      ).length,
       totalPoints: userData.reduce((sum, u) => sum + u.points, 0),
     };
     setStats(stats);
@@ -157,17 +159,23 @@ export default function UsersPage() {
   const handleUserAction = async (action: string, userId: string) => {
     if (action === "Promote to Admin") {
       try {
-        const response = await fetch(`/api/admin/users/${userId}/promote-admin`, {
-          method: "POST",
-        });
+        const response = await fetch(
+          `/api/admin/users/${userId}/promote-admin`,
+          {
+            method: "POST",
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
           toast.success(data.message);
           if (data.requiresSignOut) {
-            toast.info("The user needs to sign out and sign back in to access new permissions", {
-              duration: 10000,
-            });
+            toast.info(
+              "The user needs to sign out and sign back in to access new permissions",
+              {
+                duration: 10000,
+              }
+            );
           }
           // Refresh the users list
           fetchUsers();
@@ -181,17 +189,23 @@ export default function UsersPage() {
       }
     } else if (action === "Promote to Super Admin") {
       try {
-        const response = await fetch(`/api/admin/users/${userId}/promote-super`, {
-          method: "POST",
-        });
+        const response = await fetch(
+          `/api/admin/users/${userId}/promote-super`,
+          {
+            method: "POST",
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
           toast.success(data.message);
           if (data.requiresSignOut) {
-            toast.info("The user needs to sign out and sign back in to access new permissions", {
-              duration: 10000,
-            });
+            toast.info(
+              "The user needs to sign out and sign back in to access new permissions",
+              {
+                duration: 10000,
+              }
+            );
           }
           // Refresh the users list
           fetchUsers();
@@ -472,7 +486,9 @@ export default function UsersPage() {
                               : "default"
                           }
                         >
-                          {user.role === "super_admin" ? "Super Admin" : user.role}
+                          {user.role === "super_admin"
+                            ? "Super Admin"
+                            : user.role}
                         </Badge>
                       </TableCell>
                       <TableCell>{user.institution || "Not set"}</TableCell>
@@ -523,21 +539,28 @@ export default function UsersPage() {
                             >
                               Reset Password
                             </DropdownMenuItem>
-                            {user.role !== "admin" && user.role !== "super_admin" && (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleUserAction("Promote to Admin", user.id)
-                                }
-                                className="text-blue-600"
-                              >
-                                <Shield className="mr-2 h-4 w-4" />
-                                Promote to Admin
-                              </DropdownMenuItem>
-                            )}
+                            {user.role !== "admin" &&
+                              user.role !== "super_admin" && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleUserAction(
+                                      "Promote to Admin",
+                                      user.id
+                                    )
+                                  }
+                                  className="text-blue-600"
+                                >
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Promote to Admin
+                                </DropdownMenuItem>
+                              )}
                             {user.role !== "super_admin" && (
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleUserAction("Promote to Super Admin", user.id)
+                                  handleUserAction(
+                                    "Promote to Super Admin",
+                                    user.id
+                                  )
                                 }
                                 className="text-purple-600"
                               >

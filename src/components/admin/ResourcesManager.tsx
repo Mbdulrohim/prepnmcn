@@ -795,7 +795,8 @@ export default function ResourcesManager() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete the resource.
+                              This action cannot be undone. This will
+                              permanently delete the resource.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>

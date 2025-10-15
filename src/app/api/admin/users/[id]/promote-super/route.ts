@@ -37,7 +37,8 @@ export async function POST(
     await userRepo.save(user);
 
     return NextResponse.json({
-      message: "User promoted to super admin successfully. The user will need to sign out and sign back in to access admin features.",
+      message:
+        "User promoted to super admin successfully. The user will need to sign out and sign back in to access admin features.",
       user: {
         id: user.id,
         name: user.name,
