@@ -2,12 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Feedback } from "@/entities/Feedback";
-import { NotificationAutomation } from "@/lib/notification-automation";
-
-// Initialize AppDataSource early to prevent cyclic dependency issues
-getDataSource().catch((error) => {
-  console.error("Error initializing DataSource:", error);
-});
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,19 +23,29 @@ export async function POST(request: NextRequest) {
     const feedback = feedbackRepo.create({ userId: session.user.id, message });
     await feedbackRepo.save(feedback);
 
-    // Trigger automation asynchronously
+    // Trigger automation asynchronously to avoid cyclic dependency issues
     setImmediate(() => {
-      NotificationAutomation.triggerAutomation("feedback_submitted", {
-        userId: session.user!.id,
-        feedbackId: feedback.id,
-        message: feedback.message,
-        submittedAt: feedback.createdAt,
-      }).catch((error) => {
-        console.error(
-          "Failed to trigger feedback submission automation:",
-          error
-        );
-      });
+      import("@/lib/notification-automation")
+        .then(({ NotificationAutomation }) => {
+          NotificationAutomation.triggerAutomation(
+            AppDataSource, // Pass the initialized DataSource
+            "feedback_submitted",
+            {
+              userId: session.user!.id,
+              feedbackId: feedback.id,
+              message: feedback.message,
+              submittedAt: feedback.createdAt,
+            }
+          ).catch((error) => {
+            console.error(
+              "Failed to trigger feedback submission automation:",
+              error
+            );
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to load notification automation module:", error);
+        });
     });
 
     return NextResponse.json({ message: "Feedback submitted successfully" });

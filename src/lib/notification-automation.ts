@@ -44,18 +44,18 @@ export class NotificationAutomation {
 
   // Trigger automation based on events
   static async triggerAutomation(
+    dataSource: any, // Pass DataSource instance
     trigger: string,
     data: Record<string, unknown>
   ) {
-    const AppDataSource = await getDataSource();
-    const ruleRepository = AppDataSource.getRepository(AutomationRule);
+    const ruleRepository = dataSource.getRepository(AutomationRule);
     const relevantRules = await ruleRepository.find({
       where: { isActive: true, trigger: trigger as any },
     });
 
     for (const rule of relevantRules) {
       try {
-        await this.executeRule(rule, data);
+        await this.executeRule(dataSource, rule, data);
       } catch (error) {
         console.error(`Failed to execute automation rule ${rule.id}:`, error);
       }
@@ -63,6 +63,7 @@ export class NotificationAutomation {
   }
 
   private static async executeRule(
+    dataSource: any, // Pass DataSource instance
     rule: AutomationRule,
     data: Record<string, unknown>
   ) {
@@ -72,7 +73,7 @@ export class NotificationAutomation {
     }
 
     // Get recipients based on rule
-    const recipients = await this.getRecipients(rule, data);
+    const recipients = await this.getRecipients(dataSource, rule, data);
 
     // Send emails
     for (const recipient of recipients) {
@@ -118,11 +119,11 @@ export class NotificationAutomation {
   }
 
   private static async getRecipients(
+    dataSource: any, // Pass DataSource instance
     rule: AutomationRule,
     data: Record<string, unknown>
   ): Promise<{ email: string }[]> {
-    const AppDataSource = await getDataSource();
-    const userRepository = AppDataSource.getRepository(User);
+    const userRepository = dataSource.getRepository(User);
 
     switch (rule.trigger) {
       case "user_registration":
