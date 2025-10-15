@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { NotificationAutomation } from "@/lib/notification-automation";
 
 export const runtime = "nodejs";
 
@@ -22,6 +21,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+    const { NotificationAutomation } = await import(
+      "@/lib/notification-automation"
+    );
     const rule = await NotificationAutomation.getRuleById(id);
     if (!rule) {
       return NextResponse.json(
@@ -55,6 +57,9 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
     const updates = await req.json();
+    const { NotificationAutomation } = await import(
+      "@/lib/notification-automation"
+    );
     const existingRule = await NotificationAutomation.getRuleById(id);
 
     if (!existingRule) {
@@ -94,6 +99,9 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+    const { NotificationAutomation } = await import(
+      "@/lib/notification-automation"
+    );
     const existingRule = await NotificationAutomation.getRuleById(id);
     if (!existingRule) {
       return NextResponse.json(

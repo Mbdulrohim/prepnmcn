@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
 import { sendEmail } from "@/lib/email";
-import { NotificationAutomation } from "@/lib/notification-automation";
 import { getDataSource } from "@/lib/database";
 import { z } from "zod";
 
@@ -81,6 +80,9 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type"); // 'email' | 'automation' | null
 
     if (type === "automation") {
+      const { NotificationAutomation } = await import(
+        "@/lib/notification-automation"
+      );
       const rules = await NotificationAutomation.getRules();
       return NextResponse.json({
         success: true,
@@ -98,6 +100,9 @@ export async function GET(request: NextRequest) {
     });
 
     // Return both email notifications and automation rules
+    const { NotificationAutomation } = await import(
+      "@/lib/notification-automation"
+    );
     const automationRules = await NotificationAutomation.getRules();
     return NextResponse.json({
       success: true,
@@ -169,6 +174,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const { NotificationAutomation } = await import(
+        "@/lib/notification-automation"
+      );
       const newRule = await NotificationAutomation.addRule({
         name: validation.data.name,
         trigger: validation.data.trigger,
@@ -322,6 +330,9 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, ...updates } = body;
 
+    const { NotificationAutomation } = await import(
+      "@/lib/notification-automation"
+    );
     const existingRule = await NotificationAutomation.getRuleById(id);
     if (!existingRule) {
       return NextResponse.json(
@@ -371,6 +382,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (type === "automation") {
+      const { NotificationAutomation } = await import(
+        "@/lib/notification-automation"
+      );
       const existingRule = await NotificationAutomation.getRuleById(id);
       if (!existingRule) {
         return NextResponse.json(

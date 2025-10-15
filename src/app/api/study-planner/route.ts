@@ -35,20 +35,30 @@ export async function POST(request: NextRequest) {
       setImmediate(() => {
         import("../../../lib/notification-automation")
           .then(({ NotificationAutomation }) => {
-            NotificationAutomation.triggerAutomation(AppDataSource, "study_plan_created", {
-              userId: userId as string,
-              examType,
-              examDate,
-              studyHours,
-              knowledgeLevel,
-              daysUntilExam,
-              planGenerated: true,
-            }).catch((error) => {
-              console.error("Failed to trigger study plan creation automation:", error);
+            NotificationAutomation.triggerAutomation(
+              AppDataSource,
+              "study_plan_created",
+              {
+                userId: userId as string,
+                examType,
+                examDate,
+                studyHours,
+                knowledgeLevel,
+                daysUntilExam,
+                planGenerated: true,
+              }
+            ).catch((error) => {
+              console.error(
+                "Failed to trigger study plan creation automation:",
+                error
+              );
             });
           })
           .catch((error) => {
-            console.error("Failed to load notification automation module:", error);
+            console.error(
+              "Failed to load notification automation module:",
+              error
+            );
           });
       });
     } catch (error) {

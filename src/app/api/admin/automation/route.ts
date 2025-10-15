@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { NotificationAutomation } from "@/lib/notification-automation";
 
 export const runtime = "nodejs";
 
@@ -17,6 +16,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const { NotificationAutomation } = await import(
+      "@/lib/notification-automation"
+    );
     const rules = await NotificationAutomation.getRules();
     return NextResponse.json({ rules });
   } catch (error) {
@@ -50,6 +52,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { NotificationAutomation } = await import(
+      "@/lib/notification-automation"
+    );
     const rule = await NotificationAutomation.addRule({
       name,
       trigger,

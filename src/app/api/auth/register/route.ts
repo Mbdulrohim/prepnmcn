@@ -36,13 +36,20 @@ export async function POST(request: NextRequest) {
   setImmediate(() => {
     import("../../../../lib/notification-automation")
       .then(({ NotificationAutomation }) => {
-        NotificationAutomation.triggerAutomation(AppDataSource, "user_registration", {
-          userId: user.id,
-          userName: user.name,
-          userEmail: user.email,
-          institution: user.institution,
-        }).catch((error) => {
-          console.error("Failed to trigger user registration automation:", error);
+        NotificationAutomation.triggerAutomation(
+          AppDataSource,
+          "user_registration",
+          {
+            userId: user.id,
+            userName: user.name,
+            userEmail: user.email,
+            institution: user.institution,
+          }
+        ).catch((error) => {
+          console.error(
+            "Failed to trigger user registration automation:",
+            error
+          );
         });
       })
       .catch((error) => {
