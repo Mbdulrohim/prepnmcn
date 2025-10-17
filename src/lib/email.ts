@@ -4,6 +4,7 @@ interface EmailJob {
     to: string;
     subject: string;
     html: string;
+    text?: string;
     from?: string;
   };
   retries: number;
@@ -49,6 +50,7 @@ async function sendEmailViaSMTP(options: {
   to: string;
   subject: string;
   html: string;
+  text?: string;
   from?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
@@ -73,12 +75,17 @@ async function sendEmailViaSMTP(options: {
       rateLimit: 10,
     });
 
-    const mailOptions = {
-      from:
-        options.from || process.env.SMTP_FROM_EMAIL || "noreply@prepnmcn.com",
+    // prefer explicit text if provided, otherwise generate a simple plain-text fallback
+    const plainText =
+      options.text ||
+      (options.html ? options.html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() : "");
+
+    const mailOptions: any = {
+      from: options.from || process.env.SMTP_FROM_EMAIL || "noreply@prepnmcn.com",
       to: options.to,
       subject: options.subject,
       html: options.html,
+      text: plainText,
     };
 
     await transporter.sendMail(mailOptions);
@@ -93,10 +100,11 @@ async function sendEmailImmediate(options: {
   to: string;
   subject: string;
   html: string;
+  text?: string;
   from?: string;
 }): Promise<{ success: boolean; error?: string }> {
   // Fallback: send directly via SMTP (nodemailer)
-  const smtpResult = await sendEmailViaSMTP(options);
+  const smtpResult = await sendEmailViaSMTP(options as any);
   if (smtpResult.success) return smtpResult;
   return { success: false, error: smtpResult.error || "SMTP send failed" };
 }
@@ -105,6 +113,7 @@ function queueEmail(options: {
   to: string;
   subject: string;
   html: string;
+  text?: string;
   from?: string;
 }): Promise<{ success: boolean; error?: string }> {
   return new Promise((resolve, reject) => {
@@ -206,10 +215,8 @@ export async function sendVerificationEmail(email: string, code: string) {
 
   try {
     console.log("Queueing verification email to:", email);
-    return await queueEmail({
-      to: email,
-      subject: "Your O'Prep Login Code",
-      html: `
+
+    const htmlBody = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -281,7 +288,15 @@ export async function sendVerificationEmail(email: string, code: string) {
         </div>
       </body>
       </html>
-    `,
+    `;
+
+    const textBody = htmlBody.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+
+    return await queueEmail({
+      to: email,
+      subject: "Your O'Prep Login Code",
+      html: htmlBody,
+      text: textBody,
     });
   } catch (error) {
     console.error("Email queuing failed:", error);

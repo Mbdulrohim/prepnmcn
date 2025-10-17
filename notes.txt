@@ -12,7 +12,6 @@ ADDITIONAL FEATURES TO BE ADDED TO PREPNMCN.COM
 
 4. Add the about us section, link to social media (X, LinkedIn, IG, Facebook and email), meet the founders, and testimonials from users.
 
-5. On the admin dashboard, please kindly add a feature where we can download students' bio information (name, institution name, registered email, registration date — all as a Word or PDF file in alphabetical order).
 
 6. ✅ Add a personal study planner feature that automatically generates a study timetable based on exam date inputted by the student.
 
