@@ -1,4 +1,3 @@
-
 // Email queue to handle bursts
 interface EmailJob {
   options: {
@@ -53,7 +52,8 @@ async function sendEmailViaSMTP(options: {
   from?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const nodemailer = (await import('nodemailer')).default;
+    (await import("dotenv")).config();
+    const nodemailer = (await import("nodemailer")).default;
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || "587"),
@@ -64,7 +64,8 @@ async function sendEmailViaSMTP(options: {
         pass: process.env.SMTP_PASSWORD,
       },
       tls: {
-        rejectUnauthorized: process.env.NODE_ENV === "production" ? true : false,
+        rejectUnauthorized:
+          process.env.NODE_ENV === "production" ? true : false,
       },
       pool: true,
       maxConnections: 5,
