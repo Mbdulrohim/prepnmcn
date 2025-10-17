@@ -203,12 +203,12 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/20 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+        <Card className="shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
           <CardHeader className="space-y-4 pb-6">
             <div className="text-center space-y-2">
-              <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <div className="mx-auto w-16 h-16 bg-card rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                 <Image
                   src="/preplogo.png"
                   alt="O'Prep"
@@ -218,7 +218,7 @@ export default function SignIn() {
               </div>
               <CardTitle className="text-2xl font-bold">
                 Welcome to{" "}
-                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                   O'Prep
                 </span>
               </CardTitle>
@@ -294,7 +294,7 @@ export default function SignIn() {
                 <Button
                   onClick={sendCode}
                   disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
                   size="lg"
                 >
                   {loading ? "Sending..." : "Send Verification Code"}
@@ -328,7 +328,7 @@ export default function SignIn() {
                 <Button
                   onClick={verifyCode}
                   disabled={loading || !code}
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
                   size="lg"
                 >
                   {loading ? "Verifying..." : "Verify Code"}
@@ -383,7 +383,7 @@ export default function SignIn() {
                 <Button
                   onClick={completeProfile}
                   disabled={loading || !name || !institution}
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
                   size="lg"
                 >
                   {loading ? "Completing..." : "Complete Profile"}

@@ -17,3 +17,10 @@
 - [x] Launch the Project
 
 - [x] Ensure Documentation is Complete
+
+## Database Configuration
+
+- **TypeORM synchronize: true** - Database schema automatically syncs with entity changes, no manual migrations needed
+- **Database**: PostgreSQL
+- **ORM**: TypeORM with custom entities in `/src/entities/`
+- **Connection**: Configured in `/src/lib/database.ts`

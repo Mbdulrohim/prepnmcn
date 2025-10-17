@@ -37,6 +37,7 @@ import {
   Bell,
   Trophy,
 } from "lucide-react";
+import { ADMIN_ROLES } from "@/lib/roles";
 
 export default function AdminLayout({
   children,
@@ -58,7 +59,7 @@ export default function AdminLayout({
     }
 
     const userRole = (session.user as any)?.role;
-    if (!userRole || !["admin", "super_admin"].includes(userRole)) {
+    if (!userRole || !(ADMIN_ROLES as readonly string[]).includes(userRole)) {
       router.push("/dashboard");
       return;
     }

@@ -1,11 +1,14 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
 import FeedbackDialog from "@/components/FeedbackDialog";
 import { MessageSquare } from "lucide-react";
 
-export default function FeedbackButton() {
+interface FeedbackButtonProps {
+  children: React.ReactNode;
+}
+
+export default function FeedbackButton({ children }: FeedbackButtonProps) {
   const { data: session } = useSession();
 
   // Only show feedback button if user is authenticated
@@ -13,12 +16,5 @@ export default function FeedbackButton() {
     return null;
   }
 
-  return (
-    <FeedbackDialog>
-      <Button variant="ghost" size="sm">
-        <MessageSquare className="h-4 w-4 mr-2" />
-        Feedback
-      </Button>
-    </FeedbackDialog>
-  );
+  return <FeedbackDialog>{children}</FeedbackDialog>;
 }

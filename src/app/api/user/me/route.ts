@@ -34,6 +34,10 @@ export async function GET() {
         role: user.role,
         points: user.points,
         permissions: user.permissions || [],
+        academicLevel: user.academicLevel,
+        selectedCourses: user.selectedCourses,
+        studyPreferences: user.studyPreferences,
+        notificationSettings: user.notificationSettings,
       },
     });
   } catch (error) {

@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Feedback } from "@/entities/Feedback";
 
+export const runtime = "nodejs"; // Force Node.js runtime
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();

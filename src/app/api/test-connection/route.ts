@@ -1,6 +1,8 @@
 import { AppDataSource } from "../../../lib/database";
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs"; // Force Node.js runtime
+
 export async function GET() {
   try {
     if (!AppDataSource.isInitialized) {

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       email: email.toLowerCase(),
       name: name.trim(),
       institution: institutionEntity,
-      role: "student",
+      role: "user",
       points: 0,
     });
 

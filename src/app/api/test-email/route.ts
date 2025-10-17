@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { sendVerificationEmail } from "../../../lib/email";
 
+export const runtime = "nodejs"; // Force Node.js runtime
+
 export async function GET() {
   try {
     console.log("Testing email configuration...");

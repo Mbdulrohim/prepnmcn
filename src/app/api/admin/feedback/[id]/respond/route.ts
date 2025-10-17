@@ -3,7 +3,9 @@ import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Feedback } from "@/entities/Feedback";
 import { User } from "@/entities/User";
-import { sendEmail } from "@/lib/email";
+import { sendFeedbackEmail } from "@/lib/email";
+
+export const runtime = "nodejs"; // Force Node.js runtime
 
 export async function POST(
   request: Request,
@@ -55,7 +57,7 @@ export async function POST(
 
     // Send email to user
     try {
-      await sendEmail({
+      await sendFeedbackEmail({
         to: userDetails.email,
         subject: "Response to Your Feedback - O'Prep",
         html: `

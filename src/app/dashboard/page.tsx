@@ -26,8 +26,10 @@ import {
   BarChart3,
   Users,
   Award,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
+import { ADMIN_ROLES } from "@/lib/roles";
 
 interface User {
   id: string;
@@ -54,6 +56,11 @@ export default function Dashboard() {
       })
       .then((data) => {
         if (data?.user) {
+          // Check if user has an institution
+          if (!data.user.institution || data.user.institution === "N/A") {
+            router.push("/institution/select");
+            return;
+          }
           setUser(data.user);
         }
       })
@@ -67,10 +74,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -81,15 +88,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src="" alt={user.name} />
-              <AvatarFallback className="bg-blue-100 text-blue-600 text-xl">
+              <AvatarFallback className="bg-primary/10 text-primary text-xl">
                 {user.name
                   .split(" ")
                   .map((n) => n[0])
@@ -97,10 +103,10 @@ export default function Dashboard() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-foreground">
                 Welcome back, {user.name}!
               </h1>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {user.institution} • {user.role}
               </p>
             </div>
@@ -109,6 +115,14 @@ export default function Dashboard() {
             <CheckCircle className="w-4 h-4 mr-1" />
             Active Student
           </Badge>
+          {(ADMIN_ROLES as readonly string[]).includes(user.role) && (
+            <Button asChild variant="outline" size="sm" className="ml-4">
+              <Link href="/admin" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Admin Panel
+              </Link>
+            </Button>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -118,10 +132,10 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium">
                 Total Points
               </CardTitle>
-              <Trophy className="h-4 w-4 text-yellow-600" />
+              <Trophy className="h-4 w-4 text-chart-1" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-chart-1">
                 {user.points}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -135,10 +149,10 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium">
                 Study Streak
               </CardTitle>
-              <Target className="h-4 w-4 text-green-600" />
+              <Target className="h-4 w-4 text-chart-2" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">0 days</div>
+              <div className="text-2xl font-bold text-chart-2">0 days</div>
               <p className="text-xs text-muted-foreground">
                 Start your streak!
               </p>
@@ -150,10 +164,10 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium">
                 Hours Studied
               </CardTitle>
-              <Clock className="h-4 w-4 text-purple-600" />
+              <Clock className="h-4 w-4 text-chart-3" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600">0h</div>
+              <div className="text-2xl font-bold text-chart-3">0h</div>
               <p className="text-xs text-muted-foreground">This week</p>
             </CardContent>
           </Card>
@@ -161,10 +175,10 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Progress</CardTitle>
-              <TrendingUp className="h-4 w-4 text-orange-600" />
+              <TrendingUp className="h-4 w-4 text-chart-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">0%</div>
+              <div className="text-2xl font-bold text-chart-4">0%</div>
               <Progress value={0} className="mt-2" />
             </CardContent>
           </Card>

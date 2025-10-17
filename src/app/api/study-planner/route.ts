@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { NotificationAutomation } from "../../../lib/notification-automation";
 import { getDataSource } from "../../../lib/database";
 
+export const runtime = "nodejs"; // Force Node.js runtime
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();

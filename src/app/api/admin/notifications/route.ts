@@ -16,7 +16,7 @@ const sendEmailSchema = z
     subject: z.string().min(1).max(200),
     body: z.string().min(1).max(10000),
     recipientRole: z
-      .enum(["all", "student", "admin", "super_admin"])
+      .enum(["all", "user", "admin", "super_admin"])
       .optional(),
   })
   .refine(

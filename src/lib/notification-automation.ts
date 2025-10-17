@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import { User } from "@/entities/User";
 import { AutomationRule } from "@/entities/AutomationRule";
 import { sendEmail } from "@/lib/email";
+import type { UserRole } from "@/lib/roles";
 
 export class NotificationAutomation {
   static async addRule(
@@ -157,7 +158,7 @@ export class NotificationAutomation {
         // Custom logic based on conditions
         if (rule.conditions.recipientRole) {
           const users = await userRepository.find({
-            where: { role: rule.conditions.recipientRole as string },
+            where: { role: rule.conditions.recipientRole as UserRole },
             select: ["email"],
           });
           return users;

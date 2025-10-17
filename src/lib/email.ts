@@ -7,12 +7,12 @@ dotenv.config();
 // Create nodemailer transporter with connection pooling
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: 587,
-  secure: false, // false for port 587 (STARTTLS)
-  requireTLS: true,
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: process.env.SMTP_PORT === "465", // true for port 465, false for other ports
+  requireTLS: process.env.SMTP_PORT !== "465",
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    pass: process.env.SMTP_PASSWORD, // Updated to match .env variable
   },
   tls: {
     rejectUnauthorized: false,
@@ -130,7 +130,7 @@ function queueEmail(options: {
 export async function sendVerificationEmail(email: string, code: string) {
   const mailOptions = {
     from:
-      process.env.FROM_EMAIL || process.env.SMTP_USER || "noreply@oprep.com",
+      `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${process.env.LOGIN_CODE_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "noreply@oprep.com"}>`,
     to: email,
     subject: "Your O'Prep Login Code",
     html: `
@@ -318,4 +318,109 @@ export async function sendEmail(options: {
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+}
+
+// Specialized email functions for different types
+export async function sendLoginCodeEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from = `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${process.env.LOGIN_CODE_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+
+  return sendEmail({
+    ...options,
+    from,
+  });
+}
+
+export async function sendLoginNotificationEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from = `"${process.env.LOGIN_NOTIFICATION_SENDER_NAME || "O'Prep Security"}" <${process.env.LOGIN_NOTIFICATION_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+
+  return sendEmail({
+    ...options,
+    from,
+  });
+}
+
+export async function sendFeedbackEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from = `"${process.env.FEEDBACK_SENDER_NAME || "O'Prep Feedback"}" <${process.env.FEEDBACK_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+
+  return sendEmail({
+    ...options,
+    from,
+  });
+}
+
+export async function sendAdminNotificationEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from = `"${process.env.ADMIN_NOTIFICATION_SENDER_NAME || "O'Prep Admin"}" <${process.env.ADMIN_NOTIFICATION_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+
+  return sendEmail({
+    ...options,
+    from,
+  });
+}
+
+export async function sendWelcomeEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from = `"${process.env.WELCOME_SENDER_NAME || "O'Prep Team"}" <${process.env.WELCOME_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+
+  return sendEmail({
+    ...options,
+    from,
+  });
+}
+
+export async function sendReminderEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from = `"${process.env.REMINDER_SENDER_NAME || "O'Prep Study Buddy"}" <${process.env.REMINDER_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+
+  return sendEmail({
+    ...options,
+    from,
+  });
+}
+
+export async function sendAchievementEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from = `"${process.env.ACHIEVEMENT_SENDER_NAME || "O'Prep Achievements"}" <${process.env.ACHIEVEMENT_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+
+  return sendEmail({
+    ...options,
+    from,
+  });
+}
+
+export async function sendNewsletterEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from = `"${process.env.NEWSLETTER_SENDER_NAME || "O'Prep Updates"}" <${process.env.NEWSLETTER_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+
+  return sendEmail({
+    ...options,
+    from,
+  });
 }

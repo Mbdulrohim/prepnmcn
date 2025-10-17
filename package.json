@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typeorm": "node ./node_modules/typeorm/cli.js",
-    "set-admin": "ts-node src/scripts/set-admin.ts"
+    "set-admin": "tsx src/scripts/set-admin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.910.0",
@@ -55,12 +55,14 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.2",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.24",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.544.0",
     "next": "15.5.4",
     "next-auth": "^5.0.0-beta.29",
     "next-themes": "^0.4.6",
     "nodemailer": "^6.10.1",
+    "openai": "^6.4.0",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^2.2.13",
     "pdf2pic": "^3.2.0",
