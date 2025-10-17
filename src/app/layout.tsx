@@ -9,7 +9,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "O/Prep Admin - Exam Preparation Platform",
+  title: "O/Prep - Exam Preparation Platform",
   description:
     "Your ultimate exam preparation platform. Master your exams with O/Prep's comprehensive study tools and resources.",
   keywords: [
@@ -28,11 +28,11 @@ export const metadata: Metadata = {
     apple: "/preplogo.png",
   },
   openGraph: {
-    title: "O/Prep Admin - Exam Preparation Platform",
+    title: "O/Prep - Exam Preparation Platform",
     description:
       "Master your exams with O/Prep's comprehensive study platform.",
-    url: "https://prepp-8ysa0a4zd-mbdulrohims-projects.vercel.app",
-    siteName: "O/Prep Admin",
+    url: "new.",
+    siteName: "O/Prep",
     images: [
       {
         url: "/preplogo.png",

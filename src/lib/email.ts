@@ -1,27 +1,3 @@
-import nodemailer from "nodemailer";
-
-import dotenv from "dotenv";
-
-dotenv.config();
-
-// Create nodemailer transporter with connection pooling
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_PORT === "465", // true for port 465, false for other ports
-  requireTLS: process.env.SMTP_PORT !== "465",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD, // Updated to match .env variable
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-  pool: true, // Enable connection pooling
-  maxConnections: 5, // Maximum number of connections
-  maxMessages: 100, // Maximum messages per connection
-  rateLimit: 10, // Maximum messages per second
-});
 
 // Email queue to handle bursts
 interface EmailJob {
@@ -76,27 +52,29 @@ async function sendEmailImmediate(options: {
   html: string;
   from?: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const mailOptions = {
-    from:
-      options.from ||
-      process.env.FROM_EMAIL ||
-      process.env.SMTP_USER ||
-      "noreply@oprep.com",
-    to: options.to,
-    subject: options.subject,
-    html: options.html,
-  };
-
   try {
-    console.log("Sending email immediately to:", options.to);
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully:", info.messageId);
-    return { success: true };
+    console.log("Sending email via API to:", options.to);
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(options),
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      console.log("Email sent successfully via API");
+      return { success: true };
+    } else {
+      console.error("Email sending via API failed:", result.error);
+      return { success: false, error: result.error || 'Unknown API error' };
+    }
   } catch (error) {
-    console.error("Email sending failed:", error);
+    console.error("Email sending via API failed:", error);
     if (error instanceof Error) {
       console.error("Error details:", {
-        code: (error as Error & { code?: string | number }).code,
         message: error.message,
         stack: error.stack,
       });
@@ -130,10 +108,8 @@ function queueEmail(options: {
 export async function sendVerificationEmail(email: string, code: string) {
   const mailOptions = {
     from: `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${
-      process.env.LOGIN_CODE_FROM_EMAIL ||
-      process.env.SMTP_FROM_EMAIL ||
-      process.env.SMTP_USER ||
-      "noreply@oprep.com"
+      process.env.LOGIN_CODE_FROM_EMAIL || process.env.SMTP_FROM_EMAIL ||
+      "noreply@prepnmcn.com"
     }>`,
     to: email,
     subject: "Your O'Prep Login Code",

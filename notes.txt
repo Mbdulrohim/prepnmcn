@@ -2,38 +2,38 @@
 
 ADDITIONAL FEATURES TO BE ADDED TO PREPNMCN.COM
 
-1. ✅ USERS ARE NOW TIED TO PRE-DEFINED UNIVERSITIES IN THE DATABASE - THEY SELECT FROM A DROPDOWN INSTEAD OF TYPING INSTITUTION NAMES MANUALLY.
+1. ✅ Users are now tied to pre-defined universities in the database - they select from a dropdown instead of typing institution names manually.
 
-2. ✅ FEEDBACK PAGE IS NOW WORKING PERFECTLY - USERS CAN SEND FEEDBACK, ADMINS CAN VIEW, RESPOND TO, AND MANAGE ALL FEEDBACK SUBMISSIONS.
+2. ✅ Feedback page is now working perfectly - users can send feedback, admins can view, respond to, and manage all feedback submissions.
 
-3. ✅ LEADERBOARD NOW RANKS UNIVERSITIES BASED ON TOTAL STUDY POINTS EARNED BY THEIR STUDENTS - NO LONGER INDIVIDUAL NAMES.
+3. ✅ Leaderboard now ranks universities based on total study points earned by their students - no longer individual names.
 
-18. ✅ ACADEMIC PROFILE SETUP - USERS CAN SET THEIR LEVEL (100-500), SELECT COURSES, CONFIGURE STUDY PREFERENCES, AND MANAGE NOTIFICATION SETTINGS.
+18. ✅ Academic profile setup - users can set their level (100-500), select courses, configure study preferences, and manage notification settings.
 
-4. ADD THE ABOUT US SECTION, LINK TO SOCIAL MEDIA (X, LINKEDIN, IG, FACEBOOK AND EMAIL), MEET THE FOUNDERS, AND TESTIMONIALS FROM USERS.
+4. Add the about us section, link to social media (X, LinkedIn, IG, Facebook and email), meet the founders, and testimonials from users.
 
-5. ON THE ADMIN DASHBOARD, PLEASE KINDLY ADD A FEATURE WHERE WE CAN DOWNLOAD STUDENTS' BIO INFORMATION (NAME, INSTITUTION NAME, REGISTERED EMAIL, REGISTRATION DATE — ALL AS A WORD OR PDF FILE IN ALPHABETICAL ORDER).
+5. On the admin dashboard, please kindly add a feature where we can download students' bio information (name, institution name, registered email, registration date — all as a Word or PDF file in alphabetical order).
 
-6. ✅ ADD A PERSONAL STUDY PLANNER FEATURE THAT AUTOMATICALLY GENERATES A STUDY TIMETABLE BASED ON EXAM DATE INPUTTED BY THE STUDENT.
+6. ✅ Add a personal study planner feature that automatically generates a study timetable based on exam date inputted by the student.
 
-7. ADD A PROGRESS TRACKER SHOWING % COMPLETION, DAYS LEFT, AND STREAKS TO MOTIVATE STUDENTS TO STAY CONSISTENT.
+7. Add a progress tracker showing % completion, days left, and streaks to motivate students to stay consistent.
 
-8. CREATE A RESOURCE LIBRARY SECTION THAT WILL CONTAIN PAST QUESTIONS, ANSWERED SOLUTIONS, VIDEO TUTORIALS, AND NOTES ARRANGED BY TOPIC/LEVEL.
+8. Create a resource library section that will contain past questions, answered solutions, video tutorials, and notes arranged by topic/level.
 
-9. ADD EXAM AI ASSISTANT WITH USER CONTEXT - PERSONALIZED HELP BASED ON USER'S STUDY PLANS, INSTITUTION, PERFORMANCE DATA, AND LEARNING HISTORY.
+9. Add exam AI assistant with user context - personalized help based on user's study plans, institution, performance data, and learning history.
 
-10. ADD DISCUSSION FORUMS FOR EACH UNIVERSITY WHERE STUDENTS FROM THE SAME SCHOOL CAN INTERACT, DISCUSS AND COLLABORATE.
+10. Add discussion forums for each university where students from the same school can interact, discuss and collaborate.
 
-11. ADD A STUDY BUDDY FEATURE TO MATCH STUDENTS WITH PEERS FROM THEIR UNIVERSITY OR DIFFERENT FOR ACCOUNTABILITY.
+11. Add a study buddy feature to match students with peers from their university or different for accountability.
 
-12. ADD GAMIFICATION FEATURES LIKE STREAK BADGES, XP POINTS, WEEKLY CHALLENGES AND LEADERBOARDS TO BOOST ENGAGEMENT.
+12. Add gamification features like streak badges, XP points, weekly challenges and leaderboards to boost engagement.
 
-13. ADD A CERTIFICATE OF COMPLETION FEATURE THAT STUDENTS CAN DOWNLOAD OR SHARE WHEN THEY COMPLETE THEIR STUDY PLAN.
+13. Add a certificate of completion feature that students can download or share when they complete their study plan.
 
-14. ADD A FEEDBACK WIDGET THAT IS ALWAYS VISIBLE ON THE DASHBOARD SO STUDENTS CAN DROP QUICK FEEDBACK ANYTIME.
+14. Add a feedback widget that is always visible on the dashboard so students can drop quick feedback anytime.
 
-15. ADD A POP-UP OR SIDEBAR FOR WEEKLY MOTIVATIONAL MESSAGES / STUDY REMINDERS.
+15. Add a pop-up or sidebar for weekly motivational messages / study reminders.
 
-16. SET UP EMAIL NOTIFICATION SYSTEM FOR KEY REMINDERS (E.G. DAY 1, DAY 10, DAY 30) AND DEADLINES.
+16. Set up email notification system for key reminders (e.g. day 1, day 10, day 30) and deadlines.
 
-17. ADD ENGAGEMENT ANALYTICS TO THE ADMIN DASHBOARD TO SHOW WHICH MODULES ARE MOST/LEAST COMPLETED AND AVERAGE COMPLETION RATES PER UNIVERSITY.
+17. Add engagement analytics to the admin dashboard to show which modules are most/least completed and average completion rates per university.
