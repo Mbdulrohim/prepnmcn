@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InstitutionSelect } from "@/components/InstitutionSelect";
 import { GraduationCap, ArrowRight } from "lucide-react";
@@ -78,7 +84,8 @@ export default function InstitutionSelectPage() {
           </div>
           <CardTitle className="text-2xl">Select Your Institution</CardTitle>
           <CardDescription>
-            Choose your educational institution to personalize your experience and connect with peers.
+            Choose your educational institution to personalize your experience
+            and connect with peers.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -110,7 +117,8 @@ export default function InstitutionSelectPage() {
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            Don't see your institution? Contact support to add it to our database.
+            Don't see your institution? Contact support to add it to our
+            database.
           </p>
         </CardContent>
       </Card>

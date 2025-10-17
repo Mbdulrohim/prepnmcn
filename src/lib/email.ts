@@ -129,8 +129,12 @@ function queueEmail(options: {
 
 export async function sendVerificationEmail(email: string, code: string) {
   const mailOptions = {
-    from:
-      `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${process.env.LOGIN_CODE_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "noreply@oprep.com"}>`,
+    from: `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${
+      process.env.LOGIN_CODE_FROM_EMAIL ||
+      process.env.SMTP_FROM_EMAIL ||
+      process.env.SMTP_USER ||
+      "noreply@oprep.com"
+    }>`,
     to: email,
     subject: "Your O'Prep Login Code",
     html: `
@@ -326,7 +330,9 @@ export async function sendLoginCodeEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${process.env.LOGIN_CODE_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+  const from = `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${
+    process.env.LOGIN_CODE_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
+  }>`;
 
   return sendEmail({
     ...options,
@@ -339,7 +345,11 @@ export async function sendLoginNotificationEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.LOGIN_NOTIFICATION_SENDER_NAME || "O'Prep Security"}" <${process.env.LOGIN_NOTIFICATION_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+  const from = `"${
+    process.env.LOGIN_NOTIFICATION_SENDER_NAME || "O'Prep Security"
+  }" <${
+    process.env.LOGIN_NOTIFICATION_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
+  }>`;
 
   return sendEmail({
     ...options,
@@ -352,7 +362,9 @@ export async function sendFeedbackEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.FEEDBACK_SENDER_NAME || "O'Prep Feedback"}" <${process.env.FEEDBACK_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+  const from = `"${process.env.FEEDBACK_SENDER_NAME || "O'Prep Feedback"}" <${
+    process.env.FEEDBACK_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
+  }>`;
 
   return sendEmail({
     ...options,
@@ -365,7 +377,11 @@ export async function sendAdminNotificationEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.ADMIN_NOTIFICATION_SENDER_NAME || "O'Prep Admin"}" <${process.env.ADMIN_NOTIFICATION_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+  const from = `"${
+    process.env.ADMIN_NOTIFICATION_SENDER_NAME || "O'Prep Admin"
+  }" <${
+    process.env.ADMIN_NOTIFICATION_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
+  }>`;
 
   return sendEmail({
     ...options,
@@ -378,7 +394,9 @@ export async function sendWelcomeEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.WELCOME_SENDER_NAME || "O'Prep Team"}" <${process.env.WELCOME_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+  const from = `"${process.env.WELCOME_SENDER_NAME || "O'Prep Team"}" <${
+    process.env.WELCOME_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
+  }>`;
 
   return sendEmail({
     ...options,
@@ -391,7 +409,9 @@ export async function sendReminderEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.REMINDER_SENDER_NAME || "O'Prep Study Buddy"}" <${process.env.REMINDER_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+  const from = `"${
+    process.env.REMINDER_SENDER_NAME || "O'Prep Study Buddy"
+  }" <${process.env.REMINDER_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
 
   return sendEmail({
     ...options,
@@ -404,7 +424,9 @@ export async function sendAchievementEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.ACHIEVEMENT_SENDER_NAME || "O'Prep Achievements"}" <${process.env.ACHIEVEMENT_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+  const from = `"${
+    process.env.ACHIEVEMENT_SENDER_NAME || "O'Prep Achievements"
+  }" <${process.env.ACHIEVEMENT_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
 
   return sendEmail({
     ...options,
@@ -417,7 +439,9 @@ export async function sendNewsletterEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.NEWSLETTER_SENDER_NAME || "O'Prep Updates"}" <${process.env.NEWSLETTER_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
+  const from = `"${process.env.NEWSLETTER_SENDER_NAME || "O'Prep Updates"}" <${
+    process.env.NEWSLETTER_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
+  }>`;
 
   return sendEmail({
     ...options,

@@ -15,9 +15,7 @@ const sendEmailSchema = z
     recipientEmails: z.array(z.string().email()).optional(),
     subject: z.string().min(1).max(200),
     body: z.string().min(1).max(10000),
-    recipientRole: z
-      .enum(["all", "user", "admin", "super_admin"])
-      .optional(),
+    recipientRole: z.enum(["all", "user", "admin", "super_admin"]).optional(),
   })
   .refine(
     (data) => {
@@ -80,7 +78,9 @@ export async function GET(request: NextRequest) {
     });
 
     // Return both email notifications and automation rules
-    const automationRules = await NotificationAutomation.getRules(AppDataSource);
+    const automationRules = await NotificationAutomation.getRules(
+      AppDataSource
+    );
     return NextResponse.json({
       success: true,
       data: {

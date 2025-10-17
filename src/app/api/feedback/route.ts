@@ -46,7 +46,10 @@ export async function POST(request: NextRequest) {
           });
         })
         .catch((error) => {
-          console.error("Failed to load notification automation module:", error);
+          console.error(
+            "Failed to load notification automation module:",
+            error
+          );
         });
     });
 

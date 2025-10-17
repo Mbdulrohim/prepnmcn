@@ -123,7 +123,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     </ul>
 
                     <p style="text-align: center; margin: 30px 0;">
-                      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/signin" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Review Account Activity</a>
+                      <a href="${
+                        process.env.NEXTAUTH_URL || "http://localhost:3000"
+                      }/auth/signin" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Review Account Activity</a>
                     </p>
 
                     <div class="footer">
