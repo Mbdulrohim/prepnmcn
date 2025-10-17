@@ -138,24 +138,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="relative overflow-hidden border-b">
-        <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-primary/10 via-background to-background" />
+      <section className="relative overflow-hidden border-b pt-24 md:pt-0">
         <div className="relative min-h-[80vh] px-6 md:px-12 lg:px-20 flex items-center">
           <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-[1.05fr_0.95fr] items-center">
-            <div className="space-y-10">
+            <div className="space-y-10 text-center lg:text-left">
               <div className="space-y-4">
-                <Badge variant="outline" className="text-primary border-primary/30">
+                <Badge variant="outline" className="inline-flex text-primary border-primary/30">
                   Built for ambitious exam takers
                 </Badge>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground">
                   <PrepDynamicText className="inline" /> every exam with
                   <span className="text-primary"> O'Prep</span>
                 </h1>
-                <p className="text-lg md:text-xl text-muted-foreground max-w-xl">
+                <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0">
                   Structure your prep, stay accountable with peers, and get personalised guidance—across nursing, medical, legal, and more professional exams.
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link href="/auth/signin">
                   <ParticleButton
                     size="lg"
@@ -175,36 +174,36 @@ export default function Home() {
                 </Button>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:gap-8 gap-3 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center lg:justify-start gap-2">
                   <Badge variant="secondary" className="px-3 py-1 text-xs">30+</Badge>
                   Partner universities onboarded
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center lg:justify-start gap-2">
                   <Badge variant="secondary" className="px-3 py-1 text-xs">12k+</Badge>
                   Learners planning smarter
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center lg:justify-start gap-2">
                   <Badge variant="secondary" className="px-3 py-1 text-xs">8-step</Badge>
                   Proven O'Prep methodology
                 </div>
               </div>
             </div>
-            <div className="relative">
-              <div className="absolute -inset-4 rounded-3xl bg-primary/10 blur-2xl" />
+            <div className="relative max-w-sm mx-auto lg:mx-0 w-full">
+              <div className="absolute -inset-4 rounded-3xl bg-primary/10 blur-2xl hidden lg:block" />
               <Card className="relative border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-2xl">Learner momentum</CardTitle>
                   <CardDescription>Snapshots from across the O'Prep network.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                  <div className="flex items-center justify-between rounded-xl border bg-muted/40 px-4 py-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border bg-muted/40 px-4 py-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Active streaks
                       </p>
                       <p className="text-2xl font-semibold text-primary">1,247 learners</p>
                     </div>
-                    <Badge className="bg-primary/10 text-primary">+18% this week</Badge>
+                    <Badge className="bg-primary/10 text-primary w-fit">+18% this week</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Students from 30+ universities build plans, stay accountable, and share wins together every week.
