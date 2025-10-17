@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+export const runtime = "nodejs"; // Force Node.js runtime
+
 export async function POST() {
   try {
     const cookieStore = await cookies();

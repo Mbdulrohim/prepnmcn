@@ -4,6 +4,8 @@ import { User } from "../../../../entities/User";
 import bcrypt from "bcryptjs";
 import { NotificationAutomation } from "../../../../lib/notification-automation";
 
+export const runtime = "nodejs"; // Force Node.js runtime
+
 export async function POST(request: NextRequest) {
   const { name, email, password, institution } = await request.json();
 

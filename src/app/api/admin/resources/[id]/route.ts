@@ -3,6 +3,8 @@ import { auth } from "../../../../../lib/auth";
 import { getDataSource } from "../../../../../lib/database";
 import { Resource } from "../../../../../entities/Resource";
 
+export const runtime = "nodejs"; // Force Node.js runtime
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

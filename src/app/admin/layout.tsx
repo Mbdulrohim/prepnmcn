@@ -36,6 +36,7 @@ import {
   Mail,
   Bell,
   Trophy,
+  BookOpen,
 } from "lucide-react";
 import { ADMIN_ROLES } from "@/lib/roles";
 
@@ -187,6 +188,18 @@ export default function AdminLayout({
                     <Link href="/admin/resources">
                       <FileText />
                       <span>Resources</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive("/admin/exams")}
+                    tooltip="Exams"
+                  >
+                    <Link href="/admin/exams">
+                      <BookOpen />
+                      <span>Exams</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

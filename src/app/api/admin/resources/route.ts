@@ -93,9 +93,8 @@ export async function POST(req: NextRequest) {
     // Parse PDF with better error handling
     let contentText = "";
     try {
-      // Use dynamic import to avoid ES module issues
-
-      const pdfParse = require("pdf-parse");
+      // Use require for pdf-parse (CommonJS module)
+      const pdfParse = require("pdf-parse") as (buffer: Buffer) => Promise<any>;
       const pdfData = await pdfParse(fileBuffer);
       contentText = pdfData.text || "";
     } catch (pdfError) {
