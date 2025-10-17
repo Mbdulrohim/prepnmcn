@@ -46,44 +46,58 @@ async function processEmailQueue() {
   isProcessingQueue = false;
 }
 
-async function sendEmailImmediate(options: {
+async function sendEmailViaSMTP(options: {
   to: string;
   subject: string;
   html: string;
   from?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log("Sending email via API to:", options.to);
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/send-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const nodemailer = (await import('nodemailer')).default;
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || "587"),
+      secure: process.env.SMTP_PORT === "465",
+      requireTLS: process.env.SMTP_PORT !== "465",
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
       },
-      body: JSON.stringify(options),
+      tls: {
+        rejectUnauthorized: process.env.NODE_ENV === "production" ? true : false,
+      },
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      rateLimit: 10,
     });
 
-    const result = await response.json();
-
-    if (response.ok && result.success) {
-      console.log("Email sent successfully via API");
-      return { success: true };
-    } else {
-      console.error("Email sending via API failed:", result.error);
-      return { success: false, error: result.error || 'Unknown API error' };
-    }
-  } catch (error) {
-    console.error("Email sending via API failed:", error);
-    if (error instanceof Error) {
-      console.error("Error details:", {
-        message: error.message,
-        stack: error.stack,
-      });
-    }
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+    const mailOptions = {
+      from:
+        options.from || process.env.SMTP_FROM_EMAIL || "noreply@prepnmcn.com",
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
     };
+
+    await transporter.sendMail(mailOptions);
+    return { success: true };
+  } catch (err: any) {
+    console.error("SMTP send failed:", err?.message || err);
+    return { success: false, error: err?.message || String(err) };
   }
+}
+
+async function sendEmailImmediate(options: {
+  to: string;
+  subject: string;
+  html: string;
+  from?: string;
+}): Promise<{ success: boolean; error?: string }> {
+  // Fallback: send directly via SMTP (nodemailer)
+  const smtpResult = await sendEmailViaSMTP(options);
+  if (smtpResult.success) return smtpResult;
+  return { success: false, error: smtpResult.error || "SMTP send failed" };
 }
 
 function queueEmail(options: {
@@ -108,7 +122,8 @@ function queueEmail(options: {
 export async function sendVerificationEmail(email: string, code: string) {
   const mailOptions = {
     from: `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${
-      process.env.LOGIN_CODE_FROM_EMAIL || process.env.SMTP_FROM_EMAIL ||
+      process.env.LOGIN_CODE_FROM_EMAIL ||
+      process.env.SMTP_FROM_EMAIL ||
       "noreply@prepnmcn.com"
     }>`,
     to: email,
