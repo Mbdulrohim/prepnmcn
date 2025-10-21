@@ -38,6 +38,15 @@ export class User {
   @Column({ type: "int", default: 0 })
   points!: number;
 
+  @Column({ type: "int", default: 0 })
+  currentStreak!: number; // Current consecutive study days
+
+  @Column({ type: "int", default: 0 })
+  longestStreak!: number; // Longest streak ever achieved
+
+  @Column({ type: "date", nullable: true })
+  lastActivityDate?: Date; // Last date user performed a study activity
+
   @Column({
     type: "varchar",
     length: 50,

@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_ROLES } from "@/lib/roles";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -38,6 +39,10 @@ interface User {
   institution: string;
   role: string;
   points: number;
+  currentStreak?: number;
+  longestStreak?: number;
+  lastActivityDate?: Date;
+  hasCheckedInToday?: boolean;
 }
 
 interface ExamEnrollment {
@@ -60,6 +65,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [examEnrollments, setExamEnrollments] = useState<ExamEnrollment[]>([]);
+  const [checkingIn, setCheckingIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -68,14 +74,29 @@ export default function Dashboard() {
 
   const fetchUserData = async () => {
     try {
-      const [userResponse, enrollmentsResponse] = await Promise.all([
-        fetch("/api/user/me"),
-        fetch("/api/exams/enrollments"),
-      ]);
+      const [userResponse, enrollmentsResponse, streakResponse] =
+        await Promise.all([
+          fetch("/api/user/me"),
+          fetch("/api/exams/enrollments"),
+          fetch("/api/user/streak"),
+        ]);
 
       if (userResponse.ok) {
         const userData = await userResponse.json();
-        setUser(userData);
+        const user = userData.user || userData;
+
+        // Fetch streak data and merge with user data
+        if (streakResponse.ok) {
+          const streakData = await streakResponse.json();
+          if (streakData.success) {
+            user.currentStreak = streakData.data.currentStreak;
+            user.longestStreak = streakData.data.longestStreak;
+            user.lastActivityDate = streakData.data.lastActivityDate;
+            user.hasCheckedInToday = streakData.data.hasCheckedInToday;
+          }
+        }
+
+        setUser(user);
       }
 
       if (enrollmentsResponse.ok) {
@@ -91,12 +112,73 @@ export default function Dashboard() {
     }
   };
 
+  const handleCheckIn = async () => {
+    if (!user) return;
+
+    try {
+      setCheckingIn(true);
+      const response = await fetch("/api/user/streak", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update user data with new streak info
+        setUser((prev) =>
+          prev
+            ? {
+                ...prev,
+                currentStreak: data.data.currentStreak,
+                longestStreak: data.data.longestStreak,
+                lastActivityDate: data.data.lastActivityDate,
+                hasCheckedInToday: true,
+              }
+            : null
+        );
+
+        toast.success(
+          data.data.streakIncreased
+            ? `Streak increased to ${data.data.currentStreak} days! 🔥`
+            : data.data.streakReset
+            ? "Streak reset! Keep it up tomorrow! 💪"
+            : "Checked in successfully! 📅"
+        );
+      } else {
+        if (data.error === "Already checked in today") {
+          toast.info("You've already checked in today!");
+        } else {
+          toast.error(data.error || "Failed to check in");
+        }
+      }
+    } catch (error) {
+      console.error("Error checking in:", error);
+      toast.error("Failed to check in. Please try again.");
+    } finally {
+      setCheckingIn(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading user data...</p>
         </div>
       </div>
     );
@@ -116,17 +198,20 @@ export default function Dashboard() {
               <AvatarImage src="" alt={user.name} />
               <AvatarFallback className="bg-primary/10 text-primary text-xl">
                 {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+                  ? user.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                  : "U"}
               </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                Welcome back, {user.name}!
+                Welcome back, {user.name || "User"}!
               </h1>
               <p className="text-muted-foreground">
-                {user.institution} • {user.role}
+                {user.institution || "No institution"} •{" "}
+                {user.role || "Student"}
               </p>
             </div>
           </div>
@@ -134,7 +219,7 @@ export default function Dashboard() {
             <CheckCircle className="w-4 h-4 mr-1" />
             Active Student
           </Badge>
-          {(ADMIN_ROLES as readonly string[]).includes(user.role) && (
+          {(ADMIN_ROLES as readonly string[]).includes(user.role || "") && (
             <Button asChild variant="outline" size="sm" className="ml-4">
               <Link href="/admin" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -155,7 +240,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-chart-1">
-                {user.points}
+                {user.points || 0}
               </div>
               <p className="text-xs text-muted-foreground">
                 Start earning points!
@@ -171,10 +256,40 @@ export default function Dashboard() {
               <Target className="h-4 w-4 text-chart-2" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-chart-2">0 days</div>
-              <p className="text-xs text-muted-foreground">
-                Start your streak!
+              <div className="text-2xl font-bold text-chart-2">
+                {user.currentStreak || 0} days
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                {user.currentStreak && user.currentStreak > 0
+                  ? `Keep it up! Longest: ${user.longestStreak || 0} days`
+                  : "Start your streak!"}
               </p>
+              {!user.hasCheckedInToday && (
+                <Button
+                  onClick={handleCheckIn}
+                  disabled={checkingIn}
+                  size="sm"
+                  className="w-full"
+                >
+                  {checkingIn ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Checking in...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Check in for today
+                    </>
+                  )}
+                </Button>
+              )}
+              {user.hasCheckedInToday && (
+                <div className="flex items-center justify-center text-green-600 text-sm">
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Checked in today!
+                </div>
+              )}
             </CardContent>
           </Card>
 
