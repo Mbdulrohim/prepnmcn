@@ -31,6 +31,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Users,
   Search,
   Filter,
@@ -74,6 +82,9 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -156,6 +167,34 @@ export default function UsersPage() {
     setSelectedStatus("all");
   };
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/admin/users/${userToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        // Refresh the users list
+        fetchUsers();
+        setDeleteDialogOpen(false);
+        setUserToDelete(null);
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to delete user");
+      }
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      toast.error("Failed to delete user");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleUserAction = async (action: string, userId: string) => {
     if (action === "Promote to Admin") {
       try {
@@ -216,6 +255,12 @@ export default function UsersPage() {
       } catch (error) {
         console.error("Failed to promote user:", error);
         toast.error("Failed to promote user");
+      }
+    } else if (action === "Delete User") {
+      const user = users.find((u) => u.id === userId);
+      if (user) {
+        setUserToDelete(user);
+        setDeleteDialogOpen(true);
       }
     } else {
       // Placeholder for other actions
@@ -618,6 +663,37 @@ export default function UsersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete{" "}
+              <strong>{userToDelete?.name}</strong> ({userToDelete?.email})?
+              This action cannot be undone and will permanently remove the user
+              and all their data.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

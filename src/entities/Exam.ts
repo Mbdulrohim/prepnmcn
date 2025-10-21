@@ -98,7 +98,7 @@ export class Exam {
   status!: ExamStatus;
 
   @Column({ type: "timestamp", nullable: true })
-  scheduledAt!: Date;
+  scheduledAt?: Date;
 
   @Column({ type: "boolean", default: true })
   isActive!: boolean;

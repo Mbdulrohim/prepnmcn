@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
           ...data,
           type: examType,
           institutionId: data.institutionId || null,
+          scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
         });
         break;
       default:

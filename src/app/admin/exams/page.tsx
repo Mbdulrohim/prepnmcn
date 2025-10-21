@@ -84,6 +84,7 @@ interface Exam {
   passingScore?: number;
   price?: number;
   currency?: string;
+  scheduledAt?: string;
 }
 
 export default function ExamsAdminPage() {
@@ -123,6 +124,7 @@ export default function ExamsAdminPage() {
     currency: "NGN",
     institutionId: "",
     status: "draft" as "draft" | "published" | "archived",
+    scheduledAt: "",
   });
   const [institutions, setInstitutions] = useState<any[]>([]);
 
@@ -139,6 +141,7 @@ export default function ExamsAdminPage() {
       currency: "NGN",
       institutionId: "",
       status: "draft",
+      scheduledAt: "",
     });
     setEditingExam(null);
   };
@@ -197,6 +200,7 @@ export default function ExamsAdminPage() {
           currency: createForm.currency,
           institutionId: createForm.institutionId,
           status: createForm.status,
+          scheduledAt: createForm.scheduledAt || null,
         }),
       });
 
@@ -215,6 +219,7 @@ export default function ExamsAdminPage() {
           currency: "NGN",
           institutionId: "",
           status: "draft",
+          scheduledAt: "",
         });
         fetchExams();
         toast.success("Exam created successfully!");
@@ -249,6 +254,9 @@ export default function ExamsAdminPage() {
       currency: exam.currency || "NGN",
       institutionId: exam.institutionId || "",
       status: exam.status,
+      scheduledAt: exam.scheduledAt
+        ? new Date(exam.scheduledAt).toISOString().slice(0, 16)
+        : "",
     });
     setShowCreateModal(true);
   };
@@ -625,6 +633,25 @@ export default function ExamsAdminPage() {
                     <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="scheduledAt" className="text-right">
+                  Scheduled Date{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
+                <Input
+                  id="scheduledAt"
+                  type="datetime-local"
+                  value={createForm.scheduledAt}
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      scheduledAt: e.target.value,
+                    })
+                  }
+                  className="col-span-3"
+                  disabled={creatingExam || updatingExam}
+                />
               </div>
             </div>
             <DialogFooter>

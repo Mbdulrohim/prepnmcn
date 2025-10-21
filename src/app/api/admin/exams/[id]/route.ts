@@ -52,6 +52,12 @@ export async function PUT(
           ? data.institutionId
           : existingExam.institutionId,
       status: data.status !== undefined ? data.status : existingExam.status,
+      scheduledAt:
+        data.scheduledAt !== undefined
+          ? data.scheduledAt
+            ? new Date(data.scheduledAt)
+            : undefined
+          : existingExam.scheduledAt,
       updatedAt: new Date(),
     });
 
