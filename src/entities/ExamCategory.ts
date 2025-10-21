@@ -1,45 +1,49 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import { Exam } from "./Exam";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from "typeorm";
+import { ExamPathway } from "./ExamPathway";
 
 export enum ExamCategoryType {
-  JAMB = "jamb",
-  WAEC = "waec",
-  NECO = "neco",
-  POST_UTME = "post_utme",
-  OTHER = "other",
+  PATHWAYS = "pathways",
+  RESEARCH = "research",
+  OLEVEL_JAMB = "olevel_jamb",
+  CONSULTATION = "consultation",
+  FUTURE_SERVICES = "future_services",
 }
 
 @Entity("exam_categories")
 export class ExamCategory {
   @PrimaryGeneratedColumn("uuid")
-  id: string;
+  id!: string;
 
   @Column({ type: "varchar", length: 100 })
-  name: string;
-
-  @Column({ type: "text", nullable: true })
-  description: string;
+  name!: string;
 
   @Column({
     type: "enum",
     enum: ExamCategoryType,
-    default: ExamCategoryType.OTHER,
   })
-  type: ExamCategoryType;
+  type!: ExamCategoryType;
+
+  @Column({ type: "text", nullable: true })
+  description!: string;
 
   @Column({ type: "boolean", default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
-  createdAt: Date;
+  @OneToMany("ExamPathway", "category")
+  pathways!: ExamPathway[];
 
-  @Column({
-    type: "timestamp",
-    default: () => "CURRENT_TIMESTAMP",
-    onUpdate: "CURRENT_TIMESTAMP",
-  })
-  updatedAt: Date;
+  @CreateDateColumn()
+  createdAt!: Date;
 
-  @OneToMany(() => Exam, (exam) => exam.category)
-  exams: Exam[];
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

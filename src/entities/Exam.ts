@@ -2,14 +2,17 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  CreateDateColumn,
+  UpdateDateColumn,
   ManyToOne,
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import { ExamCategory } from "./ExamCategory";
-import { ExamAttempt } from "./ExamAttempt";
-import { ExamEnrollment } from "./ExamEnrollment";
+import { Institution } from "./Institution";
 import { Question } from "./Question";
+import { ExamAttempt } from "./ExamAttempt";
+import { ExamPackage } from "./ExamPackage";
+import { ExamEnrollment } from "./ExamEnrollment";
 
 export enum ExamStatus {
   DRAFT = "draft",
@@ -18,9 +21,13 @@ export enum ExamStatus {
 }
 
 export enum ExamType {
-  MOCK = "mock",
+  QUIZ = "quiz",
+  MIDTERM = "midterm",
+  FINAL = "final",
   PRACTICE = "practice",
-  OFFICIAL = "official",
+  CERTIFICATION = "certification",
+  LICENSING = "licensing",
+  PROFESSIONAL = "professional",
 }
 
 @Entity("exams")
@@ -28,20 +35,60 @@ export class Exam {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ type: "varchar", length: 200 })
-  title!: string;
+  @Column({ type: "varchar", length: 255, nullable: true })
+  title?: string;
 
   @Column({ type: "text", nullable: true })
   description!: string;
 
-  @Column({ type: "int" })
-  duration!: number; // in minutes
+  @Column({ type: "varchar", length: 100, nullable: true })
+  subject?: string;
 
-  @Column({ type: "int" })
-  totalQuestions!: number;
+  @Column({
+    type: "enum",
+    enum: ExamType,
+    default: ExamType.QUIZ,
+  })
+  type!: ExamType;
 
-  @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
-  passingScore!: number; // percentage
+  @Column({ type: "int", nullable: true })
+  duration?: number; // Duration in minutes
+
+  @Column({ type: "int", nullable: true })
+  totalMarks?: number;
+
+  @Column({ type: "int", default: 0 })
+  passingMarks!: number;
+
+  @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
+  price?: number;
+
+  @Column({ type: "varchar", length: 10, default: "NGN" })
+  currency!: string;
+
+  @Column({ type: "json", nullable: true })
+  questions!: Array<{
+    id: string;
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    marks: number;
+    explanation?: string;
+  }>;
+
+  @Column("uuid", { nullable: true })
+  institutionId?: string;
+
+  @ManyToOne("Institution", { nullable: true })
+  @JoinColumn({ name: "institutionId" })
+  institution?: Institution;
+
+  @Column("uuid", { nullable: true })
+  packageId!: string;
+
+  @ManyToOne("ExamPackage")
+  @JoinColumn({ name: "packageId" })
+  package!: ExamPackage;
 
   @Column({
     type: "enum",
@@ -50,55 +97,24 @@ export class Exam {
   })
   status!: ExamStatus;
 
-  @Column({
-    type: "enum",
-    enum: ExamType,
-    default: ExamType.PRACTICE,
-  })
-  type!: ExamType;
-
-  @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
-  price!: number;
-
-  @Column({ type: "varchar", length: 3, default: "NGN" })
-  currency!: string;
-
   @Column({ type: "timestamp", nullable: true })
   scheduledAt!: Date;
-
-  @Column({ type: "timestamp", nullable: true })
-  startTime!: Date;
-
-  @Column({ type: "timestamp", nullable: true })
-  endTime!: Date;
 
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
-  createdAt!: Date;
+  @OneToMany("Question", "exam")
+  examQuestions!: Question[];
 
-  @Column({
-    type: "timestamp",
-    default: () => "CURRENT_TIMESTAMP",
-    onUpdate: "CURRENT_TIMESTAMP",
-  })
-  updatedAt!: Date;
-
-  // Relationships
-  @ManyToOne(() => ExamCategory, (category) => category.exams)
-  @JoinColumn({ name: "categoryId" })
-  category!: ExamCategory;
-
-  @Column({ type: "uuid" })
-  categoryId!: string;
-
-  @OneToMany(() => ExamAttempt, (attempt) => attempt.exam)
+  @OneToMany("ExamAttempt", "exam")
   attempts!: ExamAttempt[];
 
-  @OneToMany(() => ExamEnrollment, (enrollment) => enrollment.exam)
+  @OneToMany("ExamEnrollment", "exam")
   enrollments!: ExamEnrollment[];
 
-  @OneToMany(() => Question, (question) => question.exam)
-  questions!: Question[];
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

@@ -13,13 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PrepDynamicText from "@/components/PrepDynamicText";
 import ParticleButton from "@/components/kokonutui/particle-button";
-import {
-  Facebook,
-  Instagram,
-  Linkedin,
-  Mail,
-  Twitter,
-} from "lucide-react";
+import { Facebook, Instagram, Linkedin, Mail, Twitter } from "lucide-react";
 
 export default function Home() {
   const recentUpdates = [
@@ -143,7 +137,10 @@ export default function Home() {
           <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-[1.05fr_0.95fr] items-center">
             <div className="space-y-10 text-center lg:text-left">
               <div className="space-y-4">
-                <Badge variant="outline" className="inline-flex text-primary border-primary/30">
+                <Badge
+                  variant="outline"
+                  className="inline-flex text-primary border-primary/30"
+                >
                   Built for ambitious exam takers
                 </Badge>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground">
@@ -151,11 +148,13 @@ export default function Home() {
                   <span className="text-primary"> O'Prep</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0">
-                  Structure your prep, stay accountable with peers, and get personalised guidance—across nursing, medical, legal, and more professional exams.
+                  Structure your prep, stay accountable with peers, and get
+                  personalised guidance—across nursing, medical, legal, and more
+                  professional exams.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link href="/auth/signin">
+                <Link href="/exams">
                   <ParticleButton
                     size="lg"
                     className="bg-primary hover:bg-primary/90 h-12 px-6 text-base"
@@ -175,15 +174,21 @@ export default function Home() {
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:gap-8 gap-3 text-sm text-muted-foreground">
                 <div className="flex items-center justify-center lg:justify-start gap-2">
-                  <Badge variant="secondary" className="px-3 py-1 text-xs">30+</Badge>
+                  <Badge variant="secondary" className="px-3 py-1 text-xs">
+                    30+
+                  </Badge>
                   Partner universities onboarded
                 </div>
                 <div className="flex items-center justify-center lg:justify-start gap-2">
-                  <Badge variant="secondary" className="px-3 py-1 text-xs">12k+</Badge>
+                  <Badge variant="secondary" className="px-3 py-1 text-xs">
+                    12k+
+                  </Badge>
                   Learners planning smarter
                 </div>
                 <div className="flex items-center justify-center lg:justify-start gap-2">
-                  <Badge variant="secondary" className="px-3 py-1 text-xs">8-step</Badge>
+                  <Badge variant="secondary" className="px-3 py-1 text-xs">
+                    8-step
+                  </Badge>
                   Proven O'Prep methodology
                 </div>
               </div>
@@ -193,7 +198,9 @@ export default function Home() {
               <Card className="relative border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-2xl">Learner momentum</CardTitle>
-                  <CardDescription>Snapshots from across the O'Prep network.</CardDescription>
+                  <CardDescription>
+                    Snapshots from across the O'Prep network.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border bg-muted/40 px-4 py-4">
@@ -201,12 +208,17 @@ export default function Home() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Active streaks
                       </p>
-                      <p className="text-2xl font-semibold text-primary">1,247 learners</p>
+                      <p className="text-2xl font-semibold text-primary">
+                        1,247 learners
+                      </p>
                     </div>
-                    <Badge className="bg-primary/10 text-primary w-fit">+18% this week</Badge>
+                    <Badge className="bg-primary/10 text-primary w-fit">
+                      +18% this week
+                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Students from 30+ universities build plans, stay accountable, and share wins together every week.
+                    Students from 30+ universities build plans, stay
+                    accountable, and share wins together every week.
                   </p>
                 </CardContent>
               </Card>
@@ -222,17 +234,22 @@ export default function Home() {
               About O'Prep
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              We exist to help every Nigerian professional exam student thrive from admission to certification.
+              We exist to help every Nigerian professional exam student thrive
+              from admission to certification.
             </h2>
             <p className="text-lg text-muted-foreground">
-              Built by a team of educators, clinicians, and product thinkers, O'Prep fuses evidence-backed study systems with intuitive technology. We prioritise accountability, collaboration, and support so learners can focus on the work that matters.
+              Built by a team of educators, clinicians, and product thinkers,
+              O'Prep fuses evidence-backed study systems with intuitive
+              technology. We prioritise accountability, collaboration, and
+              support so learners can focus on the work that matters.
             </p>
             <div className="grid gap-6 sm:grid-cols-2">
               <Card className="border-primary/20">
                 <CardContent className="pt-6 space-y-3">
                   <Badge>Mission</Badge>
                   <p className="text-muted-foreground">
-                    Deliver accessible, high-impact learning experiences that raise professional standards across African healthcare.
+                    Deliver accessible, high-impact learning experiences that
+                    raise professional standards across African healthcare.
                   </p>
                 </CardContent>
               </Card>
@@ -240,7 +257,8 @@ export default function Home() {
                 <CardContent className="pt-6 space-y-3">
                   <Badge variant="outline">Vision</Badge>
                   <p className="text-muted-foreground">
-                    A continental network where every student has clarity, confidence, and community on their exam journey.
+                    A continental network where every student has clarity,
+                    confidence, and community on their exam journey.
                   </p>
                 </CardContent>
               </Card>
@@ -249,11 +267,16 @@ export default function Home() {
           <Card className="border-primary/20 flex flex-col justify-between">
             <CardHeader>
               <CardTitle>O'Prep methodology</CardTitle>
-              <CardDescription>The 8-step framework guiding every learning path.</CardDescription>
+              <CardDescription>
+                The 8-step framework guiding every learning path.
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
               {"PREPMNC".split("").map((letter, index) => (
-                <Card key={`${letter}-${index}`} className="text-center border-dashed">
+                <Card
+                  key={`${letter}-${index}`}
+                  className="text-center border-dashed"
+                >
                   <CardContent className="pt-6 pb-4 space-y-2">
                     <Badge className="mx-auto w-12 h-12 rounded-full text-lg font-bold flex items-center justify-center">
                       {letter}
@@ -272,7 +295,8 @@ export default function Home() {
             </CardContent>
             <CardFooter className="pt-0">
               <p className="text-sm text-muted-foreground">
-                Each step powers adaptive plans, real-time insights, and coaching moments inside the app.
+                Each step powers adaptive plans, real-time insights, and
+                coaching moments inside the app.
               </p>
             </CardFooter>
           </Card>
@@ -325,7 +349,9 @@ export default function Home() {
               A complete prep command centre in one login.
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Every module aligns with the realities of professional programs—tight schedules, multiple exams, and the need for collaborative accountability.
+              Every module aligns with the realities of professional
+              programs—tight schedules, multiple exams, and the need for
+              collaborative accountability.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -364,7 +390,9 @@ export default function Home() {
                   </p>
                   <div>
                     <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {testimonial.role}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -421,9 +449,12 @@ export default function Home() {
               <Badge variant="secondary" className="w-fit">
                 Join the movement
               </Badge>
-              <CardTitle className="text-3xl">Stay plugged into O'Prep</CardTitle>
+              <CardTitle className="text-3xl">
+                Stay plugged into O'Prep
+              </CardTitle>
               <CardDescription>
-                Be the first to access the resource library, exam AI assistant, and cross-campus study forums launching soon.
+                Be the first to access the resource library, exam AI assistant,
+                and cross-campus study forums launching soon.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -448,26 +479,30 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="text-2xl">What’s coming next</CardTitle>
               <CardDescription>
-                Our roadmap focuses on connection, motivation, and recognition for consistent learners.
+                Our roadmap focuses on connection, motivation, and recognition
+                for consistent learners.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
                 <p className="font-semibold">Progress tracker dashboards</p>
                 <p className="text-sm text-muted-foreground">
-                  Monitor completion rates, daily streaks, and days left till exams at a glance.
+                  Monitor completion rates, daily streaks, and days left till
+                  exams at a glance.
                 </p>
               </div>
               <div className="space-y-2">
                 <p className="font-semibold">University communities</p>
                 <p className="text-sm text-muted-foreground">
-                  Dedicated forums for each partner campus to collaborate and host revision sprints.
+                  Dedicated forums for each partner campus to collaborate and
+                  host revision sprints.
                 </p>
               </div>
               <div className="space-y-2">
                 <p className="font-semibold">Study buddies & certification</p>
                 <p className="text-sm text-muted-foreground">
-                  Pair up for accountability and download certificates once your plan is completed.
+                  Pair up for accountability and download certificates once your
+                  plan is completed.
                 </p>
               </div>
             </CardContent>
@@ -481,7 +516,8 @@ export default function Home() {
             <div className="space-y-2">
               <h3 className="text-2xl font-bold text-foreground">O'Prep</h3>
               <p className="text-sm text-muted-foreground max-w-md">
-                Empowering Nigeria's exam prep community with structure, support, and smart technology.
+                Empowering Nigeria's exam prep community with structure,
+                support, and smart technology.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -504,10 +540,16 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm">
             <p>© {new Date().getFullYear()} O'Prep. All rights reserved.</p>
             <div className="flex flex-wrap gap-4">
-              <Link href="/terms" className="hover:text-primary transition-colors">
+              <Link
+                href="/terms"
+                className="hover:text-primary transition-colors"
+              >
                 Terms of Service
               </Link>
-              <Link href="/privacy" className="hover:text-primary transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-primary transition-colors"
+              >
                 Privacy Policy
               </Link>
               <Link

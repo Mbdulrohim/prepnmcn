@@ -40,37 +40,56 @@ interface User {
   points: number;
 }
 
+interface ExamEnrollment {
+  id: string;
+  examId: string;
+  status: string;
+  paymentStatus: string;
+  enrolledAt: string;
+  exam: {
+    id: string;
+    title: string;
+    subject: string;
+    type: string;
+    duration: number;
+    totalQuestions: number;
+  };
+}
+
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [examEnrollments, setExamEnrollments] = useState<ExamEnrollment[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/user/me")
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          router.push("/auth/signin");
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const [userResponse, enrollmentsResponse] = await Promise.all([
+        fetch("/api/user/me"),
+        fetch("/api/exams/enrollments"),
+      ]);
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setUser(userData);
+      }
+
+      if (enrollmentsResponse.ok) {
+        const enrollmentsData = await enrollmentsResponse.json();
+        if (enrollmentsData.success) {
+          setExamEnrollments(enrollmentsData.data);
         }
-      })
-      .then((data) => {
-        if (data?.user) {
-          // Check if user has an institution
-          if (!data.user.institution || data.user.institution === "N/A") {
-            router.push("/institution/select");
-            return;
-          }
-          setUser(data.user);
-        }
-      })
-      .catch(() => {
-        router.push("/auth/signin");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [router]);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -186,8 +205,9 @@ export default function Dashboard() {
 
         {/* Main Dashboard Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="exams">My Exams</TabsTrigger>
             <TabsTrigger value="study">Study Plan</TabsTrigger>
             <TabsTrigger value="progress">Progress</TabsTrigger>
             <TabsTrigger value="achievements">Achievements</TabsTrigger>
@@ -249,6 +269,110 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="exams" className="space-y-6">
+            {examEnrollments.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {examEnrollments.map((enrollment) => (
+                  <Card
+                    key={enrollment.id}
+                    className="hover:shadow-md transition-shadow"
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg line-clamp-2">
+                            {enrollment.exam.title}
+                          </CardTitle>
+                          <CardDescription className="mt-1">
+                            {enrollment.exam.subject} • {enrollment.exam.type}
+                          </CardDescription>
+                        </div>
+                        <Badge
+                          variant={
+                            enrollment.status === "completed"
+                              ? "default"
+                              : enrollment.status === "in_progress"
+                              ? "secondary"
+                              : "outline"
+                          }
+                        >
+                          {enrollment.status.replace("_", " ")}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {enrollment.exam.duration} min
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <BookOpen className="h-4 w-4" />
+                              {enrollment.exam.totalQuestions} questions
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-muted-foreground">
+                            Enrolled{" "}
+                            {new Date(
+                              enrollment.enrolledAt
+                            ).toLocaleDateString()}
+                          </div>
+                          <Button size="sm" asChild>
+                            <Link href={`/exams/${enrollment.exam.id}/take`}>
+                              {enrollment.status === "completed" ? (
+                                <>
+                                  <CheckCircle className="mr-2 h-3 w-3" />
+                                  View Results
+                                </>
+                              ) : (
+                                <>
+                                  <BookOpen className="mr-2 h-3 w-3" />
+                                  Take Exam
+                                </>
+                              )}
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    My Exams
+                  </CardTitle>
+                  <CardDescription>
+                    View your enrolled exams and track your progress
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">
+                      No exams enrolled yet
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Browse available exams and enroll to start testing your
+                      knowledge.
+                    </p>
+                    <Button asChild>
+                      <Link href="/exams">Browse Exams</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="study" className="space-y-6">

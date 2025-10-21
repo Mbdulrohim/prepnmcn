@@ -6,6 +6,15 @@ import { Institution } from "./src/entities/Institution";
 import { Resource } from "./src/entities/Resource";
 import { Payment } from "./src/entities/Payment";
 import { AutomationRule } from "./src/entities/AutomationRule";
+import { Question } from "./src/entities/Question";
+import { Exam } from "./src/entities/Exam";
+import { ExamAttempt } from "./src/entities/ExamAttempt";
+import { Challenge } from "./src/entities/Challenge";
+import { AccessCode } from "./src/entities/AccessCode";
+import { UserEnrollment } from "./src/entities/UserEnrollment";
+import { ExamCategory } from "./src/entities/ExamCategory";
+import { ExamPathway } from "./src/entities/ExamPathway";
+import { ExamPackage } from "./src/entities/ExamPackage";
 
 export default new DataSource({
   type: "postgres",
@@ -20,5 +29,14 @@ export default new DataSource({
     Resource,
     Payment,
     AutomationRule,
+    Question,
+    Exam,
+    ExamAttempt,
+    Challenge,
+    AccessCode,
+    UserEnrollment,
+    ExamCategory,
+    ExamPathway,
+    ExamPackage,
   ],
 });

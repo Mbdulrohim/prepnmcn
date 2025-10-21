@@ -21,7 +21,10 @@ export async function GET() {
       order: { createdAt: "DESC" },
     });
 
-    return NextResponse.json(institutions);
+    return NextResponse.json({
+      success: true,
+      data: institutions,
+    });
   } catch (error) {
     console.error("Error fetching institutions:", error);
     return NextResponse.json(
