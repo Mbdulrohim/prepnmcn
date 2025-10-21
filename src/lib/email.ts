@@ -78,10 +78,16 @@ async function sendEmailViaSMTP(options: {
     // prefer explicit text if provided, otherwise generate a simple plain-text fallback
     const plainText =
       options.text ||
-      (options.html ? options.html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() : "");
+      (options.html
+        ? options.html
+            .replace(/<[^>]*>/g, "")
+            .replace(/\s+/g, " ")
+            .trim()
+        : "");
 
     const mailOptions: any = {
-      from: options.from || process.env.SMTP_FROM_EMAIL || "noreply@prepnmcn.com",
+      from:
+        options.from || process.env.SMTP_FROM_EMAIL || "noreply@prepnmcn.com",
       to: options.to,
       subject: options.subject,
       html: options.html,
@@ -290,7 +296,10 @@ export async function sendVerificationEmail(email: string, code: string) {
       </html>
     `;
 
-    const textBody = htmlBody.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+    const textBody = htmlBody
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
 
     return await queueEmail({
       to: email,

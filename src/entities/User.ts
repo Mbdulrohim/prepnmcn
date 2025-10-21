@@ -5,9 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from "typeorm";
 import { Institution } from "./Institution";
+import { UserEnrollment } from "./UserEnrollment";
+import { ExamAttempt } from "./ExamAttempt";
 import { USER_ROLES, UserRole } from "@/lib/roles";
 import type { UserRole as UserRoleType } from "@/lib/roles";
 
@@ -76,6 +79,15 @@ export class User {
     pushNotifications: boolean;
     reminderFrequency: "daily" | "weekly" | "custom";
   } | null;
+
+  @Column({ type: "boolean", default: true })
+  isActive!: boolean;
+
+  @OneToMany("UserEnrollment", "user")
+  enrollments!: UserEnrollment[];
+
+  @OneToMany("ExamAttempt", "user")
+  examAttempts!: ExamAttempt[];
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -29,10 +29,96 @@ ADDITIONAL FEATURES TO BE ADDED TO PREPNMCN.COM
 
 13. Add a certificate of completion feature that students can download or share when they complete their study plan.
 
-14. Add a feedback widget that is always visible on the dashboard so students can drop quick feedback anytime.
+14. ✅ Add a feedback widget that is always visible on the dashboard so students can drop quick feedback anytime.
 
 15. Add a pop-up or sidebar for weekly motivational messages / study reminders.
 
-16. Set up email notification system for key reminders (e.g. day 1, day 10, day 30) and deadlines.
+16. ✅ Set up email notification system for key reminders (e.g. day 1, day 10, day 30) and deadlines.
 
 17. Add engagement analytics to the admin dashboard to show which modules are most/least completed and average completion rates per university.
+
+
+basic exams:
+
+_MAIN SECTIONS:_
+
+1. _PATHWAYS_
+    - _RN PATHWAY_
+        - WEEKLY ASSESSMENTS
+        - MONTHLY ASSESSMENTS
+        - MOCK EXAMS
+            - PAPER 1
+            - PAPER 2
+        - _PAYMENT:_ ₦1,500/MONTH
+    - _RM PATHWAY_
+        - WEEKLY ASSESSMENTS
+        - MONTHLY ASSESSMENTS
+        - MOCK EXAMS
+            - PAPER 1
+            - PAPER 2
+        - _PAYMENT:_ ₦1,500/MONTH
+    - _RPHN PATHWAY_
+        - WEEKLY ASSESSMENTS
+        - MONTHLY ASSESSMENTS
+        - MOCK EXAMS
+            - PAPER 1
+            - PAPER 2
+        - _PAYMENT:_ ₦1,500/MONTH
+    - _NCLEX PATHWAY_
+        - MONTHLY SUBSCRIPTION: ₦20,000
+        - UNLIMITED ACCESS TO RECENT UPDATED QUESTIONS
+    - _ONLINE DISTANCE LEARNING (DIRECT ENTRY)_
+        - WEEKLY ASSESSMENTS
+        - MONTHLY ASSESSMENTS
+        - MOCK EXAMS
+        - _PAYMENT:_ ₦2,000/MONTH
+    - _SPECIALTY/POST BASIC PATHWAY_
+        - WEEKLY ASSESSMENTS
+        - MONTHLY ASSESSMENTS
+        - MOCK EXAMS
+        - _PAYMENT:_ ₦2,000/MONTH
+    - _UNDERGRADUATE SECTION_
+        - 100 LEVEL
+            - WEEKLY ASSESSMENTS
+            - MONTHLY ASSESSMENTS
+            - MOCK EXAMS
+            - _PAYMENT:_ ₦1,000/MONTH
+        - 200 LEVEL
+            - WEEKLY ASSESSMENTS
+            - MONTHLY ASSESSMENTS
+            - MOCK EXAMS
+            - _PAYMENT:_ ₦1,000/MONTH
+        - 300 LEVEL
+            - WEEKLY ASSESSMENTS
+            - MONTHLY ASSESSMENTS
+            - MOCK EXAMS
+            - _PAYMENT:_ ₦1,000/MONTH
+
+2. _RESEARCH_
+    - _UNDERGRADUATE RESEARCH_
+        - FULL PACKAGE (CHAPTERS 1-5): ₦40,000
+        - PARTIAL PACKAGE (CHAPTERS 1-3): ₦20,000
+    - _POSTGRADUATE RESEARCH_
+        - THESIS/DISSERTATION: FLEXIBLE PAYMENT (NEGOTIABLE)
+        - PUBLICATION AND MANUSCRIPT: FLEXIBLE PAYMENT (NEGOTIABLE)
+
+3. _O'LEVEL AND JAMB_
+    - _O'LEVEL (WAEC & NECO)_
+        - WEEKLY ASSESSMENTS
+        - MONTHLY ASSESSMENTS
+        - MOCK EXAMS
+        - ONE-TEXAMINATION: ₦40,000
+        - INSTALLMENT PAYMENT (2X): ₦20,000 X 2
+    - _JAMB_
+        - WEEKLY ASSESSMENTS
+        - MONTHLY ASSESSMENTS
+        - MOCK EXAMS
+        - ONE-TIME PAYMENT: ₦30,000
+        - INSTALLMENT PAYMENT (2X): ₦15,000 X 2
+
+4. _RESEARCH CONSULTATION SESSION_
+    - FLEXIBLE PAYMENT (NEGOTIABLE)
+
+5. _FUTURE SERVICES_
+    - _COMING SOON_
+        - NEW SERVICES AND FEATURES COMING SOON. STAY TUNED!

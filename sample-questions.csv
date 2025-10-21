@@ -1,0 +1,5 @@
+question,type,options,correct_answer,explanation,points,order
+"What is the capital of France?",multiple_choice,"[""Paris"",""London"",""Berlin"",""Madrid""]","Paris","Paris is the capital and most populous city of France.",1,1
+"The Earth is round. True or False?",true_false,,"true","Scientific evidence confirms the Earth is an oblate spheroid.",1,2
+"Explain the process of photosynthesis.",essay,,,"Photosynthesis is the process by which plants convert light energy into chemical energy.",5,3
+"What is 2 + 2?",short_answer,,"4","Basic arithmetic operation.",1,4
