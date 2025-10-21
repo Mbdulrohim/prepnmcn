@@ -103,10 +103,16 @@ export default function InstitutionsManager() {
   const fetchInstitutions = async () => {
     try {
       const res = await fetch("/api/admin/institutions");
-      const data = await res.json();
-      setInstitutions(data);
+      const response = await res.json();
+      if (response.success && Array.isArray(response.data)) {
+        setInstitutions(response.data);
+      } else {
+        console.error("Invalid response format:", response);
+        setInstitutions([]);
+      }
     } catch (error) {
       console.error("Error fetching institutions:", error);
+      setInstitutions([]);
     } finally {
       setIsLoading(false);
     }

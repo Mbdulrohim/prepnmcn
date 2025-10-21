@@ -9,62 +9,61 @@ export async function GET() {
   try {
     const dataSource = await getDataSource();
 
-    // Fetch all exams with their related data
-    const exams = await dataSource.getRepository(Exam).find({
-      relations: ["institution", "package", "examQuestions"],
+    // Fetch exam categories with their pathways, packages, and exams
+    const categories = await dataSource.getRepository(ExamCategory).find({
       where: { isActive: true },
+      relations: [
+        "pathways",
+        "pathways.packages",
+        "pathways.packages.exams",
+        "pathways.packages.exams.examQuestions"
+      ],
       order: { createdAt: "DESC" },
     });
 
     // Transform the data to match the expected format
-    const transformedExams = exams.map((exam) => ({
-      id: exam.id,
-      title: exam.title,
-      subject: exam.subject,
-      level: exam.package?.name || "General", // Use package name as level
-      duration: exam.duration,
-      totalQuestions: exam.examQuestions?.length || exam.questions?.length || 0,
-      status: exam.status,
-      type: exam.type,
-      price: exam.price,
-      currency: exam.currency,
-      createdAt: exam.createdAt.toISOString().split("T")[0], // Format as YYYY-MM-DD
+    const transformedCategories = categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      type: category.type,
+      description: category.description,
+      isActive: category.isActive,
+      pathways: category.pathways?.map((pathway) => ({
+        id: pathway.id,
+        name: pathway.name,
+        type: pathway.type,
+        description: pathway.description,
+        isActive: pathway.isActive,
+        packages: pathway.packages?.map((pkg) => ({
+          id: pkg.id,
+          name: pkg.name,
+          description: pkg.description,
+          packageType: pkg.packageType,
+          frequency: pkg.frequency,
+          price: pkg.price,
+          currency: pkg.currency,
+          isActive: pkg.isActive,
+          exams: pkg.exams?.map((exam) => ({
+            id: exam.id,
+            title: exam.title,
+            subject: exam.subject,
+            type: exam.type,
+            duration: exam.duration,
+            totalMarks: exam.totalMarks,
+            passingMarks: exam.passingMarks,
+          })) || [],
+        })) || [],
+      })) || [],
     }));
-
-    // Calculate stats
-    const totalExams = transformedExams.length;
-    const publishedExams = transformedExams.filter(
-      (exam) => exam.status === "published"
-    ).length;
-    const draftExams = transformedExams.filter(
-      (exam) => exam.status === "draft"
-    ).length;
-    const avgDuration =
-      totalExams > 0
-        ? Math.round(
-            transformedExams.reduce(
-              (sum, exam) => sum + (exam.duration || 0),
-              0
-            ) / totalExams
-          )
-        : 0;
 
     return NextResponse.json({
       success: true,
-      data: {
-        exams: transformedExams,
-        stats: {
-          total: totalExams,
-          published: publishedExams,
-          draft: draftExams,
-          avgDuration: avgDuration,
-        },
-      },
+      data: transformedCategories,
     });
   } catch (error) {
-    console.error("Error fetching exams:", error);
+    console.error("Error fetching exam structure:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch exams" },
+      { success: false, error: "Failed to fetch exam structure" },
       { status: 500 }
     );
   }

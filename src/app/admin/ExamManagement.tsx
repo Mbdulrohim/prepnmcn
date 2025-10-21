@@ -81,13 +81,16 @@ export function ExamManagement() {
       const response = await fetch("/api/admin/exams");
       const result = await response.json();
 
-      if (result.success) {
+      if (result.success && Array.isArray(result.data)) {
         setCategories(result.data);
       } else {
+        console.error("Invalid response format:", result);
+        setCategories([]);
         toast.error("Failed to load exam structure");
       }
     } catch (error) {
       console.error("Error fetching exam structure:", error);
+      setCategories([]);
       toast.error("Failed to load exam structure");
     } finally {
       setIsLoading(false);
