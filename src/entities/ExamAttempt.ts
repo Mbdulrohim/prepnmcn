@@ -7,9 +7,9 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
-import { User } from "./User";
-import { Exam } from "./Exam";
-import { ExamEnrollment } from "./ExamEnrollment";
+import type { User } from "./User";
+import type { Exam } from "./Exam";
+import type { ExamEnrollment } from "./ExamEnrollment";
 
 @Entity("exam_attempts")
 export class ExamAttempt {

@@ -8,8 +8,8 @@ import {
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import { ExamCategory } from "./ExamCategory";
-import { ExamPackage } from "./ExamPackage";
+import type { ExamCategory } from "./ExamCategory";
+import type { ExamPackage } from "./ExamPackage";
 
 export enum ExamPathwayType {
   RN = "rn",

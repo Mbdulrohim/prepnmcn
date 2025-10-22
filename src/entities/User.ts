@@ -8,9 +8,9 @@ import {
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import { Institution } from "./Institution";
-import { UserEnrollment } from "./UserEnrollment";
-import { ExamAttempt } from "./ExamAttempt";
+import type { Institution } from "./Institution";
+import type { UserEnrollment } from "./UserEnrollment";
+import type { ExamAttempt } from "./ExamAttempt";
 import { USER_ROLES, UserRole } from "@/lib/roles";
 import type { UserRole as UserRoleType } from "@/lib/roles";
 
@@ -28,7 +28,7 @@ export class User {
   @Column({ type: "varchar", length: 255, nullable: true })
   password?: string;
 
-  @ManyToOne(() => Institution, { nullable: true })
+  @ManyToOne("Institution", { nullable: true })
   @JoinColumn({ name: "institutionId" })
   institution?: Institution;
 

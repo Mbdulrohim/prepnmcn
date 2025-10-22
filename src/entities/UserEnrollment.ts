@@ -7,8 +7,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
-import { User } from "./User";
-import { ExamPackage } from "./ExamPackage";
+import type { User } from "./User";
+import type { ExamPackage } from "./ExamPackage";
 
 export enum PaymentStatus {
   PENDING = "pending",

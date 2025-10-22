@@ -8,9 +8,9 @@ import {
   JoinColumn,
   OneToMany,
 } from "typeorm";
-import { User } from "./User";
-import { Exam } from "./Exam";
-import { ExamAttempt } from "./ExamAttempt";
+import type { User } from "./User";
+import type { Exam } from "./Exam";
+import type { ExamAttempt } from "./ExamAttempt";
 
 export enum EnrollmentStatus {
   ENROLLED = "enrolled",

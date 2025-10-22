@@ -8,10 +8,10 @@ import {
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import { ExamPathway } from "./ExamPathway";
-import { Exam } from "./Exam";
-import { UserEnrollment } from "./UserEnrollment";
-import { Challenge } from "./Challenge";
+import type { ExamPathway } from "./ExamPathway";
+import type { Exam } from "./Exam";
+import type { UserEnrollment } from "./UserEnrollment";
+import type { Challenge } from "./Challenge";
 
 export enum ExamPackageType {
   MONTHLY_SUBSCRIPTION = "monthly_subscription",

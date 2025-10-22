@@ -9,7 +9,7 @@ import {
   ManyToMany,
   JoinTable,
 } from "typeorm";
-import { ExamPackage } from "./ExamPackage";
+import type { ExamPackage } from "./ExamPackage";
 import { User } from "./User";
 import { Exam } from "./Exam";
 

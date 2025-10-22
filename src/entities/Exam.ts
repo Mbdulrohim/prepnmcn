@@ -8,11 +8,11 @@ import {
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import { Institution } from "./Institution";
-import { Question } from "./Question";
-import { ExamAttempt } from "./ExamAttempt";
-import { ExamPackage } from "./ExamPackage";
-import { ExamEnrollment } from "./ExamEnrollment";
+import type { Institution } from "./Institution";
+import type { Question } from "./Question";
+import type { ExamAttempt } from "./ExamAttempt";
+import type { ExamPackage } from "./ExamPackage";
+import type { ExamEnrollment } from "./ExamEnrollment";
 
 export enum ExamStatus {
   DRAFT = "draft",
