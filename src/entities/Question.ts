@@ -8,7 +8,7 @@ import {
   JoinColumn,
   OneToMany,
 } from "typeorm";
-import type { Exam } from "./Exam";
+import { Exam } from "./Exam";
 
 export enum QuestionType {
   MULTIPLE_CHOICE = "multiple_choice",

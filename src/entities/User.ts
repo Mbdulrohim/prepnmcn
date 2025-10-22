@@ -8,9 +8,9 @@ import {
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import type { Institution } from "./Institution";
-import type { UserEnrollment } from "./UserEnrollment";
-import type { ExamAttempt } from "./ExamAttempt";
+import { Institution } from "./Institution";
+import { UserEnrollment } from "./UserEnrollment";
+import { ExamAttempt } from "./ExamAttempt";
 import { USER_ROLES, UserRole } from "@/lib/roles";
 import type { UserRole as UserRoleType } from "@/lib/roles";
 

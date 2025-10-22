@@ -8,7 +8,7 @@ import {
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import type { ExamPathway } from "./ExamPathway";
+import { ExamPathway } from "./ExamPathway";
 
 export enum ExamCategoryType {
   PATHWAYS = "pathways",
