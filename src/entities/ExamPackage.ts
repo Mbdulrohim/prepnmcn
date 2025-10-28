@@ -74,14 +74,14 @@ export class ExamPackage {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany(() => require("./Exam").Exam, (exam: any) => exam.package)
-  exams!: any[];
+  @OneToMany("exams", "package")
+  exams!: Exam[];
 
-  @OneToMany(() => require("./UserEnrollment").UserEnrollment, (enrollment: any) => enrollment.package)
-  enrollments!: any[];
+  @OneToMany("user_enrollments", "package")
+  enrollments!: UserEnrollment[];
 
-  @OneToMany(() => require("./Challenge").Challenge, (challenge: any) => challenge.package)
-  challenges!: any[];
+  @OneToMany("challenges", "package")
+  challenges!: Challenge[];
 
   @CreateDateColumn()
   createdAt!: Date;

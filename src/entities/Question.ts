@@ -8,6 +8,7 @@ import {
   JoinColumn,
   OneToMany,
 } from "typeorm";
+import { Exam } from "./Exam";
 
 export enum QuestionType {
   MULTIPLE_CHOICE = "multiple_choice",
@@ -25,9 +26,9 @@ export class Question {
   @Column("uuid")
   examId!: string;
 
-  @ManyToOne(() => require("./Exam").Exam)
+  @ManyToOne(() => Exam)
   @JoinColumn({ name: "examId" })
-  exam!: any;
+  exam!: Exam;
 
   @Column({ type: "text" })
   question!: string;

@@ -38,8 +38,8 @@ export class ExamCategory {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany(() => require("./ExamPathway").ExamPathway, (pathway: any) => pathway.category)
-  pathways!: any[];
+  @OneToMany("exam_pathways", "category")
+  pathways!: ExamPathway[];
 
   @CreateDateColumn()
   createdAt!: Date;

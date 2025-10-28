@@ -53,8 +53,8 @@ export class ExamPathway {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany(() => require("./ExamPackage").ExamPackage, (pkg: any) => pkg.pathway)
-  packages!: any[];
+  @OneToMany("exam_packages", "pathway")
+  packages!: ExamPackage[];
 
   @CreateDateColumn()
   createdAt!: Date;

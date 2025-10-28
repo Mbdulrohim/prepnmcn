@@ -77,11 +77,8 @@ export class ExamEnrollment {
   @Column({ type: "int", default: 3 }) // Default max attempts
   maxAttempts!: number;
 
-  @OneToMany(
-    () => require("./ExamAttempt").ExamAttempt,
-    (attempt: any) => attempt.enrollment
-  )
-  attempts!: any[];
+  @OneToMany("exam_attempts", "enrollment")
+  attempts!: ExamAttempt[];
 
   @CreateDateColumn()
   createdAt!: Date;
