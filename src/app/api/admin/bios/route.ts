@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../../lib/auth";
-import { AppDataSource } from "../../../../lib/database";
-import { User } from "../../../../entities/User";
+import { getDataSource } from "../../../../lib/database";
+// import { User } from "../../../../entities/User";
 
 export const runtime = "nodejs";
 
@@ -14,9 +14,9 @@ export async function GET() {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
-  }
+  const { getDataSource } = await import("../../../../lib/database");
+  const AppDataSource = await getDataSource();
+  const { User } = await import("../../../../entities/User");
   const userRepo = AppDataSource.getRepository(User);
 
   const users = await userRepo.find({

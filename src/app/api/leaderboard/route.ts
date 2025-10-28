@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
-import { AppDataSource } from "../../../lib/database";
-import { User } from "../../../entities/User";
-import { Institution } from "../../../entities/Institution";
+import { getDataSource } from "../../../lib/database";
+// import { User } from "../../../entities/User";
+// import { Institution } from "../../../entities/Institution";
 
 export const runtime = "nodejs"; // Force Node.js runtime
 
 export async function GET() {
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
-  }
+  const { getDataSource } = await import("../../../lib/database");
+  const AppDataSource = await getDataSource();
+  const { User } = await import("../../../entities/User");
+  const { Institution } = await import("../../../entities/Institution");
 
   const userRepo = AppDataSource.getRepository(User);
 

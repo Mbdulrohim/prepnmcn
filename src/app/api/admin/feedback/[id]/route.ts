@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
-import { Feedback } from "@/entities/Feedback";
+// import { Feedback } from "@/entities/Feedback";
 
 export const runtime = "nodejs";
 
@@ -23,6 +23,7 @@ export async function PATCH(
     }
 
     const AppDataSource = await getDataSource();
+    const { Feedback } = await import("@/entities/Feedback");
     const feedbackRepo = AppDataSource.getRepository(Feedback);
 
     const feedback = await feedbackRepo.findOne({
@@ -64,6 +65,7 @@ export async function DELETE(
     const { id } = await params;
 
     const AppDataSource = await getDataSource();
+    const { Feedback } = await import("@/entities/Feedback");
     const feedbackRepo = AppDataSource.getRepository(Feedback);
 
     const feedback = await feedbackRepo.findOne({
