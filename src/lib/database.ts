@@ -37,5 +37,3 @@ export async function getDataSource(): Promise<DataSource> {
   await AppDataSource.initialize();
   return AppDataSource;
 }
-
-export { AppDataSource };

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
-import { Feedback } from "@/entities/Feedback";
-import { User } from "@/entities/User";
+// import { Feedback } from "@/entities/Feedback";
+// import { User } from "@/entities/User";
 import { sendFeedbackEmail } from "@/lib/email";
 
 export const runtime = "nodejs"; // Force Node.js runtime
@@ -31,6 +31,8 @@ export async function POST(
     }
 
     const AppDataSource = await getDataSource();
+    const { Feedback } = await import("@/entities/Feedback");
+    const { User } = await import("@/entities/User");
     const feedbackRepo = AppDataSource.getRepository(Feedback);
     const userRepo = AppDataSource.getRepository(User);
 
