@@ -9,10 +9,6 @@ import {
   JoinColumn,
 } from "typeorm";
 import { Institution } from "./Institution";
-import { Question } from "./Question";
-import { ExamAttempt } from "./ExamAttempt";
-import { ExamPackage } from "./ExamPackage";
-import { ExamEnrollment } from "./ExamEnrollment";
 
 export enum ExamStatus {
   DRAFT = "draft",
@@ -79,16 +75,16 @@ export class Exam {
   @Column("uuid", { nullable: true })
   institutionId?: string;
 
-  @ManyToOne("Institution", { nullable: true })
+  @ManyToOne(() => Institution, { nullable: true })
   @JoinColumn({ name: "institutionId" })
   institution?: Institution;
 
   @Column("uuid", { nullable: true })
   packageId!: string;
 
-  @ManyToOne("ExamPackage")
+  @ManyToOne(() => require("./ExamPackage").ExamPackage)
   @JoinColumn({ name: "packageId" })
-  package!: ExamPackage;
+  package!: any;
 
   @Column({
     type: "enum",
@@ -103,14 +99,8 @@ export class Exam {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany("Question", "exam")
-  examQuestions!: Question[];
-
-  @OneToMany("ExamAttempt", "exam")
-  attempts!: ExamAttempt[];
-
-  @OneToMany("ExamEnrollment", "exam")
-  enrollments!: ExamEnrollment[];
+  @OneToMany(() => require("./Question").Question, (question: any) => question.exam)
+  examQuestions!: any[];
 
   @CreateDateColumn()
   createdAt!: Date;

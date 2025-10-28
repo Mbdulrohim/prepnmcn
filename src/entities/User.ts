@@ -83,10 +83,10 @@ export class User {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany("UserEnrollment", "user")
+  @OneToMany(() => UserEnrollment, (userEnrollment) => userEnrollment.user)
   enrollments!: UserEnrollment[];
 
-  @OneToMany("ExamAttempt", "user")
+  @OneToMany(() => ExamAttempt, (examAttempt) => examAttempt.user)
   examAttempts!: ExamAttempt[];
 
   @CreateDateColumn()

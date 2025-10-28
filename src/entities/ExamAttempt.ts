@@ -19,21 +19,21 @@ export class ExamAttempt {
   @Column("uuid")
   userId!: string;
 
-  @ManyToOne("User")
+  @ManyToOne(() => User)
   @JoinColumn({ name: "userId" })
   user!: User;
 
   @Column("uuid")
   examId!: string;
 
-  @ManyToOne("Exam")
+  @ManyToOne(() => Exam)
   @JoinColumn({ name: "examId" })
   exam!: Exam;
 
   @Column("uuid", { nullable: true })
   enrollmentId?: string;
 
-  @ManyToOne("ExamEnrollment")
+  @ManyToOne(() => ExamEnrollment)
   @JoinColumn({ name: "enrollmentId" })
   enrollment?: ExamEnrollment;
 

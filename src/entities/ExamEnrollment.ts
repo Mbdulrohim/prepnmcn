@@ -34,14 +34,14 @@ export class ExamEnrollment {
   @Column("uuid")
   userId!: string;
 
-  @ManyToOne("User")
+  @ManyToOne(() => User)
   @JoinColumn({ name: "userId" })
   user!: User;
 
   @Column("uuid")
   examId!: string;
 
-  @ManyToOne("Exam")
+  @ManyToOne(() => Exam)
   @JoinColumn({ name: "examId" })
   exam!: Exam;
 
@@ -77,8 +77,11 @@ export class ExamEnrollment {
   @Column({ type: "int", default: 3 }) // Default max attempts
   maxAttempts!: number;
 
-  @OneToMany("ExamAttempt", "enrollment")
-  attempts!: ExamAttempt[];
+  @OneToMany(
+    () => require("./ExamAttempt").ExamAttempt,
+    (attempt: any) => attempt.enrollment
+  )
+  attempts!: any[];
 
   @CreateDateColumn()
   createdAt!: Date;

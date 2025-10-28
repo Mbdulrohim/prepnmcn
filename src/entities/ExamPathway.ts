@@ -46,15 +46,15 @@ export class ExamPathway {
   @Column("uuid")
   categoryId!: string;
 
-  @ManyToOne("ExamCategory")
+  @ManyToOne(() => ExamCategory)
   @JoinColumn({ name: "categoryId" })
   category!: ExamCategory;
 
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany("ExamPackage", "pathway")
-  packages!: ExamPackage[];
+  @OneToMany(() => require("./ExamPackage").ExamPackage, (pkg: any) => pkg.pathway)
+  packages!: any[];
 
   @CreateDateColumn()
   createdAt!: Date;

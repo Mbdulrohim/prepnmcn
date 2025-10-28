@@ -27,7 +27,7 @@ export class Challenge {
   @Column("uuid")
   packageId!: string;
 
-  @ManyToOne("ExamPackage")
+  @ManyToOne(() => ExamPackage)
   @JoinColumn({ name: "packageId" })
   package!: ExamPackage;
 

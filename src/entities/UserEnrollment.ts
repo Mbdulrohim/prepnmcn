@@ -25,14 +25,14 @@ export class UserEnrollment {
   @Column("uuid")
   userId!: string;
 
-  @ManyToOne("User")
+  @ManyToOne(() => User)
   @JoinColumn({ name: "userId" })
   user!: User;
 
   @Column("uuid")
   packageId!: string;
 
-  @ManyToOne("ExamPackage")
+  @ManyToOne(() => ExamPackage)
   @JoinColumn({ name: "packageId" })
   package!: ExamPackage;
 

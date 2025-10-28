@@ -44,7 +44,7 @@ export class ExamPackage {
   @Column("uuid")
   pathwayId!: string;
 
-  @ManyToOne("ExamPathway")
+  @ManyToOne(() => ExamPathway)
   @JoinColumn({ name: "pathwayId" })
   pathway!: ExamPathway;
 
@@ -74,14 +74,14 @@ export class ExamPackage {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany("Exam", "package")
-  exams!: Exam[];
+  @OneToMany(() => require("./Exam").Exam, (exam: any) => exam.package)
+  exams!: any[];
 
-  @OneToMany("UserEnrollment", "package")
-  enrollments!: UserEnrollment[];
+  @OneToMany(() => require("./UserEnrollment").UserEnrollment, (enrollment: any) => enrollment.package)
+  enrollments!: any[];
 
-  @OneToMany("Challenge", "package")
-  challenges!: Challenge[];
+  @OneToMany(() => require("./Challenge").Challenge, (challenge: any) => challenge.package)
+  challenges!: any[];
 
   @CreateDateColumn()
   createdAt!: Date;

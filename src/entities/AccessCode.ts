@@ -49,7 +49,7 @@ export class AccessCode {
   @Column("uuid", { nullable: true })
   createdBy?: string; // Admin user who created this code
 
-  @ManyToOne("User", { nullable: true })
+  @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: "createdBy" })
   creator?: User;
 
