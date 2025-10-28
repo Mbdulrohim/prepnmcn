@@ -38,6 +38,7 @@ import {
   Trophy,
   BookOpen,
   HelpCircle,
+  Globe,
 } from "lucide-react";
 import { ADMIN_ROLES } from "@/lib/roles";
 
@@ -141,6 +142,18 @@ export default function AdminLayout({
                     <Link href="/admin/seo">
                       <Search />
                       <span>SEO</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive("/admin/website")}
+                    tooltip="Website"
+                  >
+                    <Link href="/admin/website">
+                      <Globe />
+                      <span>Website</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,120 +18,32 @@ import PrepDynamicText from "@/components/PrepDynamicText";
 import ParticleButton from "@/components/kokonutui/particle-button";
 import { Facebook, Instagram, Linkedin, Mail, Twitter } from "lucide-react";
 
+interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  quote: string;
+  isActive: boolean;
+}
+
 export default function Home() {
-  const recentUpdates = [
-    {
-      title: "Universities now linked to student accounts",
-      description:
-        "Enrollment is streamlined with verified campus data powering leaderboards and study groups.",
-      date: "Oct 2025",
-      tag: "Platform",
-    },
-    {
-      title: "Feedback hub launched for students & admins",
-      description:
-        "Real-time conversations around feedback ensure every learner gets the support they need.",
-      date: "Sep 2025",
-      tag: "Community",
-    },
-    {
-      title: "Study planner beta is live",
-      description:
-        "Personalized timetables adapt to exam timelines, keeping preparation on track effortlessly.",
-      date: "Aug 2025",
-      tag: "Product",
-    },
-  ];
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
-  const featureHighlights = [
-    {
-      title: "Smart Study Planner",
-      description:
-        "Generate daily schedules around exams, classes, and personal commitments automatically.",
-    },
-    {
-      title: "Progress Tracker",
-      description:
-        "Celebrate milestones with completion metrics, streaks, and supportive nudges to stay consistent.",
-    },
-    {
-      title: "Resource Library",
-      description:
-        "Browse curated past questions, step-by-step solutions, and video lessons by topic and level.",
-    },
-    {
-      title: "Exam AI Assistant",
-      description:
-        "Receive contextual guidance that understands your courses, study habits, and performance data.",
-    },
-  ];
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await fetch("/api/website/testimonials");
+        if (response.ok) {
+          const data = await response.json();
+          setTestimonials(data);
+        }
+      } catch (error) {
+        console.error("Error fetching testimonials:", error);
+      }
+    };
 
-  const testimonials = [
-    {
-      name: "Chioma A.",
-      role: "BNSc Student, UNILAG",
-      quote:
-        "O'Prep gave me structure and accountability. The planner and AI prompts made revision stress-free.",
-    },
-    {
-      name: "Ibrahim M.",
-      role: "RM Candidate, ABU",
-      quote:
-        "Our faculty study group thrives now—we track streaks, swap resources, and stay exam ready together.",
-    },
-    {
-      name: "Opeyemi S.",
-      role: "Final Year Nursing Student, OAU",
-      quote:
-        "The feedback timeline keeps me heard. I can raise issues, get responses, and keep learning without blockers.",
-    },
-  ];
-
-  const team = [
-    {
-      name: "Titilope Abidoye",
-      title: "Co-founder & CEO",
-      bio: "Leads product vision and community partnerships across Nigerian campuses.",
-    },
-    {
-      name: "Ridwan Ayinde",
-      title: "Co-founder & COO",
-      bio: "Drives operations, academic programs, and the O'Prep study methodology roadmap.",
-    },
-    {
-      name: "Yusuf Adamu",
-      title: "Head of Engineering",
-      bio: "Builds delightful learning experiences backed by data and thoughtful automation.",
-    },
-  ];
-
-  const socialLinks = [
-    {
-      label: "Follow on X",
-      href: "https://twitter.com",
-      icon: <Twitter className="h-5 w-5" aria-hidden />,
-    },
-    {
-      label: "Connect on LinkedIn",
-      href: "https://linkedin.com",
-      icon: <Linkedin className="h-5 w-5" aria-hidden />,
-    },
-    {
-      label: "Join on Instagram",
-      href: "https://instagram.com",
-      icon: <Instagram className="h-5 w-5" aria-hidden />,
-    },
-    {
-      label: "Like on Facebook",
-      href: "https://facebook.com",
-      icon: <Facebook className="h-5 w-5" aria-hidden />,
-    },
-    {
-      label: "Email the team",
-      href: "mailto:contact@prepnmcn.com",
-      icon: <Mail className="h-5 w-5" aria-hidden />,
-    },
-  ];
+    fetchTestimonials();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -303,265 +218,37 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 px-6 md:px-12 lg:px-20">
-        <div className="max-w-6xl mx-auto space-y-10">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div>
-              <Badge variant="secondary" className="w-fit">
-                Recent updates
+      {testimonials.length > 0 && (
+        <section className="py-20 px-6 md:px-12 lg:px-20">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div className="space-y-4 text-center">
+              <Badge variant="secondary" className="w-fit mx-auto">
+                Voices from the community
               </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-4">
-                Building faster with your feedback every release cycle.
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                Stories from campuses we serve.
               </h2>
             </div>
-            <Button variant="outline" asChild>
-              <Link href="/blog">See all updates</Link>
-            </Button>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {recentUpdates.map((update) => (
-              <Card key={update.title} className="h-full">
-                <CardHeader className="space-y-3">
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>{update.date}</span>
-                    <Badge variant="outline">{update.tag}</Badge>
-                  </div>
-                  <CardTitle className="text-xl">{update.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {update.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 px-6 md:px-12 lg:px-20 bg-muted/40">
-        <div className="max-w-6xl mx-auto space-y-10">
-          <div className="space-y-4 text-center">
-            <Badge variant="secondary" className="w-fit mx-auto">
-              Why learners stay
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              A complete prep command centre in one login.
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Every module aligns with the realities of professional
-              programs—tight schedules, multiple exams, and the need for
-              collaborative accountability.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {featureHighlights.map((feature) => (
-              <Card key={feature.title} className="h-full border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 px-6 md:px-12 lg:px-20">
-        <div className="max-w-6xl mx-auto space-y-10">
-          <div className="space-y-4 text-center">
-            <Badge variant="secondary" className="w-fit mx-auto">
-              Voices from the community
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Stories from campuses we serve.
-            </h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {testimonials.map((testimonial) => (
-              <Card key={testimonial.name} className="h-full">
-                <CardContent className="space-y-6 pt-6">
-                  <p className="text-muted-foreground leading-relaxed">
-                    “{testimonial.quote}”
-                  </p>
-                  <div>
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {testimonial.role}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((testimonial) => (
+                <Card key={testimonial.id} className="h-full">
+                  <CardContent className="space-y-6 pt-6">
+                    <p className="text-muted-foreground leading-relaxed">
+                      “{testimonial.quote}”
                     </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/*
-      <section className="py-20 px-6 md:px-12 lg:px-20 bg-muted/40">
-        <div className="max-w-6xl mx-auto space-y-10">
-          <div className="space-y-4 text-center">
-            <Badge variant="secondary" className="w-fit mx-auto">
-              Meet the team
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Operators, educators, and professionals building with you.
-            </h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {team.map((member) => (
-              <Card key={member.name} className="h-full">
-                <CardContent className="pt-6 space-y-5">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-14 w-14 border">
-                      <AvatarImage src={``} alt={member.name} />
-                      <AvatarFallback>
-                        {member.name
-                          .split(" ")
-                          .map((part) => part[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
                     <div>
-                      <p className="font-semibold text-lg">{member.name}</p>
-                      <p className="text-sm text-muted-foreground">{member.title}</p>
+                      <p className="font-semibold">{testimonial.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {testimonial.role}
+                      </p>
                     </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {member.bio}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-      */}
-
-      <section className="py-20 px-6 md:px-12 lg:px-20">
-        <div className="max-w-6xl mx-auto grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center">
-          <Card className="border-primary/20">
-            <CardHeader>
-              <Badge variant="secondary" className="w-fit">
-                Join the movement
-              </Badge>
-              <CardTitle className="text-3xl">
-                Stay plugged into O'Prep
-              </CardTitle>
-              <CardDescription>
-                Be the first to access the resource library, exam AI assistant,
-                and cross-campus study forums launching soon.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                {socialLinks.map((link) => (
-                  <Button
-                    key={link.label}
-                    variant="outline"
-                    className="justify-start gap-3"
-                    asChild
-                  >
-                    <Link href={link.href} target="_blank" rel="noreferrer">
-                      {link.icon}
-                      <span>{link.label}</span>
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-dashed border-primary/30">
-            <CardHeader>
-              <CardTitle className="text-2xl">What’s coming next</CardTitle>
-              <CardDescription>
-                Our roadmap focuses on connection, motivation, and recognition
-                for consistent learners.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-2">
-                <p className="font-semibold">Progress tracker dashboards</p>
-                <p className="text-sm text-muted-foreground">
-                  Monitor completion rates, daily streaks, and days left till
-                  exams at a glance.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">University communities</p>
-                <p className="text-sm text-muted-foreground">
-                  Dedicated forums for each partner campus to collaborate and
-                  host revision sprints.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Study buddies & certification</p>
-                <p className="text-sm text-muted-foreground">
-                  Pair up for accountability and download certificates once your
-                  plan is completed.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <footer className="bg-muted text-muted-foreground py-12 px-6 md:px-12 lg:px-20 border-t">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-foreground">O'Prep</h3>
-              <p className="text-sm text-muted-foreground max-w-md">
-                Empowering Nigeria's exam prep community with structure,
-                support, and smart technology.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {socialLinks.map((link) => (
-                <Button
-                  key={`footer-${link.label}`}
-                  variant="ghost"
-                  className="gap-2"
-                  asChild
-                >
-                  <Link href={link.href} target="_blank" rel="noreferrer">
-                    {link.icon}
-                    <span className="text-sm">{link.label}</span>
-                  </Link>
-                </Button>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
-          <Separator />
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm">
-            <p>© {new Date().getFullYear()} O'Prep. All rights reserved.</p>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                href="/terms"
-                className="hover:text-primary transition-colors"
-              >
-                Terms of Service
-              </Link>
-              <Link
-                href="/privacy"
-                className="hover:text-primary transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="mailto:contact@prepnmcn.com"
-                className="hover:text-primary transition-colors"
-              >
-                contact@prepnmcn.com
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+        </section>
+      )}
     </div>
   );
 }

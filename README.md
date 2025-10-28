@@ -22,14 +22,47 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## Admin Guide
 
-To learn more about Next.js, take a look at the following resources:
+### Website Content Management
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Admins can manage website content through the `/admin/website` interface. This includes:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### Community Voices
+
+- **Add/Edit Voices**: Click "Add Voice" to create new community testimonials
+- **Fields**: Name, Role, Institution, Content, Image URL, Active Status
+- **Display**: Shows on homepage if active
+
+#### Campus Stories
+
+- **Add/Edit Stories**: Click "Add Story" to create campus experience stories
+- **Fields**: Title, Institution, Content, Author, Image URL, Active Status
+- **Display**: Shows on homepage if active
+
+#### Learner Testimonials
+
+- **Add/Edit Testimonials**: Click "Add Testimonial" to create learner success stories
+- **Fields**: Name, Program, Institution, Content, Image URL, Active Status
+- **Display**: Shows on homepage if active
+
+#### Blog Posts
+
+- **Add/Edit Posts**: Click "Add Post" to create blog articles
+- **Fields**: Title, Content, Excerpt, Author, Category, Tags, Image URL, Published Status
+- **Display**: Available via `/api/website/blog` endpoints
+
+### Content Guidelines
+
+- **Active Status**: Only active/published content appears on the public website
+- **Image URLs**: Use full URLs for images (hosted externally)
+- **Content**: Keep content concise and engaging
+- **Categories**: Use consistent category names for blog posts
+
+### API Endpoints
+
+- Public website consumes content via `/api/website/*` endpoints
+- Admin management via `/api/admin/website/*` endpoints
 
 ## Deploy on Vercel
 

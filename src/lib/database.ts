@@ -17,6 +17,7 @@ import { Question } from "../entities/Question";
 import { Exam } from "../entities/Exam";
 import { Challenge } from "../entities/Challenge";
 import { AccessCode } from "../entities/AccessCode";
+import { ChatMessage } from "../entities/ChatMessage";
 
 let AppDataSource: DataSource;
 
@@ -52,6 +53,7 @@ export async function getDataSource(): Promise<DataSource> {
       UserEnrollment,
       Challenge,
       AccessCode,
+      ChatMessage,
     ],
     ssl: { rejectUnauthorized: false }, // Allow self-signed certificates
   });

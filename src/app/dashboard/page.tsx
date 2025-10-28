@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Trophy,
   Target,
@@ -30,6 +31,78 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_ROLES } from "@/lib/roles";
+
+function DashboardSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section Skeleton */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-32" />
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-full max-w-md mx-auto" />
+
+          {/* Overview Content Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Quick Actions Skeleton */}
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32 mb-2" />
+                <Skeleton className="h-4 w-48" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity Skeleton */}
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32 mb-2" />
+                <Skeleton className="h-4 w-48" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 space-y-4">
+                  <Skeleton className="h-12 w-12 mx-auto" />
+                  <Skeleton className="h-6 w-48 mx-auto" />
+                  <Skeleton className="h-4 w-64 mx-auto" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface User {
   id: string;
@@ -75,7 +148,7 @@ export default function Dashboard() {
 
       if (userResponse.ok) {
         const userData = await userResponse.json();
-        setUser(userData);
+        setUser(userData.user);
       }
 
       if (enrollmentsResponse.ok) {
@@ -92,18 +165,11 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!user) {
-    return null;
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -113,20 +179,24 @@ export default function Dashboard() {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src="" alt={user.name} />
+              <AvatarImage src="" alt={user?.name || "User"} />
               <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+                {user?.name
+                  ? user.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                  : "U"}
               </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                Welcome back, {user.name}!
+                Welcome back, {user?.name || "Student"}!
               </h1>
               <p className="text-muted-foreground">
-                {user.institution} • {user.role}
+                {user?.institution || "Institution not set"} •{" "}
+                {user?.role || "Student"}
               </p>
             </div>
           </div>
@@ -134,7 +204,7 @@ export default function Dashboard() {
             <CheckCircle className="w-4 h-4 mr-1" />
             Active Student
           </Badge>
-          {(ADMIN_ROLES as readonly string[]).includes(user.role) && (
+          {(ADMIN_ROLES as readonly string[]).includes(user?.role || "") && (
             <Button asChild variant="outline" size="sm" className="ml-4">
               <Link href="/admin" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -155,7 +225,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-chart-1">
-                {user.points}
+                {user?.points || 0}
               </div>
               <p className="text-xs text-muted-foreground">
                 Start earning points!

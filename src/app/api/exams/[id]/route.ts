@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { AppDataSource } from "@/lib/database";
+import { getDataSource } from "@/lib/database";
 import { Exam } from "@/entities/Exam";
 
 export async function GET(
@@ -19,11 +19,8 @@ export async function GET(
 
     const { id } = await params;
 
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
-
-    const examRepository = AppDataSource.getRepository(Exam);
+    const dataSource = await getDataSource();
+    const examRepository = dataSource.getRepository(Exam);
     const exam = await examRepository.findOne({
       where: { id },
       relations: ["institution"],

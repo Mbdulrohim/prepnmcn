@@ -1,11 +1,5 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-export default openai;
-
 // Helper function to create chat completions
 export async function createChatCompletion(
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
@@ -16,6 +10,14 @@ export async function createChatCompletion(
   }
 ) {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OpenAI API key not configured");
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     const response = await openai.chat.completions.create({
       model: options?.model || "gpt-4o-mini",
       messages,
@@ -33,6 +35,14 @@ export async function createChatCompletion(
 // Helper function for embeddings
 export async function createEmbedding(text: string) {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OpenAI API key not configured");
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     const response = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: text,
@@ -45,17 +55,35 @@ export async function createEmbedding(text: string) {
   }
 }
 
-// Helper function for moderation
-export async function moderateContent(content: string) {
+// Helper function for streaming chat completions
+export async function createStreamingChatCompletion(
+  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+  options?: {
+    model?: string;
+    temperature?: number;
+    max_tokens?: number;
+  }
+) {
   try {
-    const response = await openai.moderations.create({
-      model: "text-moderation-latest",
-      input: content,
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OpenAI API key not configured");
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
-    return response.results[0];
+    const stream = await openai.chat.completions.create({
+      model: options?.model || "gpt-4o-mini",
+      messages,
+      temperature: options?.temperature || 0.7,
+      max_tokens: options?.max_tokens || 500,
+      stream: true,
+    });
+
+    return stream;
   } catch (error) {
-    console.error("OpenAI moderation error:", error);
-    throw new Error("Failed to moderate content");
+    console.error("OpenAI streaming error:", error);
+    throw new Error("Failed to create streaming response");
   }
 }

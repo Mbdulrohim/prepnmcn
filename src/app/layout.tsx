@@ -22,6 +22,12 @@ export const metadata: Metadata = {
   authors: [{ name: "O/Prep Team" }],
   creator: "O/Prep",
   publisher: "O/Prep",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
   icons: {
     icon: "/preplogo.png",
     shortcut: "/preplogo.png",
@@ -78,6 +84,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+        />
+      </head>
       <body className={`${dmSans.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"

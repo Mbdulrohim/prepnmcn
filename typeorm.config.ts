@@ -17,6 +17,10 @@ import { ExamCategory } from "./src/entities/ExamCategory";
 import { ExamPathway } from "./src/entities/ExamPathway";
 import { ExamPackage } from "./src/entities/ExamPackage";
 import { ExamEnrollment } from "./src/entities/ExamEnrollment";
+import { CommunityVoice } from "./src/entities/CommunityVoice";
+import { CampusStory } from "./src/entities/CampusStory";
+import { LearnerTestimonial } from "./src/entities/LearnerTestimonial";
+import { BlogPost } from "./src/entities/BlogPost";
 
 export default new DataSource({
   type: "postgres",
@@ -42,5 +46,9 @@ export default new DataSource({
     ExamPathway,
     ExamPackage,
     ExamEnrollment,
+    CommunityVoice,
+    CampusStory,
+    LearnerTestimonial,
+    BlogPost,
   ],
 });
