@@ -86,12 +86,14 @@ export default function NotificationsPage() {
   const [isSendDialogOpen, setIsSendDialogOpen] = useState(false);
   const [isAutomationDialogOpen, setIsAutomationDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [parsedEmailCount, setParsedEmailCount] = useState(0);
 
   // Form states
   const [emailForm, setEmailForm] = useState({
     recipientType: "individual",
     recipientEmail: "",
     recipientId: "",
+    recipientEmails: "",
     subject: "",
     message: "",
   });
@@ -116,6 +118,16 @@ export default function NotificationsPage() {
       fetchUsers();
     }
   }, [session, status, router]);
+
+  // Update parsed email count when recipientEmails changes
+  useEffect(() => {
+    if (emailForm.recipientType === "multiple_emails" && emailForm.recipientEmails) {
+      const parsedEmails = parseEmails(emailForm.recipientEmails);
+      setParsedEmailCount(parsedEmails.length);
+    } else {
+      setParsedEmailCount(0);
+    }
+  }, [emailForm.recipientEmails, emailForm.recipientType]);
 
   const fetchNotifications = async () => {
     try {
@@ -163,6 +175,13 @@ export default function NotificationsPage() {
     }
   };
 
+  const parseEmails = (emailString: string): string[] => {
+    return emailString
+      .split(/[,\n]/)
+      .map(email => email.trim())
+      .filter(email => email && email.includes('@'));
+  };
+
   const sendEmail = async () => {
     if (!emailForm.subject || !emailForm.message) {
       toast.error("Subject and message are required");
@@ -171,6 +190,11 @@ export default function NotificationsPage() {
 
     if (emailForm.recipientType === "individual" && !emailForm.recipientEmail) {
       toast.error("Recipient email is required");
+      return;
+    }
+
+    if (emailForm.recipientType === "multiple_emails" && !emailForm.recipientEmails.trim()) {
+      toast.error("At least one email address is required");
       return;
     }
 
@@ -185,6 +209,16 @@ export default function NotificationsPage() {
 
       if (emailForm.recipientType === "individual") {
         requestBody.recipientEmails = [emailForm.recipientEmail];
+      } else if (emailForm.recipientType === "multiple_emails") {
+        // Parse multiple emails from textarea
+        const emails = parseEmails(emailForm.recipientEmails);
+        
+        if (emails.length === 0) {
+          toast.error("No valid email addresses found");
+          return;
+        }
+        
+        requestBody.recipientEmails = emails;
       } else {
         // Map recipient types to API expected values
         switch (emailForm.recipientType) {
@@ -224,6 +258,7 @@ export default function NotificationsPage() {
           recipientType: "individual",
           recipientEmail: "",
           recipientId: "",
+          recipientEmails: "",
           subject: "",
           message: "",
         });
@@ -558,6 +593,9 @@ export default function NotificationsPage() {
                       <SelectItem value="individual">
                         Individual User
                       </SelectItem>
+                      <SelectItem value="multiple_emails">
+                        Multiple Email Addresses
+                      </SelectItem>
                       <SelectItem value="all_users">All Users</SelectItem>
                       <SelectItem value="students">All Students</SelectItem>
                       <SelectItem value="admins">All Admins</SelectItem>
@@ -601,6 +639,41 @@ export default function NotificationsPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                )}
+
+                {emailForm.recipientType === "multiple_emails" && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="recipient-emails">
+                      Email Addresses
+                    </Label>
+                    <Textarea
+                      id="recipient-emails"
+                      value={emailForm.recipientEmails || ""}
+                      onChange={(e) =>
+                        setEmailForm((prev) => ({
+                          ...prev,
+                          recipientEmails: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter email addresses, one per line or separated by commas&#10;example1@email.com&#10;example2@email.com&#10;example3@email.com"
+                      rows={4}
+                      className="font-mono text-sm"
+                    />
+                    {parsedEmailCount > 0 && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-green-600 font-medium">
+                          {parsedEmailCount} email{parsedEmailCount !== 1 ? 's' : ''} parsed
+                        </span>
+                        <span className="text-muted-foreground">
+                          (ready to send)
+                        </span>
+                      </div>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Enter multiple email addresses separated by commas or new lines.
+                      Invalid email addresses will be skipped.
+                    </p>
                   </div>
                 )}
 

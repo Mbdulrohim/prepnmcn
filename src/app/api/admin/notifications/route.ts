@@ -222,12 +222,20 @@ export async function POST(request: NextRequest) {
       const notificationRepo = AppDataSource.getRepository(Notification);
 
       const results = [];
-      for (const email of finalRecipientEmails) {
+      for (let i = 0; i < finalRecipientEmails.length; i++) {
+        const email = finalRecipientEmails[i];
         try {
           await sendEmail({
             to: email,
             subject,
             html: emailBody,
+            from: `"${
+              process.env.ADMIN_NOTIFICATION_SENDER_NAME || "O'Prep Admin"
+            }" <${
+              process.env.ADMIN_NOTIFICATION_FROM_EMAIL ||
+              process.env.SMTP_FROM_EMAIL ||
+              "noreply@prepnmcn.com"
+            }>`,
           });
 
           const notification = notificationRepo.create({
@@ -268,6 +276,12 @@ export async function POST(request: NextRequest) {
             status: "failed",
             error: error instanceof Error ? error.message : "Unknown error",
           });
+        }
+
+        // Add random delay between emails to avoid spam flags (1-3 seconds)
+        if (i < finalRecipientEmails.length - 1) {
+          const randomDelay = Math.random() * 2000 + 1000; // 1-3 seconds
+          await new Promise((resolve) => setTimeout(resolve, randomDelay));
         }
       }
 

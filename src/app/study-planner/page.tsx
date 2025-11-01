@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -30,9 +31,27 @@ interface User {
   role: string;
 }
 
+interface StudySession {
+  session: number;
+  topics: string[];
+  duration: number;
+}
+
+interface StudyDay {
+  date: string;
+  day: number;
+  sessions: StudySession[];
+}
+
+interface StudyPlan {
+  studyPlan: StudyDay[];
+}
+
 export default function StudyPlanner() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [studyPlan, setStudyPlan] = useState<StudyDay[] | null>(null);
   const [examType, setExamType] = useState("");
   const [examDate, setExamDate] = useState("");
   const [studyHours, setStudyHours] = useState("");
@@ -61,15 +80,35 @@ export default function StudyPlanner() {
       });
   }, [router]);
 
-  const handleGeneratePlan = (e: React.FormEvent) => {
+  const handleGeneratePlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement study plan generation logic
-    console.log("Generating study plan:", {
-      examType,
-      examDate,
-      studyHours,
-      knowledgeLevel,
-    });
+    setGenerating(true);
+
+    try {
+      const response = await fetch("/api/study-planner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          examType,
+          examDate,
+          studyHours: parseInt(studyHours),
+          knowledgeLevel,
+        }),
+      });
+
+      if (response.ok) {
+        const data: StudyPlan = await response.json();
+        setStudyPlan(data.studyPlan);
+      } else {
+        console.error("Failed to generate study plan");
+      }
+    } catch (error) {
+      console.error("Error generating study plan:", error);
+    } finally {
+      setGenerating(false);
+    }
   };
 
   if (loading) {
@@ -195,13 +234,72 @@ export default function StudyPlanner() {
                     </Select>
                   </div>
 
-                  <Button type="submit" className="w-full">
-                    Generate Study Plan
+                  <Button type="submit" className="w-full" disabled={generating}>
+                    {generating ? "Generating Plan..." : "Generate Study Plan"}
                   </Button>
                 </form>
               </CardContent>
             </Card>
           </div>
+
+          {/* Study Plan Display */}
+          {studyPlan && (
+            <div className="lg:col-span-3 mt-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Your Study Plan
+                  </CardTitle>
+                  <CardDescription>
+                    Your personalized study schedule for {examType}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {studyPlan.slice(0, 7).map((day) => (
+                      <div key={day.day} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="font-semibold text-lg">
+                            Day {day.day} - {new Date(day.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                          </h3>
+                          <Badge variant="outline">
+                            {day.sessions.length} session{day.sessions.length !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {day.sessions.map((session) => (
+                            <div key={session.session} className="bg-muted/50 rounded p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Clock className="h-4 w-4 text-primary" />
+                                <span className="font-medium">Session {session.session}</span>
+                                <span className="text-sm text-muted-foreground">({session.duration}h)</span>
+                              </div>
+                              <div className="space-y-1">
+                                {session.topics.map((topic, index) => (
+                                  <div key={index} className="text-sm flex items-center gap-2">
+                                    <CheckCircle className="h-3 w-3 text-primary" />
+                                    {topic}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {studyPlan.length > 7 && (
+                      <div className="text-center">
+                        <p className="text-muted-foreground">
+                          And {studyPlan.length - 7} more days...
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Study Tips Sidebar */}
           <div className="space-y-6">
