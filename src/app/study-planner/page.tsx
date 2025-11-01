@@ -234,7 +234,11 @@ export default function StudyPlanner() {
                     </Select>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={generating}>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={generating}
+                  >
                     {generating ? "Generating Plan..." : "Generate Study Plan"}
                   </Button>
                 </form>
@@ -261,23 +265,39 @@ export default function StudyPlanner() {
                       <div key={day.day} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="font-semibold text-lg">
-                            Day {day.day} - {new Date(day.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                            Day {day.day} -{" "}
+                            {new Date(day.date).toLocaleDateString("en-US", {
+                              weekday: "long",
+                              month: "short",
+                              day: "numeric",
+                            })}
                           </h3>
                           <Badge variant="outline">
-                            {day.sessions.length} session{day.sessions.length !== 1 ? 's' : ''}
+                            {day.sessions.length} session
+                            {day.sessions.length !== 1 ? "s" : ""}
                           </Badge>
                         </div>
                         <div className="grid gap-3 md:grid-cols-2">
                           {day.sessions.map((session) => (
-                            <div key={session.session} className="bg-muted/50 rounded p-3">
+                            <div
+                              key={session.session}
+                              className="bg-muted/50 rounded p-3"
+                            >
                               <div className="flex items-center gap-2 mb-2">
                                 <Clock className="h-4 w-4 text-primary" />
-                                <span className="font-medium">Session {session.session}</span>
-                                <span className="text-sm text-muted-foreground">({session.duration}h)</span>
+                                <span className="font-medium">
+                                  Session {session.session}
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                  ({session.duration}h)
+                                </span>
                               </div>
                               <div className="space-y-1">
                                 {session.topics.map((topic, index) => (
-                                  <div key={index} className="text-sm flex items-center gap-2">
+                                  <div
+                                    key={index}
+                                    className="text-sm flex items-center gap-2"
+                                  >
                                     <CheckCircle className="h-3 w-3 text-primary" />
                                     {topic}
                                   </div>

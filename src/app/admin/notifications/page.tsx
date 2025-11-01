@@ -121,7 +121,10 @@ export default function NotificationsPage() {
 
   // Update parsed email count when recipientEmails changes
   useEffect(() => {
-    if (emailForm.recipientType === "multiple_emails" && emailForm.recipientEmails) {
+    if (
+      emailForm.recipientType === "multiple_emails" &&
+      emailForm.recipientEmails
+    ) {
       const parsedEmails = parseEmails(emailForm.recipientEmails);
       setParsedEmailCount(parsedEmails.length);
     } else {
@@ -178,8 +181,8 @@ export default function NotificationsPage() {
   const parseEmails = (emailString: string): string[] => {
     return emailString
       .split(/[,\n]/)
-      .map(email => email.trim())
-      .filter(email => email && email.includes('@'));
+      .map((email) => email.trim())
+      .filter((email) => email && email.includes("@"));
   };
 
   const sendEmail = async () => {
@@ -193,7 +196,10 @@ export default function NotificationsPage() {
       return;
     }
 
-    if (emailForm.recipientType === "multiple_emails" && !emailForm.recipientEmails.trim()) {
+    if (
+      emailForm.recipientType === "multiple_emails" &&
+      !emailForm.recipientEmails.trim()
+    ) {
       toast.error("At least one email address is required");
       return;
     }
@@ -212,12 +218,12 @@ export default function NotificationsPage() {
       } else if (emailForm.recipientType === "multiple_emails") {
         // Parse multiple emails from textarea
         const emails = parseEmails(emailForm.recipientEmails);
-        
+
         if (emails.length === 0) {
           toast.error("No valid email addresses found");
           return;
         }
-        
+
         requestBody.recipientEmails = emails;
       } else {
         // Map recipient types to API expected values
@@ -412,6 +418,51 @@ export default function NotificationsPage() {
       </div>
     );
   }
+
+  // Formatting helper functions
+  const insertFormatting = (
+    before: string,
+    after: string,
+    placeholder: string
+  ) => {
+    const textarea = document.getElementById("message") as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = emailForm.message.substring(start, end);
+    const textToInsert = selectedText || placeholder;
+
+    const newText =
+      emailForm.message.substring(0, start) +
+      before +
+      textToInsert +
+      after +
+      emailForm.message.substring(end);
+
+    setEmailForm((prev) => ({
+      ...prev,
+      message: newText,
+    }));
+
+    // Set cursor position after the inserted text
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + before.length + textToInsert.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  const insertLink = () => {
+    const url = prompt("Enter the URL:");
+    if (!url) return;
+
+    const linkText = prompt("Enter the link text:", "Click here");
+    if (!linkText) return;
+
+    const linkHtml = `<a href="${url}">${linkText}</a>`;
+    insertFormatting(linkHtml, "", "");
+  };
 
   return (
     <div className="container mx-auto py-6">
@@ -644,9 +695,7 @@ export default function NotificationsPage() {
 
                 {emailForm.recipientType === "multiple_emails" && (
                   <div className="grid gap-2">
-                    <Label htmlFor="recipient-emails">
-                      Email Addresses
-                    </Label>
+                    <Label htmlFor="recipient-emails">Email Addresses</Label>
                     <Textarea
                       id="recipient-emails"
                       value={emailForm.recipientEmails || ""}
@@ -663,7 +712,8 @@ export default function NotificationsPage() {
                     {parsedEmailCount > 0 && (
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-green-600 font-medium">
-                          {parsedEmailCount} email{parsedEmailCount !== 1 ? 's' : ''} parsed
+                          {parsedEmailCount} email
+                          {parsedEmailCount !== 1 ? "s" : ""} parsed
                         </span>
                         <span className="text-muted-foreground">
                           (ready to send)
@@ -671,8 +721,8 @@ export default function NotificationsPage() {
                       </div>
                     )}
                     <p className="text-sm text-muted-foreground">
-                      Enter multiple email addresses separated by commas or new lines.
-                      Invalid email addresses will be skipped.
+                      Enter multiple email addresses separated by commas or new
+                      lines. Invalid email addresses will be skipped.
                     </p>
                   </div>
                 )}
@@ -694,18 +744,116 @@ export default function NotificationsPage() {
 
                 <div className="grid gap-2">
                   <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    value={emailForm.message}
-                    onChange={(e) =>
-                      setEmailForm((prev) => ({
-                        ...prev,
-                        message: e.target.value,
-                      }))
-                    }
-                    placeholder="Email message"
-                    rows={6}
-                  />
+                  <div className="space-y-2">
+                    {/* Formatting Toolbar */}
+                    <div className="flex flex-wrap gap-1 p-2 border rounded-md bg-muted/50">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          insertFormatting("**", "**", "bold text")
+                        }
+                        className="h-8 px-2 text-xs"
+                        title="Bold"
+                      >
+                        <strong>B</strong>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          insertFormatting("*", "*", "italic text")
+                        }
+                        className="h-8 px-2 text-xs"
+                        title="Italic"
+                      >
+                        <em>I</em>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          insertFormatting("<u>", "</u>", "underlined text")
+                        }
+                        className="h-8 px-2 text-xs"
+                        title="Underline"
+                      >
+                        <u>U</u>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => insertLink()}
+                        className="h-8 px-2 text-xs"
+                        title="Insert Link"
+                      >
+                        🔗 Link
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => insertFormatting("<br>", "", "")}
+                        className="h-8 px-2 text-xs"
+                        title="Line Break"
+                      >
+                        ↵ Break
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          insertFormatting("<h3>", "</h3>", "Heading")
+                        }
+                        className="h-8 px-2 text-xs"
+                        title="Heading"
+                      >
+                        H₃
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          insertFormatting(
+                            "<ul><li>",
+                            "</li></ul>",
+                            "List item"
+                          )
+                        }
+                        className="h-8 px-2 text-xs"
+                        title="Bullet List"
+                      >
+                        • List
+                      </Button>
+                    </div>
+
+                    <Textarea
+                      id="message"
+                      value={emailForm.message}
+                      onChange={(e) =>
+                        setEmailForm((prev) => ({
+                          ...prev,
+                          message: e.target.value,
+                        }))
+                      }
+                      placeholder="Compose your email message. Use HTML formatting for rich text (e.g., <strong>bold</strong>, <em>italic</em>, <a href='...'>link</a>)"
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Supports HTML formatting. Use the toolbar above or type
+                      HTML tags directly. Examples:{" "}
+                      <code>&lt;strong&gt;bold&lt;/strong&gt;</code>,{" "}
+                      <code>&lt;em&gt;italic&lt;/em&gt;</code>,{" "}
+                      <code>&lt;a href="..."&gt;link&lt;/a&gt;</code>
+                    </p>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
