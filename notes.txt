@@ -10,7 +10,7 @@ ADDITIONAL FEATURES TO BE ADDED TO PREPNMCN.COM
 
 18. ✅ Academic profile setup - users can set their level (100-500), select courses, configure study preferences, and manage notification settings.
 
-4. Add the about us section, link to social media (X, LinkedIn, IG, Facebook and email), meet the founders, and testimonials from users.
+4. ✅ Add the about us section, link to social media (X, LinkedIn, IG, Facebook and email), meet the founders, and testimonials from users.
 
 
 6. ✅ Add a personal study planner feature that automatically generates a study timetable based on exam date inputted by the student.
@@ -37,7 +37,7 @@ ADDITIONAL FEATURES TO BE ADDED TO PREPNMCN.COM
 
 17. Add engagement analytics to the admin dashboard to show which modules are most/least completed and average completion rates per university.
 
-✅ **EXAM MANAGEMENT SYSTEM IMPLEMENTED** - Complete exam platform with pathways (RN, RM, RPHN, NCLEX, Direct Entry, Specialty, Undergraduate), payment integration via Paystack, admin dashboard for exam management, question banks, student enrollments, and attempt tracking.
+18. ✅ **EXAM MANAGEMENT SYSTEM IMPLEMENTED** - Complete exam platform with pathways (RN, RM, RPHN, NCLEX, Direct Entry, Specialty, Undergraduate), payment integration via Paystack, admin dashboard for exam management, question banks, student enrollments, and attempt tracking.
 
 
 basic exams:

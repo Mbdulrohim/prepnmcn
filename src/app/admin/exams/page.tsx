@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -89,7 +90,7 @@ interface Exam {
 export default function ExamsAdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [exams, setExams] = useState<Exam[]>([]);
+  const [exams, setExams] = useState<ExamAdmin[]>([]);
   const [stats, setStats] = useState<ExamStats>({
     total: 0,
     published: 0,
@@ -100,10 +101,14 @@ export default function ExamsAdminPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creatingExam, setCreatingExam] = useState(false);
-  const [editingExam, setEditingExam] = useState<Exam | null>(null);
+  const [editingExam, setEditingExam] = useState<ExamAdmin | null>(null);
   const [updatingExam, setUpdatingExam] = useState(false);
   const [deletingExam, setDeletingExam] = useState<Exam | null>(null);
-  const [viewingExam, setViewingExam] = useState<Exam | null>(null);
+  const [viewingExam, setViewingExam] = useState<ExamAdmin | null>(null);
+  const [publishingExam, setPublishingExam] = useState<ExamAdmin | null>(null);
+  const [publishNote, setPublishNote] = useState("");
+  const [versionsOpen, setVersionsOpen] = useState(false);
+  const [examVersions, setExamVersions] = useState<any[]>([]);
   const [createForm, setCreateForm] = useState({
     title: "",
     description: "",
@@ -123,6 +128,11 @@ export default function ExamsAdminPage() {
     currency: "NGN",
     institutionId: "",
     status: "draft" as "draft" | "published" | "archived",
+    startAt: "",
+    endAt: "",
+    allowPreview: false,
+    maxAttempts: 3,
+    allowMultipleAttempts: false,
   });
   const [institutions, setInstitutions] = useState<any[]>([]);
 
@@ -139,6 +149,11 @@ export default function ExamsAdminPage() {
       currency: "NGN",
       institutionId: "",
       status: "draft",
+      startAt: "",
+      endAt: "",
+      allowPreview: false,
+      maxAttempts: 3,
+      allowMultipleAttempts: false,
     });
     setEditingExam(null);
   };
@@ -163,6 +178,15 @@ export default function ExamsAdminPage() {
       resetForm();
     }
   }, [showCreateModal]);
+
+  // Helper to convert ISO datetime string to local datetime-local input format
+  const isoToLocalInput = (iso?: string | null) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    // apply timezone offset for local representation
+    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  };
 
   const fetchInstitutions = async () => {
     try {
@@ -195,6 +219,15 @@ export default function ExamsAdminPage() {
           passingMarks: createForm.passingMarks,
           price: createForm.price,
           currency: createForm.currency,
+          startAt: createForm.startAt
+            ? new Date(createForm.startAt).toISOString()
+            : null,
+          endAt: createForm.endAt
+            ? new Date(createForm.endAt).toISOString()
+            : null,
+          allowPreview: createForm.allowPreview,
+          maxAttempts: createForm.maxAttempts,
+          allowMultipleAttempts: createForm.allowMultipleAttempts,
           institutionId: createForm.institutionId,
           status: createForm.status,
         }),
@@ -215,6 +248,11 @@ export default function ExamsAdminPage() {
           currency: "NGN",
           institutionId: "",
           status: "draft",
+          startAt: "",
+          endAt: "",
+          allowPreview: false,
+          maxAttempts: 3,
+          allowMultipleAttempts: false,
         });
         fetchExams();
         toast.success("Exam created successfully!");
@@ -249,6 +287,11 @@ export default function ExamsAdminPage() {
       currency: exam.currency || "NGN",
       institutionId: exam.institutionId || "",
       status: exam.status,
+      startAt: isoToLocalInput((exam as any)?.startAt || null),
+      endAt: isoToLocalInput((exam as any)?.endAt || null),
+      allowPreview: (exam as any)?.allowPreview || false,
+      maxAttempts: (exam as any)?.maxAttempts || 3,
+      allowMultipleAttempts: (exam as any)?.allowMultipleAttempts || false,
     });
     setShowCreateModal(true);
   };
@@ -266,6 +309,15 @@ export default function ExamsAdminPage() {
         body: JSON.stringify({
           ...createForm,
           institutionId: createForm.institutionId || null,
+          startAt: createForm.startAt
+            ? new Date(createForm.startAt).toISOString()
+            : null,
+          endAt: createForm.endAt
+            ? new Date(createForm.endAt).toISOString()
+            : null,
+          allowPreview: createForm.allowPreview,
+          maxAttempts: createForm.maxAttempts,
+          allowMultipleAttempts: createForm.allowMultipleAttempts,
         }),
       });
 
@@ -291,6 +343,31 @@ export default function ExamsAdminPage() {
 
   const handleDeleteExam = (exam: Exam) => {
     setDeletingExam(exam);
+  };
+
+  const handlePublishExam = async () => {
+    if (!publishingExam) return;
+    try {
+      const resp = await fetch(
+        `/api/admin/exams/${publishingExam.id}/publish`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note: publishNote }),
+        }
+      );
+      const data = await resp.json();
+      if (data.success) {
+        toast.success("Exam published");
+        setPublishingExam(null);
+        setPublishNote("");
+        fetchExams();
+      } else {
+        toast.error("Failed to publish exam: " + (data.error || "Unknown"));
+      }
+    } catch (err) {
+      toast.error("Failed to publish exam");
+    }
   };
 
   const confirmDeleteExam = async () => {
@@ -383,6 +460,13 @@ export default function ExamsAdminPage() {
         </div>
       </div>
     );
+  }
+  interface ExamAdmin extends Exam {
+    startAt?: string | null;
+    endAt?: string | null;
+    allowPreview?: boolean;
+    maxAttempts?: number;
+    allowMultipleAttempts?: boolean;
   }
 
   return (
@@ -626,6 +710,77 @@ export default function ExamsAdminPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="startAt" className="text-right">
+                  Start At
+                </Label>
+                <Input
+                  id="startAt"
+                  type="datetime-local"
+                  value={createForm.startAt}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, startAt: e.target.value })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="endAt" className="text-right">
+                  End At
+                </Label>
+                <Input
+                  id="endAt"
+                  type="datetime-local"
+                  value={createForm.endAt}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, endAt: e.target.value })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="maxAttempts" className="text-right">
+                  Max Attempts
+                </Label>
+                <Input
+                  id="maxAttempts"
+                  type="number"
+                  value={createForm.maxAttempts}
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      maxAttempts: parseInt(e.target.value || "0"),
+                    })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Options</Label>
+                <div className="col-span-3 space-y-2">
+                  <div className="flex items-center">
+                    <Checkbox
+                      checked={createForm.allowPreview}
+                      onCheckedChange={(v) =>
+                        setCreateForm({ ...createForm, allowPreview: !!v })
+                      }
+                    />
+                    <div className="ml-2 text-sm">Allow Preview</div>
+                  </div>
+                  <div className="flex items-center">
+                    <Checkbox
+                      checked={createForm.allowMultipleAttempts}
+                      onCheckedChange={(v) =>
+                        setCreateForm({
+                          ...createForm,
+                          allowMultipleAttempts: !!v,
+                        })
+                      }
+                    />
+                    <div className="ml-2 text-sm">Allow Multiple Attempts</div>
+                  </div>
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <Button
@@ -742,6 +897,32 @@ export default function ExamsAdminPage() {
                           <Eye className="mr-2 h-4 w-4" />
                           View
                         </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setPublishingExam(exam);
+                          }}
+                        >
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          Publish
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            setViewingExam(exam);
+                            setVersionsOpen(true);
+                            try {
+                              const resp = await fetch(
+                                `/api/admin/exams/${exam.id}/versions`
+                              );
+                              const data = await resp.json();
+                              if (data.success) setExamVersions(data.data);
+                            } catch (err) {
+                              console.error(err);
+                            }
+                          }}
+                        >
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          Versions
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEditExam(exam)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
@@ -798,6 +979,35 @@ export default function ExamsAdminPage() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right font-medium">Subject</Label>
                 <div className="col-span-3 text-sm">{viewingExam.subject}</div>
+              </div>
+              {viewingExam.startAt && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right font-medium">Start At</Label>
+                  <div className="col-span-3 text-sm">
+                    {new Date(viewingExam.startAt).toLocaleString()}
+                  </div>
+                </div>
+              )}
+              {viewingExam.endAt && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right font-medium">End At</Label>
+                  <div className="col-span-3 text-sm">
+                    {new Date(viewingExam.endAt).toLocaleString()}
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right font-medium">Options</Label>
+                <div className="col-span-3 text-sm">
+                  <div>
+                    Allow Preview: {viewingExam.allowPreview ? "Yes" : "No"}
+                  </div>
+                  <div>Max Attempts: {viewingExam.maxAttempts || 0}</div>
+                  <div>
+                    Allow Multiple Attempts:{" "}
+                    {viewingExam.allowMultipleAttempts ? "Yes" : "No"}
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right font-medium">Type</Label>
@@ -859,6 +1069,77 @@ export default function ExamsAdminPage() {
             <Button variant="outline" onClick={() => setViewingExam(null)}>
               Close
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Publish Exam Dialog */}
+      <Dialog
+        open={!!publishingExam}
+        onOpenChange={() => setPublishingExam(null)}
+      >
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Publish Exam</DialogTitle>
+            <DialogDescription>
+              Publishing will snapshot current questions & metadata. Add an
+              optional note.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right font-medium">Exam</Label>
+              <div className="col-span-3 text-sm">{publishingExam?.title}</div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Note</Label>
+              <Textarea
+                value={publishNote}
+                onChange={(e) => setPublishNote(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setPublishingExam(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handlePublishExam}>Publish</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Versions Dialog */}
+      <Dialog open={versionsOpen} onOpenChange={() => setVersionsOpen(false)}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>Exam Versions</DialogTitle>
+            <DialogDescription>
+              List of published snapshots for this exam.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {examVersions.length === 0 && (
+              <div className="text-muted-foreground">No versions yet.</div>
+            )}
+            <div className="space-y-3">
+              {examVersions.map((v) => (
+                <Card key={v.id} className="p-3">
+                  <div className="text-sm font-medium">
+                    {new Date(v.createdAt).toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Note: {v.note || "—"}
+                  </div>
+                  <div className="text-xs mt-2">
+                    Questions: {(v.snapshot?.questions || []).length}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setVersionsOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

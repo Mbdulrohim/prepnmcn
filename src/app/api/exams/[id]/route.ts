@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Exam } from "@/entities/Exam";
+import {
+  ExamEnrollment,
+  EnrollmentPaymentStatus,
+} from "@/entities/ExamEnrollment";
 
 export async function GET(
   request: NextRequest,
@@ -41,6 +45,17 @@ export async function GET(
       );
     }
 
+    // Determine enrollment status for schedule preview gating
+    const enrollmentRepo = dataSource.getRepository(ExamEnrollment);
+    const enrollment = await enrollmentRepo.findOne({
+      where: { examId: id, userId: session.user.id },
+    });
+
+    const canSeeSchedule =
+      !exam.price ||
+      (enrollment &&
+        enrollment.paymentStatus === EnrollmentPaymentStatus.COMPLETED);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -63,6 +78,10 @@ export async function GET(
               name: exam.institution.name,
             }
           : null,
+        startAt: canSeeSchedule ? exam.startAt : null,
+        endAt: canSeeSchedule ? exam.endAt : null,
+        allowPreview: exam.allowPreview,
+        maxAttempts: exam.maxAttempts,
       },
     });
   } catch (error) {

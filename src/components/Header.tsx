@@ -9,12 +9,14 @@ import {
   User,
   LogOut,
   Calendar,
+  BookOpen,
   Trophy,
   Home,
   MessageSquare,
   Settings,
   ChevronDown,
   MoreHorizontal,
+  Calculator,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +49,7 @@ export default function Header() {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Study Planner", href: "/study-planner", icon: Calendar },
+    { name: "CGPA Calculator", href: "/cgpa-calculator", icon: Calculator },
     { name: "Academic Profile", href: "/profile/academic", icon: User },
     { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
     { name: "Forums", href: "/forums", icon: MessageSquare },
@@ -124,6 +127,19 @@ export default function Header() {
                 >
                   <User size={18} />
                   <span className="hidden lg:block">Academic Profile</span>
+                </Link>
+
+                {/* Exams Link */}
+                <Link
+                  href="/exams"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive("/exams")
+                      ? "bg-primary/10 text-primary border border-primary/20"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  }`}
+                >
+                  <BookOpen size={18} />
+                  <span className="hidden lg:block">Exams</span>
                 </Link>
 
                 {/* More Menu Dropdown */}
@@ -341,6 +357,34 @@ export default function Header() {
                   >
                     <Calendar size={20} />
                     Study Planner
+                  </Link>
+
+                  {/* Exams */}
+                  <Link
+                    href="/exams"
+                    className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive("/exams")
+                        ? "bg-primary/10 text-primary border-l-4 border-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <BookOpen size={20} />
+                    Exams
+                  </Link>
+
+                  {/* CGPA Calculator */}
+                  <Link
+                    href="/cgpa-calculator"
+                    className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive("/cgpa-calculator")
+                        ? "bg-primary/10 text-primary border-l-4 border-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Calculator size={20} />
+                    CGPA Calculator
                   </Link>
 
                   {/* Leaderboard */}

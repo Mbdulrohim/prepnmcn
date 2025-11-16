@@ -15,9 +15,14 @@ import { ExamEnrollment } from "../entities/ExamEnrollment";
 import { ExamAttempt } from "../entities/ExamAttempt";
 import { Question } from "../entities/Question";
 import { Exam } from "../entities/Exam";
+import { ExamVersion } from "../entities/ExamVersion";
 import { Challenge } from "../entities/Challenge";
 import { AccessCode } from "../entities/AccessCode";
 import { ChatMessage } from "../entities/ChatMessage";
+import { CommunityVoice } from "../entities/CommunityVoice";
+import { CampusStory } from "../entities/CampusStory";
+import { LearnerTestimonial } from "../entities/LearnerTestimonial";
+import { BlogPost } from "../entities/BlogPost";
 
 let AppDataSource: DataSource;
 
@@ -37,9 +42,14 @@ export async function getDataSource(): Promise<DataSource> {
     entities: [
       Institution,
       ExamCategory,
+      CommunityVoice,
+      CampusStory,
+      LearnerTestimonial,
+      BlogPost,
       ExamPackage,
       Exam,
       Question,
+      ExamVersion,
       ExamAttempt,
       ExamEnrollment,
       User,

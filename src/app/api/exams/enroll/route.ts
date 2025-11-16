@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
           amountPaid: exam.price,
           currency: exam.currency || "NGN",
           enrolledAt: new Date(),
+          maxAttempts: exam.maxAttempts || 3,
         });
 
         await enrollmentRepository.save(enrollment);
@@ -140,6 +141,7 @@ export async function POST(request: NextRequest) {
       amountPaid: 0,
       currency: exam.currency || "NGN",
       enrolledAt: new Date(),
+      maxAttempts: exam.maxAttempts || 3,
     });
 
     await enrollmentRepository.save(enrollment);

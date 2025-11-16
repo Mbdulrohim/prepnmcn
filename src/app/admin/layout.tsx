@@ -220,6 +220,18 @@ export default function AdminLayout({
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
+                    isActive={isActive("/admin/shareable-exams")}
+                    tooltip="Shareable Exams"
+                  >
+                    <Link href="/admin/shareable-exams">
+                      <Globe />
+                      <span>Shareable Exams</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
                     isActive={isActive("/admin/questions")}
                     tooltip="Questions"
                   >

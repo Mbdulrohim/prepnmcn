@@ -76,6 +76,7 @@ import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/components/AuthProvider";
 import { ThemeProvider } from "next-themes";
 import FloatingChat from "@/components/FloatingChat";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function RootLayout({
   children,
@@ -98,8 +99,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <ConditionalHeader />
-            {children}
+            <div className="min-h-screen flex flex-col">
+              <ConditionalHeader />
+              <main className="flex-1">{children}</main>
+              <SiteFooter />
+            </div>
             <Toaster />
             <FloatingChat />
           </AuthProvider>

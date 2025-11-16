@@ -31,6 +31,7 @@ import {
   CheckCircle,
   Lock,
 } from "lucide-react";
+import ExamTable from "@/components/ExamTable";
 import { toast } from "sonner";
 
 interface Exam {
@@ -356,28 +357,22 @@ export default function ExamsPage() {
             </CardContent>
           </Card>
 
-          {/* Exam Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-            {filteredExams.map((exam) => (
-              <Link key={exam.id} href={`/exam/${exam.id}`}>
-                <Card className="hover:shadow-lg transition-all duration-200 hover:scale-105 cursor-pointer aspect-square flex items-center justify-center text-center p-4 border-2 hover:border-primary/50">
-                  <div className="space-y-2">
-                    <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-                      <BookOpen className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-sm line-clamp-2 leading-tight">
-                      {exam.title}
-                    </h3>
-                    {getStatusBadge(exam.id) && (
-                      <div className="flex justify-center">
-                        {getStatusBadge(exam.id)}
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+          {/* Exam Table (reusable) */}
+          <Card>
+            <CardHeader>
+              <CardTitle>All Exams</CardTitle>
+              <CardDescription>
+                Click an exam to view details or enroll.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ExamTable
+                exams={filteredExams as any}
+                enrollments={enrollments as any}
+                onEnroll={handleEnroll}
+              />
+            </CardContent>
+          </Card>
 
           {filteredExams.length === 0 && (
             <div className="text-center py-12">

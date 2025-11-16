@@ -28,6 +28,12 @@ export async function GET() {
       type: exam.type,
       price: exam.price,
       currency: exam.currency,
+      // expose scheduling & admin options in admin listing
+      startAt: exam.startAt ? exam.startAt.toISOString() : null,
+      endAt: exam.endAt ? exam.endAt.toISOString() : null,
+      allowPreview: exam.allowPreview,
+      maxAttempts: exam.maxAttempts,
+      allowMultipleAttempts: exam.allowMultipleAttempts,
       createdAt: exam.createdAt.toISOString().split("T")[0], // Format as YYYY-MM-DD
     }));
 
@@ -89,10 +95,16 @@ export async function POST(request: NextRequest) {
         result = await dataSource.getRepository(ExamPackage).save(data);
         break;
       case "exam":
+        // parse scheduling fields
         result = await dataSource.getRepository(Exam).save({
           ...data,
           type: examType,
           institutionId: data.institutionId || null,
+          startAt: data.startAt ? new Date(data.startAt) : null,
+          endAt: data.endAt ? new Date(data.endAt) : null,
+          allowPreview: !!data.allowPreview,
+          maxAttempts: data.maxAttempts !== undefined ? data.maxAttempts : 3,
+          allowMultipleAttempts: !!data.allowMultipleAttempts,
         });
         break;
       default:

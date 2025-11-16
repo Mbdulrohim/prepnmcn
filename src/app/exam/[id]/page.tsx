@@ -1,4 +1,5 @@
 "use client";
+import ExamStartDialog from "@/components/ExamStartDialog";
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -26,6 +27,14 @@ import {
   Award,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Exam {
   id: string;
@@ -46,6 +55,10 @@ interface Exam {
     id: string;
     name: string;
   };
+  startAt?: string | null;
+  endAt?: string | null;
+  allowPreview?: boolean;
+  maxAttempts?: number;
 }
 
 interface Enrollment {
@@ -53,6 +66,8 @@ interface Enrollment {
   examId: string;
   status: string;
   paymentStatus: string;
+  attemptsUsed?: number;
+  maxAttempts?: number;
 }
 
 export default function ExamDetailPage() {
@@ -65,6 +80,8 @@ export default function ExamDetailPage() {
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [loading, setLoading] = useState(true);
   const [creatingEnrollment, setCreatingEnrollment] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewQuestions, setPreviewQuestions] = useState<any[] | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -270,6 +287,22 @@ export default function ExamDetailPage() {
 
           {/* Exam Details */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {exam.startAt && (
+              <Card>
+                <CardHeader className="text-center">
+                  <Calendar className="mx-auto h-8 w-8 text-primary mb-2" />
+                  <CardTitle className="text-lg">Active Window</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(exam.startAt).toLocaleString()} —{" "}
+                    {exam.endAt
+                      ? new Date(exam.endAt).toLocaleString()
+                      : "No end date"}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
             <Card>
               <CardHeader className="text-center">
                 <Clock className="mx-auto h-8 w-8 text-primary mb-2" />
@@ -357,24 +390,79 @@ export default function ExamDetailPage() {
                     <span className="text-green-600">Free</span>
                   )}
                 </div>
+                {enrollment && (
+                  <div className="text-sm text-muted-foreground mt-2">
+                    Attempts remaining:{" "}
+                    {(enrollment.maxAttempts || 0) -
+                      (enrollment.attemptsUsed || 0)}
+                  </div>
+                )}
 
                 <div className="flex gap-2">
                   {enrollment ? (
-                    <Button asChild size="lg">
-                      <Link href={`/exams/${exam.id}/take`}>
-                        {enrollment.status === "completed" ? (
-                          <>
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            View Results
-                          </>
-                        ) : (
-                          <>
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            Take Exam
-                          </>
-                        )}
-                      </Link>
-                    </Button>
+                    enrollment.status === "completed" ? (
+                      <Button
+                        size="lg"
+                        onClick={() => {
+                          router.push(`/exam/${exam.id}/attempts`);
+                        }}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        View Results
+                      </Button>
+                    ) : (
+                      <ExamStartDialog
+                        exam={{
+                          id: exam.id,
+                          title: exam.title,
+                          totalQuestions: exam.totalQuestions,
+                          duration: exam.duration,
+                          type: exam.type,
+                          subject: exam.subject,
+                          topics: [],
+                          startAt: exam.startAt,
+                          endAt: exam.endAt,
+                        }}
+                        onStart={async () => {
+                          // Start attempt logic
+                          try {
+                            const resp = await fetch(
+                              `/api/exams/attempts?examId=${exam.id}`
+                            );
+                            const data = await resp.json();
+                            if (data.success) {
+                              const inProgress = data.data.find(
+                                (a: any) => !a.isCompleted
+                              );
+                              if (inProgress) {
+                                router.push(
+                                  `/exam/${exam.id}/attempt/${inProgress.id}`
+                                );
+                                return;
+                              }
+                            }
+
+                            const newResp = await fetch(
+                              `/api/exams/${exam.id}/attempt`,
+                              { method: "POST" }
+                            );
+                            const newData = await newResp.json();
+                            if (newResp.ok && newData.success) {
+                              router.push(
+                                `/exam/${exam.id}/attempt/${newData.data.id}`
+                              );
+                            } else {
+                              toast.error(
+                                newData.error || "Failed to create attempt"
+                              );
+                            }
+                          } catch (err) {
+                            console.error(err);
+                            toast.error("Failed to start attempt");
+                          }
+                        }}
+                      />
+                    )
                   ) : (
                     <Button
                       onClick={handleEnroll}
@@ -387,10 +475,39 @@ export default function ExamDetailPage() {
                           Pay & Enroll
                         </>
                       ) : (
-                        <>
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Enroll Free
-                        </>
+                        <div className="flex gap-2">
+                          {exam.allowPreview && (
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              onClick={async () => {
+                                setPreviewOpen(true);
+                                try {
+                                  const r = await fetch(
+                                    `/api/exams/${exam.id}/preview`
+                                  );
+                                  const data = await r.json();
+                                  if (data.success)
+                                    setPreviewQuestions(data.data);
+                                  else setPreviewQuestions([]);
+                                } catch (err) {
+                                  setPreviewQuestions([]);
+                                }
+                              }}
+                            >
+                              Preview
+                            </Button>
+                          )}
+                          <Button
+                            size="lg"
+                            onClick={handleEnroll}
+                            disabled={creatingEnrollment}
+                          >
+                            {exam.price && exam.price > 0
+                              ? "Enroll & Pay"
+                              : "Enroll"}
+                          </Button>
+                        </div>
                       )}
                     </Button>
                   )}
@@ -400,6 +517,40 @@ export default function ExamDetailPage() {
           </Card>
         </div>
       </div>
+      {/* Preview Modal */}
+      <Dialog open={previewOpen} onOpenChange={() => setPreviewOpen(false)}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>Exam Preview</DialogTitle>
+            <DialogDescription>
+              Sample questions from this exam.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {previewQuestions === null ? (
+              <div>Loading...</div>
+            ) : previewQuestions.length === 0 ? (
+              <div>No preview available</div>
+            ) : (
+              previewQuestions.map((q) => (
+                <Card key={q.id}>
+                  <CardContent>
+                    <div className="font-medium mb-2">{q.question}</div>
+                    <ul className="list-disc pl-6 text-sm">
+                      {q.options.map((o: string, i: number) => (
+                        <li key={i}>{o}</li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setPreviewOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

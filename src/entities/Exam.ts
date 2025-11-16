@@ -15,6 +15,7 @@ import { Question } from "./Question";
 export enum ExamStatus {
   DRAFT = "draft",
   PUBLISHED = "published",
+  DISABLED = "disabled",
   ARCHIVED = "archived",
 }
 
@@ -96,10 +97,29 @@ export class Exam {
   status!: ExamStatus;
 
   @Column({ type: "timestamp", nullable: true })
-  scheduledAt!: Date;
+  // start date/time for scheduled/controlled exams
+  startAt?: Date | null;
+
+  @Column({ type: "timestamp", nullable: true })
+  endAt?: Date | null;
 
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
+
+  @Column({ type: "boolean", default: false })
+  allowPreview!: boolean;
+
+  @Column({ type: "int", default: 3 })
+  maxAttempts?: number;
+
+  @Column({ type: "boolean", default: false })
+  allowMultipleAttempts!: boolean;
+
+  @Column({ type: "boolean", default: false })
+  isShareable!: boolean; // True for link-shareable exams
+
+  @Column({ type: "varchar", length: 100, unique: true, nullable: true })
+  shareSlug?: string; // Unique slug for shareable link (e.g., "math-quiz-2024")
 
   @OneToMany("questions", "exam")
   examQuestions!: Question[];
