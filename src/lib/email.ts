@@ -56,6 +56,11 @@ async function sendEmailViaSMTP(options: {
   try {
     (await import("dotenv")).config();
     const nodemailer = (await import("nodemailer")).default;
+
+    const allowSelfSigned =
+      process.env.SMTP_ALLOW_SELF_SIGNED === "true" ||
+      process.env.SMTP_ALLOW_SELF_SIGNED === "1";
+
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || "587"),
@@ -67,7 +72,7 @@ async function sendEmailViaSMTP(options: {
       },
       tls: {
         rejectUnauthorized:
-          process.env.NODE_ENV === "production" ? true : false,
+          process.env.NODE_ENV === "production" && !allowSelfSigned,
       },
       pool: true,
       maxConnections: 5,
