@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "NODE_OPTIONS='--no-deprecation' next build",
+    "build:ci": "NODE_OPTIONS='--max-old-space-size=6144 --no-deprecation' NEXT_DISABLE_ESLINT=1 next build",
     "start": "next start",
     "lint": "eslint",
     "typeorm": "node ./node_modules/typeorm/cli.js",
