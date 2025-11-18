@@ -59,7 +59,8 @@ async function sendEmailViaSMTP(options: {
 
     const allowSelfSigned =
       process.env.SMTP_ALLOW_SELF_SIGNED === "true" ||
-      process.env.SMTP_ALLOW_SELF_SIGNED === "1";
+      process.env.SMTP_ALLOW_SELF_SIGNED === "1" ||
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED === "0";
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
