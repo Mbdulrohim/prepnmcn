@@ -196,6 +196,7 @@ export default function ShareableExamsPage() {
         duration: 60,
         shareSlug: "",
       });
+      // Refresh list
       await loadShareableExams();
     } catch (error: any) {
       console.error("Error updating exam:", error);
