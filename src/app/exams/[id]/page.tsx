@@ -67,8 +67,7 @@ export default function ExamDetailPage() {
     }
 
     if (status === "authenticated" && examId) {
-      fetchExam();
-      fetchEnrollment();
+      loadExamData();
       checkPaymentStatus();
     }
   }, [status, router, examId]);
@@ -132,6 +131,12 @@ export default function ExamDetailPage() {
       }
     } catch (error) {
       console.error("Error fetching enrollment:", error);
+    }
+  };
+
+  const loadExamData = async () => {
+    try {
+      await Promise.all([fetchExam(), fetchEnrollment()]);
     } finally {
       setLoading(false);
     }
