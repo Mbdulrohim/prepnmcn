@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -89,12 +95,20 @@ export default function ExamDetailPage() {
         const data = await response.json();
 
         if (data.success && data.data.status === "success") {
-          toast.success("Payment successful! You are now enrolled in the exam.");
+          toast.success(
+            "Payment successful! You are now enrolled in the exam."
+          );
           fetchEnrollment(); // Refresh enrollment
           // Clean up URL
-          window.history.replaceState({}, document.title, window.location.pathname);
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
         } else {
-          toast.error("Payment verification failed. Please contact support if you were charged.");
+          toast.error(
+            "Payment verification failed. Please contact support if you were charged."
+          );
         }
       } catch (error) {
         console.error("Error verifying payment:", error);
@@ -126,7 +140,9 @@ export default function ExamDetailPage() {
       const data = await response.json();
 
       if (data.success) {
-        const userEnrollment = data.data.find((e: Enrollment) => e.examId === examId);
+        const userEnrollment = data.data.find(
+          (e: Enrollment) => e.examId === examId
+        );
         setEnrollment(userEnrollment || null);
       }
     } catch (error) {
@@ -224,7 +240,9 @@ export default function ExamDetailPage() {
         <div className="text-center">
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium">Exam not found</h3>
-          <p className="text-muted-foreground">The exam you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground">
+            The exam you're looking for doesn't exist.
+          </p>
           <Button asChild className="mt-4">
             <Link href="/exams">Back to Exams</Link>
           </Button>
@@ -249,7 +267,9 @@ export default function ExamDetailPage() {
           <div className="space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h1 className="text-3xl font-bold tracking-tight">{exam.title}</h1>
+                <h1 className="text-3xl font-bold tracking-tight">
+                  {exam.title}
+                </h1>
                 <div className="flex items-center gap-4 mt-2">
                   <Badge variant="outline">{exam.subject}</Badge>
                   <Badge variant="outline">{formatExamType(exam.type)}</Badge>
@@ -276,7 +296,8 @@ export default function ExamDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground leading-relaxed">
-                    {exam.description || "No detailed description available for this exam."}
+                    {exam.description ||
+                      "No detailed description available for this exam."}
                   </p>
                 </CardContent>
               </Card>
@@ -300,8 +321,12 @@ export default function ExamDetailPage() {
                     <div className="flex items-center gap-2">
                       <BookOpen className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="text-2xl font-bold">{exam.totalQuestions}</p>
-                        <p className="text-xs text-muted-foreground">Questions</p>
+                        <p className="text-2xl font-bold">
+                          {exam.totalQuestions}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Questions
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -312,8 +337,12 @@ export default function ExamDetailPage() {
                     <div className="flex items-center gap-2">
                       <Target className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="text-2xl font-bold">{exam.passingScore || 70}%</p>
-                        <p className="text-xs text-muted-foreground">Passing Score</p>
+                        <p className="text-2xl font-bold">
+                          {exam.passingScore || 70}%
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Passing Score
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -351,7 +380,9 @@ export default function ExamDetailPage() {
                       )}
                     </div>
                     {exam.price && exam.price > 0 && (
-                      <p className="text-sm text-muted-foreground mt-1">One-time payment</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        One-time payment
+                      </p>
                     )}
                   </div>
 
@@ -414,7 +445,9 @@ export default function ExamDetailPage() {
                     <span>{exam.totalQuestions}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Passing Score:</span>
+                    <span className="text-muted-foreground">
+                      Passing Score:
+                    </span>
                     <span>{exam.passingScore || 70}%</span>
                   </div>
                   <div className="flex justify-between text-sm">

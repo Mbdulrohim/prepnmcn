@@ -20,6 +20,10 @@ export async function GET(
       );
     }
 
+    // Check if includeAnswers query parameter is present
+    const { searchParams } = new URL(request.url);
+    const includeAnswers = searchParams.get("includeAnswers") === "true";
+
     const dataSource = await getDataSource();
     const questionRepo = dataSource.getRepository(Question);
 
@@ -28,13 +32,14 @@ export async function GET(
       order: { order: "ASC", createdAt: "ASC" },
     });
 
-    // Strip correctAnswer from public response
+    // Include correctAnswer if requested (for review pages), otherwise strip it
     const sanitized = questions.map((q) => ({
       id: q.id,
       examId: q.examId,
       question: q.question,
       type: q.type,
       options: q.options,
+      ...(includeAnswers && { correctAnswer: q.correctAnswer }),
       explanation: q.explanation ? q.explanation : null,
       marks: q.marks,
       order: q.order,
