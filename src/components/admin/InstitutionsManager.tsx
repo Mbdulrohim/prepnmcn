@@ -69,6 +69,8 @@ export default function InstitutionsManager() {
   const [selectedState, setSelectedState] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
   const [geoStats, setGeoStats] = useState<GeoStats | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(50);
   const [newInstitution, setNewInstitution] = useState({
     name: "",
     code: "",
@@ -76,6 +78,56 @@ export default function InstitutionsManager() {
     city: "",
     type: "",
   });
+
+  // Define arrays at component top level so they're always available
+  const nigerianStates = [
+    "Abia",
+    "Adamawa",
+    "Akwa Ibom",
+    "Anambra",
+    "Bauchi",
+    "Bayelsa",
+    "Benue",
+    "Borno",
+    "Cross River",
+    "Delta",
+    "Ebonyi",
+    "Edo",
+    "Ekiti",
+    "Enugu",
+    "FCT",
+    "Gombe",
+    "Imo",
+    "Jigawa",
+    "Kaduna",
+    "Kano",
+    "Katsina",
+    "Kebbi",
+    "Kogi",
+    "Kwara",
+    "Lagos",
+    "Nasarawa",
+    "Niger",
+    "Ogun",
+    "Ondo",
+    "Osun",
+    "Oyo",
+    "Plateau",
+    "Rivers",
+    "Sokoto",
+    "Taraba",
+    "Yobe",
+    "Zamfara",
+  ];
+
+  const institutionTypes = [
+    "University",
+    "Polytechnic",
+    "College of Education",
+    "Monotechnic",
+    "College of Health",
+    "Other",
+  ];
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -92,6 +144,7 @@ export default function InstitutionsManager() {
 
   useEffect(() => {
     filterInstitutions();
+    setCurrentPage(1); // Reset to first page when filters change
   }, [institutions, searchTerm, selectedState, selectedType]);
 
   useEffect(() => {
@@ -103,16 +156,41 @@ export default function InstitutionsManager() {
   const fetchInstitutions = async () => {
     try {
       const res = await fetch("/api/admin/institutions");
-      const data = await res.json();
-      setInstitutions(data);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch institutions");
+      }
+
+      const response = await res.json();
+
+      // Handle different response structures
+      let institutionsData = [];
+      if (response && typeof response === "object") {
+        if (response.success && Array.isArray(response.data)) {
+          institutionsData = response.data;
+        } else if (Array.isArray(response)) {
+          institutionsData = response;
+        } else if (response.data && Array.isArray(response.data)) {
+          institutionsData = response.data;
+        }
+      }
+
+      setInstitutions(institutionsData);
     } catch (error) {
       console.error("Error fetching institutions:", error);
+      setInstitutions([]);
     } finally {
       setIsLoading(false);
     }
   };
 
   const filterInstitutions = () => {
+    if (!Array.isArray(institutions)) {
+      console.error("institutions is not an array:", institutions);
+      setFilteredInstitutions([]);
+      return;
+    }
+
     let filtered = institutions;
 
     if (searchTerm) {
@@ -136,6 +214,10 @@ export default function InstitutionsManager() {
   };
 
   const calculateGeoStats = () => {
+    if (!Array.isArray(institutions)) {
+      return;
+    }
+
     const states = new Set(institutions.map((inst) => inst.state));
     const cities = new Set(institutions.map((inst) => inst.city));
 
@@ -296,55 +378,6 @@ export default function InstitutionsManager() {
       </div>
     );
   }
-
-  const nigerianStates = [
-    "Abia",
-    "Adamawa",
-    "Akwa Ibom",
-    "Anambra",
-    "Bauchi",
-    "Bayelsa",
-    "Benue",
-    "Borno",
-    "Cross River",
-    "Delta",
-    "Ebonyi",
-    "Edo",
-    "Ekiti",
-    "Enugu",
-    "FCT",
-    "Gombe",
-    "Imo",
-    "Jigawa",
-    "Kaduna",
-    "Kano",
-    "Katsina",
-    "Kebbi",
-    "Kogi",
-    "Kwara",
-    "Lagos",
-    "Nasarawa",
-    "Niger",
-    "Ogun",
-    "Ondo",
-    "Osun",
-    "Oyo",
-    "Plateau",
-    "Rivers",
-    "Sokoto",
-    "Taraba",
-    "Yobe",
-    "Zamfara",
-  ];
-
-  const institutionTypes = [
-    "University",
-    "Polytechnic",
-    "College of Education",
-    "Monotechnic",
-    "College of Health",
-    "Other",
-  ];
 
   return (
     <div className="space-y-6">
@@ -550,11 +583,12 @@ export default function InstitutionsManager() {
                           <SelectValue placeholder="Select state" />
                         </SelectTrigger>
                         <SelectContent>
-                          {nigerianStates.map((state) => (
-                            <SelectItem key={state} value={state}>
-                              {state}
-                            </SelectItem>
-                          ))}
+                          {Array.isArray(nigerianStates) &&
+                            nigerianStates.map((state) => (
+                              <SelectItem key={state} value={state}>
+                                {state}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -584,11 +618,12 @@ export default function InstitutionsManager() {
                           <SelectValue placeholder="Select institution type" />
                         </SelectTrigger>
                         <SelectContent>
-                          {institutionTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
+                          {Array.isArray(institutionTypes) &&
+                            institutionTypes.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -607,8 +642,11 @@ export default function InstitutionsManager() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Institutions ({filteredInstitutions.length} of {institutions.length}
-            )
+            Institutions (
+            {Array.isArray(filteredInstitutions)
+              ? filteredInstitutions.length
+              : 0}{" "}
+            of {Array.isArray(institutions) ? institutions.length : 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -626,55 +664,96 @@ export default function InstitutionsManager() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredInstitutions.map((institution) => (
-                <TableRow
-                  key={institution.id}
-                  data-state={
-                    selectedInstitutions.has(institution.id)
-                      ? "selected"
-                      : undefined
-                  }
-                  onClick={() => toggleInstitutionSelection(institution.id)}
-                >
-                  <TableCell>
-                    <input
-                      type="checkbox"
-                      checked={selectedInstitutions.has(institution.id)}
-                      onChange={() =>
-                        toggleInstitutionSelection(institution.id)
+              {Array.isArray(filteredInstitutions) &&
+                filteredInstitutions
+                  .slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage
+                  )
+                  .map((institution) => (
+                    <TableRow
+                      key={institution.id}
+                      data-state={
+                        selectedInstitutions.has(institution.id)
+                          ? "selected"
+                          : undefined
                       }
-                      className="rounded border-gray-300"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {institution.name}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{institution.code}</Badge>
-                  </TableCell>
-                  <TableCell>{institution.state}</TableCell>
-                  <TableCell>{institution.city}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{institution.type}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        institution.isActive
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                      }`}
+                      onClick={() => toggleInstitutionSelection(institution.id)}
                     >
-                      {institution.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(institution.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedInstitutions.has(institution.id)}
+                          onChange={() =>
+                            toggleInstitutionSelection(institution.id)
+                          }
+                          className="rounded border-gray-300"
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {institution.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{institution.code}</Badge>
+                      </TableCell>
+                      <TableCell>{institution.state}</TableCell>
+                      <TableCell>{institution.city}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{institution.type}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            institution.isActive
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                          }`}
+                        >
+                          {institution.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(institution.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          {Array.isArray(filteredInstitutions) &&
+            filteredInstitutions.length > itemsPerPage && (
+              <div className="flex items-center justify-between mt-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                  {Math.min(
+                    currentPage * itemsPerPage,
+                    filteredInstitutions.length
+                  )}{" "}
+                  of {filteredInstitutions.length} institutions
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={
+                      currentPage * itemsPerPage >= filteredInstitutions.length
+                    }
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
         </CardContent>
       </Card>
     </div>

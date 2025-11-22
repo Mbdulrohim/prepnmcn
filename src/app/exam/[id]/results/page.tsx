@@ -150,11 +150,13 @@ export default function ExamResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-lg text-slate-700">Loading your results...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-lg text-muted-foreground">
+              Loading your results...
+            </p>
           </div>
         </div>
       </div>
@@ -163,14 +165,14 @@ export default function ExamResultsPage() {
 
   if (error || !results) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="text-center max-w-md">
-            <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-foreground mb-2">
               Error Loading Results
             </h1>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <p className="text-muted-foreground mb-6">{error}</p>
             <Button onClick={handleBackToDashboard}>Back to Dashboard</Button>
           </div>
         </div>
@@ -181,14 +183,14 @@ export default function ExamResultsPage() {
   const performance = getPerformanceLevel(results.percentage);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Submission Alert */}
         {isAutoSubmit && (
-          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
-              <p className="text-yellow-800">
+              <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
+              <p className="text-yellow-800 dark:text-yellow-200">
                 <span className="font-medium">Auto-submitted:</span> Your exam
                 was automatically submitted when time expired.
               </p>
@@ -197,16 +199,16 @@ export default function ExamResultsPage() {
         )}
 
         {/* Main Results Card */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="bg-card rounded-xl shadow-lg border border-border overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 px-8 py-6 text-white">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                 <Trophy className="h-6 w-6" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold">Exam Completed!</h1>
-                <p className="text-blue-100">{results.examTitle}</p>
+                <p className="text-blue-100">Exam Results</p>
               </div>
             </div>
           </div>
@@ -215,19 +217,29 @@ export default function ExamResultsPage() {
           <div className="p-8">
             <div className="text-center mb-8">
               <div className="mb-6">
-                <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-4">
-                  <span className="text-3xl font-bold text-gray-900">
+                <div className="inline-flex items-center justify-center w-24 h-24 bg-muted rounded-full mb-4">
+                  <span className="text-3xl font-bold text-foreground">
                     {results.percentage}%
                   </span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold text-foreground mb-2">
                   Your Final Score
                 </h2>
                 <div
-                  className={`inline-flex items-center px-4 py-2 rounded-full ${performance.bg}`}
+                  className={`inline-flex items-center px-4 py-2 rounded-full ${
+                    performance.bg
+                  } dark:${performance.bg.replace("bg-", "bg-")}/20`}
                 >
-                  <Award className={`h-4 w-4 mr-2 ${performance.color}`} />
-                  <span className={`font-medium ${performance.color}`}>
+                  <Award
+                    className={`h-4 w-4 mr-2 ${
+                      performance.color
+                    } dark:${performance.color.replace("text-", "text-")}`}
+                  />
+                  <span
+                    className={`font-medium ${
+                      performance.color
+                    } dark:${performance.color.replace("text-", "text-")}`}
+                  >
                     {performance.level}
                   </span>
                 </div>
@@ -236,7 +248,7 @@ export default function ExamResultsPage() {
               {/* Progress Bar */}
               <div className="max-w-md mx-auto">
                 <Progress value={results.percentage} className="h-3 mb-2" />
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {results.score} out of {results.totalQuestions} questions
                   correct
                 </p>
@@ -245,40 +257,40 @@ export default function ExamResultsPage() {
 
             {/* Detailed Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-green-700">
+              <div className="text-center p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-500 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-green-700 dark:text-green-400">
                   {results.correctAnswers}
                 </div>
-                <div className="text-sm text-green-600 font-medium">
+                <div className="text-sm text-green-600 dark:text-green-500 font-medium">
                   Correct Answers
                 </div>
               </div>
 
-              <div className="text-center p-6 bg-red-50 border border-red-200 rounded-lg">
-                <XCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-red-700">
+              <div className="text-center p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <XCircle className="h-8 w-8 text-red-600 dark:text-red-500 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-red-700 dark:text-red-400">
                   {results.wrongAnswers}
                 </div>
-                <div className="text-sm text-red-600 font-medium">
+                <div className="text-sm text-red-600 dark:text-red-500 font-medium">
                   Incorrect Answers
                 </div>
               </div>
 
-              <div className="text-center p-6 bg-gray-50 border border-gray-200 rounded-lg">
-                <AlertCircle className="h-8 w-8 text-gray-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-700">
+              <div className="text-center p-6 bg-muted border border-border rounded-lg">
+                <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <div className="text-2xl font-bold text-foreground">
                   {results.unanswered}
                 </div>
-                <div className="text-sm text-gray-600 font-medium">
+                <div className="text-sm text-muted-foreground font-medium">
                   Unanswered
                 </div>
               </div>
             </div>
 
             {/* Time Spent */}
-            <div className="text-center mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center justify-center space-x-2 text-blue-700">
+            <div className="text-center mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-center justify-center space-x-2 text-blue-700 dark:text-blue-400">
                 <Clock className="h-5 w-5" />
                 <span className="font-medium">
                   Time Spent: {formatTime(results.timeSpent)}
@@ -288,10 +300,7 @@ export default function ExamResultsPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <Button
-                onClick={handleReviewAnswers}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
-              >
+              <Button onClick={handleReviewAnswers} className="flex-1">
                 <BookOpen className="h-4 w-4 mr-2" />
                 Review Answers
               </Button>
@@ -307,10 +316,10 @@ export default function ExamResultsPage() {
             </div>
 
             {/* Additional Info */}
-            <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="mt-8 p-4 bg-muted border border-border rounded-lg">
               <div className="flex items-start space-x-2">
-                <TrendingUp className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-gray-700">
+                <TrendingUp className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-muted-foreground">
                   <p className="font-medium mb-1">What's Next?</p>
                   <ul className="space-y-1">
                     <li>

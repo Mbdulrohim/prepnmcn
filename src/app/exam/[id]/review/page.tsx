@@ -153,14 +153,14 @@ export default function ExamReviewPage() {
   const userAnswer = currentQuestion
     ? reviewData?.answers[currentQuestion.id]
     : undefined;
-  
+
   // Parse correctAnswer to number if it's a string
-  const correctAnswerIndex = currentQuestion 
-    ? typeof currentQuestion.correctAnswer === 'string' 
+  const correctAnswerIndex = currentQuestion
+    ? typeof currentQuestion.correctAnswer === "string"
       ? parseInt(currentQuestion.correctAnswer, 10)
       : currentQuestion.correctAnswer
     : undefined;
-  
+
   const isCorrect =
     userAnswer !== undefined &&
     correctAnswerIndex !== undefined &&
@@ -231,16 +231,18 @@ export default function ExamReviewPage() {
   }
 
   const correctCount = reviewData.questions.filter((q) => {
-    const correctIdx = typeof q.correctAnswer === 'string' 
-      ? parseInt(q.correctAnswer, 10) 
-      : q.correctAnswer;
+    const correctIdx =
+      typeof q.correctAnswer === "string"
+        ? parseInt(q.correctAnswer, 10)
+        : q.correctAnswer;
     return reviewData.answers[q.id] === correctIdx;
   }).length;
-  
+
   const incorrectCount = reviewData.questions.filter((q) => {
-    const correctIdx = typeof q.correctAnswer === 'string' 
-      ? parseInt(q.correctAnswer, 10) 
-      : q.correctAnswer;
+    const correctIdx =
+      typeof q.correctAnswer === "string"
+        ? parseInt(q.correctAnswer, 10)
+        : q.correctAnswer;
     return (
       reviewData.answers[q.id] !== undefined &&
       reviewData.answers[q.id] !== correctIdx
@@ -338,7 +340,9 @@ export default function ExamReviewPage() {
             <div className="space-y-3 mb-6">
               {currentQuestion.options.map((option, index) => {
                 const isUserAnswer = userAnswer === index;
-                const isCorrectAnswer = correctAnswerIndex !== undefined && index === correctAnswerIndex;
+                const isCorrectAnswer =
+                  correctAnswerIndex !== undefined &&
+                  index === correctAnswerIndex;
 
                 let className = "w-full p-4 text-left rounded-lg border-2 ";
                 if (isCorrectAnswer && isUserAnswer) {
@@ -467,9 +471,10 @@ export default function ExamReviewPage() {
             <div className="grid grid-cols-10 gap-2">
               {reviewData.questions.map((q, index) => {
                 const answer = reviewData.answers[q.id];
-                const correctIdx = typeof q.correctAnswer === 'string' 
-                  ? parseInt(q.correctAnswer, 10) 
-                  : q.correctAnswer;
+                const correctIdx =
+                  typeof q.correctAnswer === "string"
+                    ? parseInt(q.correctAnswer, 10)
+                    : q.correctAnswer;
                 const isCorrect = answer === correctIdx;
                 const isAnswered = answer !== undefined;
 
