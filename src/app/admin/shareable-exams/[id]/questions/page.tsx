@@ -152,9 +152,22 @@ export default function ManageShareableExamQuestions() {
         body: formData,
       });
 
+      if (!response.ok) {
+        // Try to parse error response
+        let errorMessage = "Failed to upload document";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use status text
+          errorMessage = `Upload failed: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error || "Failed to upload document");
       }
 

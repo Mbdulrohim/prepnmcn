@@ -4,12 +4,28 @@ import { Question, QuestionType } from "@/entities/Question";
 import { Exam } from "@/entities/Exam";
 import { s3Client, BUCKET_NAME } from "@/lib/s3";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import * as pdfParse from "pdf-parse";
-import * as mammoth from "mammoth";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if S3 is configured
+    if (
+      !process.env.AWS_ACCESS_KEY_ID ||
+      !process.env.AWS_SECRET_ACCESS_KEY ||
+      !process.env.AWS_S3_BUCKET_NAME
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "AWS S3 is not configured. Please set AWS environment variables.",
+        },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const examId = formData.get("examId") as string;
@@ -23,16 +39,17 @@ export async function POST(request: NextRequest) {
 
     // Validate file type
     const allowedTypes = [
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "text/plain",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      // "application/pdf", // Disabled due to DOMMatrix issues in Node.js
     ];
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         {
           success: false,
-          error: "Invalid file type. Only PDF, DOCX, and TXT files are allowed",
+          error:
+            "Invalid file type. Only TXT and DOCX files are supported. PDF support is temporarily unavailable.",
         },
         { status: 400 }
       );
@@ -58,36 +75,69 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    await s3Client.send(
-      new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: s3Key,
-        Body: buffer,
-        ContentType: file.type,
-      })
-    );
+    try {
+      await s3Client.send(
+        new PutObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: s3Key,
+          Body: buffer,
+          ContentType: file.type,
+        })
+      );
+    } catch (s3Error: any) {
+      console.error("S3 upload error:", s3Error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Failed to upload file to S3: ${
+            s3Error.message || "Unknown error"
+          }`,
+        },
+        { status: 500 }
+      );
+    }
 
     // Extract text from file
     let extractedText = "";
     try {
-      if (file.type === "application/pdf") {
-        const pdfData = await (pdfParse as any)(buffer);
-        extractedText = pdfData.text;
-        console.log("PDF extracted text length:", extractedText.length);
-        console.log("First 200 chars:", extractedText.substring(0, 200));
+      if (file.type === "text/plain") {
+        // TXT files are simple to parse
+        extractedText = buffer.toString("utf-8");
+        console.log("TXT extracted text length:", extractedText.length);
+      } else if (file.type === "application/pdf") {
+        // PDF parsing in Node.js has issues with DOMMatrix
+        // Return a helpful message instead
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "PDF parsing is currently unavailable. Please convert your PDF to a text file (.txt) or manually enter questions.",
+          },
+          { status: 400 }
+        );
       } else if (
         file.type ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       ) {
-        const result = await mammoth.extractRawText({ buffer });
-        extractedText = result.value;
-        console.log("DOCX extracted text length:", extractedText.length);
-        console.log("First 200 chars:", extractedText.substring(0, 200));
-      } else if (file.type === "text/plain") {
-        extractedText = buffer.toString("utf-8");
-        console.log("TXT extracted text length:", extractedText.length);
-        console.log("First 200 chars:", extractedText.substring(0, 200));
+        // DOCX parsing
+        try {
+          const mammoth = await import("mammoth");
+          const result = await mammoth.extractRawText({ buffer });
+          extractedText = result.value;
+          console.log("DOCX extracted text length:", extractedText.length);
+        } catch (docxError) {
+          console.error("DOCX parsing error:", docxError);
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Failed to parse DOCX file. Please convert to text format (.txt) or manually enter questions.",
+            },
+            { status: 400 }
+          );
+        }
       }
+
       console.log("File type:", file.type);
       console.log(
         "First 200 chars of extracted text:",
@@ -95,7 +145,15 @@ export async function POST(request: NextRequest) {
       );
     } catch (error) {
       console.error("Error extracting text:", error);
-      extractedText = "Error extracting text from file";
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Failed to extract text from file: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }. Please use a text file (.txt) format.`,
+        },
+        { status: 500 }
+      );
     }
 
     // Parse questions from text (basic implementation)
