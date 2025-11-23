@@ -42,10 +42,16 @@ export async function GET(
         // Extract S3 key from URL if it's a full URL, or use as-is if it's just a key
         let s3Key = resource.fileUrl;
         if (resource.fileUrl.includes("amazonaws.com")) {
-          // Extract key from full S3 URL
+          // Extract key from full S3 URL and decode it
           const urlParts = new URL(resource.fileUrl);
-          s3Key = urlParts.pathname.substring(1); // Remove leading slash
+          // pathname is already decoded by URL constructor
+          s3Key = decodeURIComponent(urlParts.pathname.substring(1)); // Remove leading slash and decode
+        } else {
+          // If it's just a key, decode it in case it's encoded
+          s3Key = decodeURIComponent(resource.fileUrl);
         }
+
+        console.log("Downloading resource:", resource.name, "S3 Key:", s3Key);
 
         // Generate a fresh pre-signed URL (valid for 1 hour)
         const command = new GetObjectCommand({
