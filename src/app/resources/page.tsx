@@ -56,13 +56,16 @@ export default function ResourcesPage() {
   return (
     <div className="container mx-auto py-6 px-4 sm:py-10">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Resources</h1>
-      
+
       {isPremiumRequired && (
         <Alert className="mb-4 sm:mb-6 border-yellow-300 bg-yellow-50">
           <Lock className="h-4 w-4 text-yellow-600" />
-          <AlertTitle className="text-yellow-800">Premium Access Required</AlertTitle>
+          <AlertTitle className="text-yellow-800">
+            Premium Access Required
+          </AlertTitle>
           <AlertDescription className="text-yellow-700 text-sm">
-            {errorMessage || "You need a premium subscription to access study resources. Contact an administrator to upgrade your account."}
+            {errorMessage ||
+              "You need a premium subscription to access study resources. Contact an administrator to upgrade your account."}
           </AlertDescription>
         </Alert>
       )}
@@ -70,7 +73,9 @@ export default function ResourcesPage() {
       {errorMessage && !isPremiumRequired && (
         <Alert className="mb-4 sm:mb-6" variant="destructive">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription className="text-sm">{errorMessage}</AlertDescription>
+          <AlertDescription className="text-sm">
+            {errorMessage}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -104,9 +109,12 @@ export default function ResourcesPage() {
               <Star className="h-8 w-8 sm:h-12 sm:w-12 text-yellow-600" />
             </div>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold mb-2">Upgrade to Premium</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Upgrade to Premium
+          </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-4">
-            Access all study resources, shareable exams, and more with a premium subscription.
+            Access all study resources, shareable exams, and more with a premium
+            subscription.
           </p>
           <p className="text-xs sm:text-sm text-muted-foreground">
             Contact your administrator to upgrade your account.
@@ -119,7 +127,9 @@ export default function ResourcesPage() {
               <Star className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
             </div>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold mb-2">No Resources Available</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            No Resources Available
+          </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-4">
             There are currently no resources to display.
           </p>
@@ -132,7 +142,9 @@ export default function ResourcesPage() {
           {resources.map((resource) => (
             <Card key={resource.id}>
               <CardHeader>
-                <CardTitle className="text-base sm:text-lg">{resource.name}</CardTitle>
+                <CardTitle className="text-base sm:text-lg">
+                  {resource.name}
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex justify-between items-center flex-wrap gap-2">
                 <Badge variant={resource.isFree ? "default" : "secondary"}>

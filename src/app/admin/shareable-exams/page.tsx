@@ -39,6 +39,17 @@ import {
   Upload,
   Edit,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 interface ShareableExam {
@@ -72,6 +83,7 @@ export default function ShareableExamsPage() {
   const [creating, setCreating] = useState(false);
   const [editingExam, setEditingExam] = useState<ShareableExam | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [deletingExamId, setDeletingExamId] = useState<string | null>(null);
 
   const [createForm, setCreateForm] = useState<CreateExamForm>({
     title: "",
@@ -206,17 +218,11 @@ export default function ShareableExamsPage() {
     }
   };
 
-  const deleteExam = async (examId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this shareable exam? This cannot be undone."
-      )
-    ) {
-      return;
-    }
+  const confirmDeleteExam = async () => {
+    if (!deletingExamId) return;
 
     try {
-      const res = await fetch(`/api/admin/exams/shareable/${examId}`, {
+      const res = await fetch(`/api/admin/exams/shareable/${deletingExamId}`, {
         method: "DELETE",
       });
 
@@ -226,11 +232,13 @@ export default function ShareableExamsPage() {
         throw new Error(data.error || "Failed to delete exam");
       }
 
-      toast.success("Exam deleted");
+      toast.success("Exam deleted successfully");
       loadShareableExams();
     } catch (error: any) {
       console.error("Error deleting exam:", error);
       toast.error(error.message || "Failed to delete exam");
+    } finally {
+      setDeletingExamId(null);
     }
   };
 
@@ -393,15 +401,44 @@ export default function ShareableExamsPage() {
                       <ExternalLink className="h-4 w-4 mr-1" />
                       Preview
                     </Button>
-                    <Button
-                      onClick={() => deleteExam(exam.id)}
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 w-full sm:w-auto"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDeletingExamId(exam.id)}
+                          className="text-red-600 hover:text-red-700 w-full sm:w-auto"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Delete Shareable Exam
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this shareable exam?
+                            This will also delete all associated questions. This
+                            action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            onClick={() => setDeletingExamId(null)}
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={confirmDeleteExam}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </CardContent>

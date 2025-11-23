@@ -14,10 +14,7 @@ export async function DELETE(
     const session = await auth();
 
     // Only super_admin can delete users
-    if (
-      !session?.user ||
-      (session.user as any).role !== "super_admin"
-    ) {
+    if (!session?.user || (session.user as any).role !== "super_admin") {
       return NextResponse.json(
         { message: "Unauthorized. Super admin access required." },
         { status: 403 }
@@ -32,10 +29,7 @@ export async function DELETE(
     const user = await userRepo.findOne({ where: { id: userId } });
 
     if (!user) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     // Prevent deleting super admins
@@ -104,10 +98,7 @@ export async function PATCH(
     const user = await userRepo.findOne({ where: { id: userId } });
 
     if (!user) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     // Prevent deactivating super admins
@@ -130,7 +121,9 @@ export async function PATCH(
     await userRepo.save(user);
 
     return NextResponse.json({
-      message: isActive ? "User activated successfully" : "User deactivated successfully",
+      message: isActive
+        ? "User activated successfully"
+        : "User deactivated successfully",
       user: {
         id: user.id,
         name: user.name,

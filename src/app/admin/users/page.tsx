@@ -161,7 +161,11 @@ export default function UsersPage() {
     setSelectedStatus("all");
   };
 
-  const handleUserAction = async (action: string, userId: string, durationMonths?: number) => {
+  const handleUserAction = async (
+    action: string,
+    userId: string,
+    durationMonths?: number
+  ) => {
     if (action === "Promote to Premium") {
       try {
         const response = await fetch(
@@ -280,7 +284,9 @@ export default function UsersPage() {
           fetchUsers();
         } else {
           const error = await response.json();
-          toast.error(error.message || `Failed to ${action.toLowerCase()} user`);
+          toast.error(
+            error.message || `Failed to ${action.toLowerCase()} user`
+          );
         }
       } catch (error) {
         console.error(`Failed to ${action.toLowerCase()} user:`, error);
@@ -288,7 +294,11 @@ export default function UsersPage() {
       }
     } else if (action === "Delete User") {
       // Show confirmation dialog
-      if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+      if (
+        !confirm(
+          "Are you sure you want to delete this user? This action cannot be undone."
+        )
+      ) {
         return;
       }
 
@@ -438,7 +448,9 @@ export default function UsersPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.premiumUsers}</div>
-              <p className="text-xs text-muted-foreground">Active subscriptions</p>
+              <p className="text-xs text-muted-foreground">
+                Active subscriptions
+              </p>
             </CardContent>
           </Card>
 
@@ -591,7 +603,8 @@ export default function UsersPage() {
                         <div className="flex gap-1 flex-wrap">
                           <Badge
                             variant={
-                              user.role === "admin" || user.role === "super_admin"
+                              user.role === "admin" ||
+                              user.role === "super_admin"
                                 ? "destructive"
                                 : "default"
                             }
@@ -601,7 +614,10 @@ export default function UsersPage() {
                               : user.role}
                           </Badge>
                           {user.isPremium && (
-                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-700">
+                            <Badge
+                              variant="outline"
+                              className="bg-yellow-50 border-yellow-300 text-yellow-700"
+                            >
                               <Star className="h-3 w-3 mr-1" />
                               Premium
                             </Badge>
@@ -688,7 +704,11 @@ export default function UsersPage() {
                             {!user.isPremium ? (
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleUserAction("Promote to Premium", user.id, 1)
+                                  handleUserAction(
+                                    "Promote to Premium",
+                                    user.id,
+                                    1
+                                  )
                                 }
                                 className="text-yellow-600"
                               >

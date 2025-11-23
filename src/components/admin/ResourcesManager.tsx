@@ -370,12 +370,21 @@ export default function ResourcesManager() {
   };
 
   const confirmDelete = async () => {
-    if (!deleteResourceId) return;
+    if (!deleteResourceId) {
+      console.log("No resource ID to delete");
+      return;
+    }
+
+    console.log("Attempting to delete resource:", deleteResourceId);
 
     try {
       const response = await fetch(`/api/admin/resources/${deleteResourceId}`, {
         method: "DELETE",
       });
+
+      console.log("Delete response status:", response.status);
+      const data = await response.json();
+      console.log("Delete response data:", data);
 
       if (response.ok) {
         toast.success("Resource deleted successfully");
@@ -384,7 +393,7 @@ export default function ResourcesManager() {
         // Refresh stats
         calculateStats();
       } else {
-        toast.error("Failed to delete resource");
+        toast.error(data.message || "Failed to delete resource");
       }
     } catch (error) {
       console.error("Error deleting resource:", error);
@@ -805,7 +814,11 @@ export default function ResourcesManager() {
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setDeleteResourceId(null)}>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel
+                              onClick={() => setDeleteResourceId(null)}
+                            >
+                              Cancel
+                            </AlertDialogCancel>
                             <AlertDialogAction
                               onClick={confirmDelete}
                               className="bg-red-600 hover:bg-red-700"
