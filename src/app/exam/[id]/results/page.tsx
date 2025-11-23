@@ -66,7 +66,49 @@ export default function ExamResultsPage() {
       }
 
       const attempt = data.data;
-      const totalQuestions = Object.keys(attempt.answers || {}).length;
+
+      // Fetch questions to calculate correct answers count
+      const questionsResponse = await fetch(`/api/exams/${examId}/questions`);
+      const questionsData = await questionsResponse.json();
+
+      let correctCount = 0;
+      let totalQuestions = 0;
+
+      if (questionsData.success && Array.isArray(questionsData.data)) {
+        const questions = questionsData.data;
+        totalQuestions = questions.length;
+
+        // Count correct answers by comparing with actual questions
+        questions.forEach((q: any) => {
+          const submitted = attempt.answers?.[q.id];
+          if (submitted !== undefined && submitted !== null) {
+            const normalizedSubmitted = String(submitted).trim().toLowerCase();
+            const normalizedCorrect = String(q.correctAnswer || "")
+              .trim()
+              .toLowerCase();
+
+            if (normalizedCorrect === normalizedSubmitted) {
+              correctCount++;
+            } else if (Array.isArray(q.options)) {
+              // Check if submitted is numeric index
+              const maybeIndex = parseInt(submitted as any, 10);
+              if (!isNaN(maybeIndex) && q.options[maybeIndex]) {
+                if (
+                  q.options[maybeIndex].trim().toLowerCase() ===
+                  normalizedCorrect
+                ) {
+                  correctCount++;
+                }
+              }
+            }
+          }
+        });
+      } else {
+        // Fallback to answers object if questions fetch fails
+        totalQuestions = Object.keys(attempt.answers || {}).length;
+        correctCount = attempt.score || 0;
+      }
+
       const answeredCount = Object.values(attempt.answers || {}).filter(
         (answer) => answer !== undefined && answer !== null
       ).length;
@@ -78,13 +120,10 @@ export default function ExamResultsPage() {
         score: attempt.score || 0,
         percentage:
           totalQuestions > 0
-            ? Math.round((attempt.score / totalQuestions) * 100)
+            ? Math.round((correctCount / totalQuestions) * 100)
             : 0,
-        correctAnswers: attempt.score || 0,
-        wrongAnswers:
-          totalQuestions -
-          (attempt.score || 0) -
-          (totalQuestions - answeredCount),
+        correctAnswers: correctCount,
+        wrongAnswers: answeredCount - correctCount,
         unanswered: totalQuestions - answeredCount,
         totalQuestions: totalQuestions,
         timeSpent: attempt.timeTaken || 0,
