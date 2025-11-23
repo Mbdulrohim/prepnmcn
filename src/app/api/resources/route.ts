@@ -1,12 +1,41 @@
 import { NextResponse } from "next/server";
 import { getDataSource } from "@/lib/database";
 import { Resource } from "@/entities/Resource";
+import { auth } from "@/lib/auth";
+import { User } from "@/entities/User";
 
 export const runtime = "nodejs"; // Force Node.js runtime
 
 export async function GET(request: Request) {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // Check if user is premium
+  const AppDataSource = await getDataSource();
+  const userRepo = AppDataSource.getRepository(User);
+  const user = await userRepo.findOne({ where: { id: session.user.id } });
+  
+  if (!user?.isPremium) {
+    return NextResponse.json(
+      { error: "Premium subscription required to access resources" },
+      { status: 403 }
+    );
+  }
+
+  // Check if premium has expired
+  if (user.premiumExpiresAt && new Date() > new Date(user.premiumExpiresAt)) {
+    return NextResponse.json(
+      { error: "Premium subscription has expired" },
+      { status: 403 }
+    );
+  }
   try {
-    const AppDataSource = await getDataSource();
     const resourceRepo = AppDataSource.getRepository(Resource);
 
     // Support optional query params for filtering and search

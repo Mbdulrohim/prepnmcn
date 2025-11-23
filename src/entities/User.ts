@@ -83,6 +83,12 @@ export class User {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
+  @Column({ type: "boolean", default: false })
+  isPremium!: boolean;
+
+  @Column({ type: "timestamp", nullable: true })
+  premiumExpiresAt?: Date | null;
+
   @OneToMany("user_enrollments", "user")
   enrollments!: UserEnrollment[];
 

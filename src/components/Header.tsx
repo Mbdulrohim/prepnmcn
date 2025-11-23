@@ -17,6 +17,7 @@ import {
   ChevronDown,
   MoreHorizontal,
   Calculator,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,29 +107,6 @@ export default function Header() {
                   <span className="hidden lg:block">Dashboard</span>
                 </Link>
 
-                {/* Feedback Button */}
-                <FeedbackButton>
-                  <div
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${"text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-                  >
-                    <MessageSquare size={18} />
-                    <span className="hidden lg:block">Feedback</span>
-                  </div>
-                </FeedbackButton>
-
-                {/* Academic Profile Link */}
-                <Link
-                  href="/profile/academic"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive("/profile/academic")
-                      ? "bg-primary/10 text-primary border border-primary/20"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                  }`}
-                >
-                  <User size={18} />
-                  <span className="hidden lg:block">Academic Profile</span>
-                </Link>
-
                 {/* Exams Link */}
                 <Link
                   href="/exams"
@@ -142,6 +120,21 @@ export default function Header() {
                   <span className="hidden lg:block">Exams</span>
                 </Link>
 
+                {/* Lecture Notes Link - Admin Only */}
+                {["admin", "super_admin"].includes((user as any)?.role) && (
+                  <Link
+                    href="/resources"
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive("/resources")
+                        ? "bg-primary/10 text-primary border border-primary/20"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }`}
+                  >
+                    <FileText size={18} />
+                    <span className="hidden lg:block">Lecture Notes</span>
+                  </Link>
+                )}
+
                 {/* More Menu Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -154,6 +147,17 @@ export default function Header() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48">
+                    {/* Academic Profile */}
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/profile/academic"
+                        className="flex items-center gap-2"
+                      >
+                        <User size={16} />
+                        Academic Profile
+                      </Link>
+                    </DropdownMenuItem>
+
                     {/* Study Planner */}
                     <DropdownMenuItem asChild>
                       <Link
@@ -162,6 +166,17 @@ export default function Header() {
                       >
                         <Calendar size={16} />
                         Study Planner
+                      </Link>
+                    </DropdownMenuItem>
+
+                    {/* CGPA Calculator */}
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/cgpa-calculator"
+                        className="flex items-center gap-2"
+                      >
+                        <Calculator size={16} />
+                        CGPA Calculator
                       </Link>
                     </DropdownMenuItem>
 
@@ -182,6 +197,18 @@ export default function Header() {
                         <MessageSquare size={16} />
                         Forums
                       </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    {/* Feedback */}
+                    <DropdownMenuItem asChild>
+                      <FeedbackButton>
+                        <div className="flex items-center gap-2 w-full">
+                          <MessageSquare size={16} />
+                          Feedback
+                        </div>
+                      </FeedbackButton>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -372,6 +399,22 @@ export default function Header() {
                     <BookOpen size={20} />
                     Exams
                   </Link>
+
+                  {/* Lecture Notes - Admin Only */}
+                  {["admin", "super_admin"].includes((user as any)?.role) && (
+                    <Link
+                      href="/resources"
+                      className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        isActive("/resources")
+                          ? "bg-primary/10 text-primary border-l-4 border-primary"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <FileText size={20} />
+                      Lecture Notes
+                    </Link>
+                  )}
 
                   {/* CGPA Calculator */}
                   <Link

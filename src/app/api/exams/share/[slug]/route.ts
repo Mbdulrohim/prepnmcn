@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Exam } from "@/entities/Exam";
 import { ExamAttempt } from "@/entities/ExamAttempt";
+import { User } from "@/entities/User";
 
 export const runtime = "nodejs";
 
@@ -22,6 +23,26 @@ export async function GET(
     }
 
     const dataSource = await getDataSource();
+    
+    // Check if user is premium
+    const userRepo = dataSource.getRepository(User);
+    const user = await userRepo.findOne({ where: { id: session.user.id } });
+    
+    if (!user?.isPremium) {
+      return NextResponse.json(
+        { success: false, error: "Premium subscription required to access shareable exams" },
+        { status: 403 }
+      );
+    }
+
+    // Check if premium has expired
+    if (user.premiumExpiresAt && new Date() > new Date(user.premiumExpiresAt)) {
+      return NextResponse.json(
+        { success: false, error: "Premium subscription has expired" },
+        { status: 403 }
+      );
+    }
+
     const examRepo = dataSource.getRepository(Exam);
     const attemptRepo = dataSource.getRepository(ExamAttempt);
 

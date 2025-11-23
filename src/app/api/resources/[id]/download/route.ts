@@ -41,7 +41,7 @@ export async function GET(
       try {
         // Extract S3 key from URL if it's a full URL, or use as-is if it's just a key
         let s3Key = resource.fileUrl;
-        if (resource.fileUrl.includes('amazonaws.com')) {
+        if (resource.fileUrl.includes("amazonaws.com")) {
           // Extract key from full S3 URL
           const urlParts = new URL(resource.fileUrl);
           s3Key = urlParts.pathname.substring(1); // Remove leading slash

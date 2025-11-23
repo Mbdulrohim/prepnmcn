@@ -42,6 +42,7 @@ import {
   UserX,
   Crown,
   GraduationCap,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +54,8 @@ interface User {
   institution: string;
   points: number;
   isActive: boolean;
+  isPremium: boolean;
+  premiumExpiresAt?: string | null;
   createdAt: string;
   lastLogin?: string;
 }
@@ -61,6 +64,7 @@ interface UserStats {
   totalUsers: number;
   activeUsers: number;
   adminUsers: number;
+  premiumUsers: number;
   totalPoints: number;
 }
 
@@ -118,6 +122,7 @@ export default function UsersPage() {
       adminUsers: userData.filter(
         (u) => u.role === "admin" || u.role === "super_admin"
       ).length,
+      premiumUsers: userData.filter((u) => u.isPremium).length,
       totalPoints: userData.reduce((sum, u) => sum + u.points, 0),
     };
     setStats(stats);
@@ -156,8 +161,52 @@ export default function UsersPage() {
     setSelectedStatus("all");
   };
 
-  const handleUserAction = async (action: string, userId: string) => {
-    if (action === "Promote to Admin") {
+  const handleUserAction = async (action: string, userId: string, durationMonths?: number) => {
+    if (action === "Promote to Premium") {
+      try {
+        const response = await fetch(
+          `/api/admin/users/${userId}/promote-premium`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ durationMonths: durationMonths || 1 }),
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          toast.success(data.message);
+          fetchUsers();
+        } else {
+          const error = await response.json();
+          toast.error(error.message || "Failed to promote user to premium");
+        }
+      } catch (error) {
+        console.error("Failed to promote user to premium:", error);
+        toast.error("Failed to promote user to premium");
+      }
+    } else if (action === "Revoke Premium") {
+      try {
+        const response = await fetch(
+          `/api/admin/users/${userId}/promote-premium`,
+          {
+            method: "DELETE",
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          toast.success(data.message);
+          fetchUsers();
+        } else {
+          const error = await response.json();
+          toast.error(error.message || "Failed to revoke premium status");
+        }
+      } catch (error) {
+        console.error("Failed to revoke premium status:", error);
+        toast.error("Failed to revoke premium status");
+      }
+    } else if (action === "Promote to Admin") {
       try {
         const response = await fetch(
           `/api/admin/users/${userId}/promote-admin`,
@@ -296,6 +345,10 @@ export default function UsersPage() {
             {stats?.activeUsers || 0} Active
           </Badge>
           <Badge variant="secondary" className="flex items-center gap-1">
+            <Star className="h-3 w-3" />
+            {stats?.premiumUsers || 0} Premium
+          </Badge>
+          <Badge variant="secondary" className="flex items-center gap-1">
             <Crown className="h-3 w-3" />
             {stats?.adminUsers || 0} Admins
           </Badge>
@@ -304,7 +357,7 @@ export default function UsersPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -330,6 +383,19 @@ export default function UsersPage() {
             <CardContent>
               <div className="text-2xl font-bold">{stats.activeUsers}</div>
               <p className="text-xs text-muted-foreground">Currently active</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Star className="h-4 w-4" />
+                Premium Users
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.premiumUsers}</div>
+              <p className="text-xs text-muted-foreground">Active subscriptions</p>
             </CardContent>
           </Card>
 
@@ -479,17 +545,25 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            user.role === "admin" || user.role === "super_admin"
-                              ? "destructive"
-                              : "default"
-                          }
-                        >
-                          {user.role === "super_admin"
-                            ? "Super Admin"
-                            : user.role}
-                        </Badge>
+                        <div className="flex gap-1 flex-wrap">
+                          <Badge
+                            variant={
+                              user.role === "admin" || user.role === "super_admin"
+                                ? "destructive"
+                                : "default"
+                            }
+                          >
+                            {user.role === "super_admin"
+                              ? "Super Admin"
+                              : user.role}
+                          </Badge>
+                          {user.isPremium && (
+                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-700">
+                              <Star className="h-3 w-3 mr-1" />
+                              Premium
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>{user.institution || "Not set"}</TableCell>
                       <TableCell>
@@ -566,6 +640,27 @@ export default function UsersPage() {
                               >
                                 <Crown className="mr-2 h-4 w-4" />
                                 Promote to Super Admin
+                              </DropdownMenuItem>
+                            )}
+                            {!user.isPremium ? (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleUserAction("Promote to Premium", user.id, 1)
+                                }
+                                className="text-yellow-600"
+                              >
+                                <Star className="mr-2 h-4 w-4" />
+                                Promote to Premium (1 month)
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleUserAction("Revoke Premium", user.id)
+                                }
+                                className="text-orange-600"
+                              >
+                                <Star className="mr-2 h-4 w-4" />
+                                Revoke Premium
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuItem
