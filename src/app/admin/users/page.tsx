@@ -266,6 +266,49 @@ export default function UsersPage() {
         console.error("Failed to promote user:", error);
         toast.error("Failed to promote user");
       }
+    } else if (action === "Deactivate" || action === "Activate") {
+      try {
+        const response = await fetch(`/api/admin/users/${userId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isActive: action === "Activate" }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          toast.success(data.message);
+          fetchUsers();
+        } else {
+          const error = await response.json();
+          toast.error(error.message || `Failed to ${action.toLowerCase()} user`);
+        }
+      } catch (error) {
+        console.error(`Failed to ${action.toLowerCase()} user:`, error);
+        toast.error(`Failed to ${action.toLowerCase()} user`);
+      }
+    } else if (action === "Delete User") {
+      // Show confirmation dialog
+      if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/users/${userId}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          toast.success(data.message);
+          fetchUsers();
+        } else {
+          const error = await response.json();
+          toast.error(error.message || "Failed to delete user");
+        }
+      } catch (error) {
+        console.error("Failed to delete user:", error);
+        toast.error("Failed to delete user");
+      }
     } else {
       // Placeholder for other actions
       toast.info(`${action} functionality would be implemented here`);

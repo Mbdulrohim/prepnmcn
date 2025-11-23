@@ -54,38 +54,38 @@ export default function ResourcesPage() {
   }, [searchTerm, selectedType]);
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Resources</h1>
+    <div className="container mx-auto py-6 px-4 sm:py-10">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Resources</h1>
       
       {isPremiumRequired && (
-        <Alert className="mb-6 border-yellow-300 bg-yellow-50">
+        <Alert className="mb-4 sm:mb-6 border-yellow-300 bg-yellow-50">
           <Lock className="h-4 w-4 text-yellow-600" />
           <AlertTitle className="text-yellow-800">Premium Access Required</AlertTitle>
-          <AlertDescription className="text-yellow-700">
+          <AlertDescription className="text-yellow-700 text-sm">
             {errorMessage || "You need a premium subscription to access study resources. Contact an administrator to upgrade your account."}
           </AlertDescription>
         </Alert>
       )}
 
       {errorMessage && !isPremiumRequired && (
-        <Alert className="mb-6" variant="destructive">
+        <Alert className="mb-4 sm:mb-6" variant="destructive">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
+          <AlertDescription className="text-sm">{errorMessage}</AlertDescription>
         </Alert>
       )}
 
-      <div className="flex gap-3 items-center mb-4">
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center mb-4">
         <input
           placeholder="Search resources"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-3 py-2 border rounded w-full"
+          className="px-3 py-2 border rounded w-full text-sm sm:text-base"
           disabled={isPremiumRequired}
         />
         <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
-          className="px-3 py-2 border rounded"
+          className="px-3 py-2 border rounded w-full sm:w-auto text-sm sm:text-base"
           disabled={isPremiumRequired}
         >
           <option value="all">All</option>
@@ -94,35 +94,52 @@ export default function ResourcesPage() {
         </select>
       </div>
       {isLoading ? (
-        <p>Loading...</p>
+        <div className="text-center py-8 sm:py-12">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       ) : isPremiumRequired ? (
-        <Card className="p-10 text-center">
+        <Card className="p-6 sm:p-10 text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-yellow-100 p-4 rounded-full">
-              <Star className="h-12 w-12 text-yellow-600" />
+            <div className="bg-yellow-100 p-3 sm:p-4 rounded-full">
+              <Star className="h-8 w-8 sm:h-12 sm:w-12 text-yellow-600" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold mb-2">Upgrade to Premium</h2>
-          <p className="text-muted-foreground mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">Upgrade to Premium</h2>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4">
             Access all study resources, shareable exams, and more with a premium subscription.
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Contact your administrator to upgrade your account.
           </p>
         </Card>
+      ) : resources.length === 0 ? (
+        <Card className="p-6 sm:p-10 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="bg-muted p-3 sm:p-4 rounded-full">
+              <Star className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
+            </div>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">No Resources Available</h2>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4">
+            There are currently no resources to display.
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Check back later or contact an administrator.
+          </p>
+        </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {resources.map((resource) => (
             <Card key={resource.id}>
               <CardHeader>
-                <CardTitle>{resource.name}</CardTitle>
+                <CardTitle className="text-base sm:text-lg">{resource.name}</CardTitle>
               </CardHeader>
-              <CardContent className="flex justify-between items-center">
+              <CardContent className="flex justify-between items-center flex-wrap gap-2">
                 <Badge variant={resource.isFree ? "default" : "secondary"}>
                   {resource.isFree ? "Free" : "Paid"}
                 </Badge>
                 <a href={`/api/resources/${resource.id}/download`} download>
-                  <Button>Download</Button>
+                  <Button size="sm">Download</Button>
                 </a>
               </CardContent>
             </Card>
