@@ -3,6 +3,9 @@ import { getDataSource } from "@/lib/database";
 import { Resource } from "@/entities/Resource";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { auth } from "@/lib/auth";
+import { s3Client, BUCKET_NAME } from "@/lib/s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const runtime = "nodejs"; // Force Node.js runtime
 
@@ -33,9 +36,35 @@ export async function GET(
       );
     }
 
-    // If the resource has a file URL, redirect to it
+    // If the resource has a fileUrl, it's an S3 key - generate a fresh pre-signed URL
     if (resource.fileUrl) {
-      return NextResponse.redirect(resource.fileUrl);
+      try {
+        // Extract S3 key from URL if it's a full URL, or use as-is if it's just a key
+        let s3Key = resource.fileUrl;
+        if (resource.fileUrl.includes('amazonaws.com')) {
+          // Extract key from full S3 URL
+          const urlParts = new URL(resource.fileUrl);
+          s3Key = urlParts.pathname.substring(1); // Remove leading slash
+        }
+
+        // Generate a fresh pre-signed URL (valid for 1 hour)
+        const command = new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: s3Key,
+        });
+
+        const signedUrl = await getSignedUrl(s3Client, command, {
+          expiresIn: 3600, // 1 hour
+        });
+
+        return NextResponse.redirect(signedUrl);
+      } catch (s3Error) {
+        console.error("Error generating pre-signed URL:", s3Error);
+        return NextResponse.json(
+          { message: "Error accessing file. Please try again." },
+          { status: 500 }
+        );
+      }
     }
 
     // Generate PDF from content
