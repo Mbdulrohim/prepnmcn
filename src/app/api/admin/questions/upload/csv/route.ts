@@ -171,6 +171,29 @@ function parseQuestionRow(
       // If not JSON, treat as comma-separated string
       question.options = row.options.split(",").map((opt) => opt.trim());
     }
+
+    // Fix: Map letter/number correct answer to option text if it's not already the text
+    const correct = row.correct_answer.trim();
+    const options = question.options || [];
+
+    // If the correct answer is NOT in the options, try to interpret it as an index/label
+    if (!options.includes(correct)) {
+      // Check if correct answer is a single letter A-Z (case insensitive)
+      const letterMatch = correct.match(/^[A-Z]$/i);
+      if (letterMatch) {
+        const index = letterMatch[0].toUpperCase().charCodeAt(0) - 65; // A=0, B=1, etc.
+        if (index >= 0 && index < options.length) {
+          question.correctAnswer = options[index];
+        }
+      }
+      // Check if correct answer is a number 1-9
+      else if (/^\d+$/.test(correct)) {
+        const index = parseInt(correct, 10) - 1; // Assume 1-based indexing (1=Option 1)
+        if (index >= 0 && index < options.length) {
+          question.correctAnswer = options[index];
+        }
+      }
+    }
   }
 
   return question;

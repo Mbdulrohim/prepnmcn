@@ -220,8 +220,8 @@ function parseQuestionsFromText(
     } else if (
       expectingQuestionText &&
       line &&
-      !line.match(/^[a-d][\)\.]\s/i) &&
-      !line.match(/^\([a-d]\)\s/i)
+      !line.match(/^[a-z][\)\.]\s/i) &&
+      !line.match(/^\([a-z]\)\s/i)
     ) {
       // This should be part of the question text (could be multi-line)
       if (currentQuestion) {
@@ -235,14 +235,15 @@ function parseQuestionsFromText(
       }
     } else if (
       currentQuestion &&
-      (line.match(/^[a-d][\)\.]\s/i) || line.match(/^\([a-d]\)\s/i))
+      (line.match(/^[a-z][\)\.]\s/i) || line.match(/^\([a-z]\)\s/i))
     ) {
       // Stop expecting question text since we're now in options
       expectingQuestionText = false;
 
       // More flexible option matching - require space after punctuation
+      // Updated regex to handle trailing spaces and wider range of option letters
       const optionMatch = line.match(
-        /^[\(\s]*([a-d])[\)\.]\s+(.+?)(\s*\*\*|\s*\(correct\)|\s*\[correct\])?$/i
+        /^[\(\s]*([a-z])[\)\.]\s+(.+?)(\s*\*\*|\s*\(correct\)|\s*\[correct\])?\s*$/i
       );
       if (optionMatch) {
         const [, optionLetter, optionText, isCorrect] = optionMatch;
