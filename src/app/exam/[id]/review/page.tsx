@@ -59,6 +59,24 @@ export default function ExamReviewPage() {
     }
   }, [attemptId]);
 
+  // Helper to get correct answer index regardless of format
+  const getCorrectAnswerIndex = (q: Question): number => {
+    if (typeof q.correctAnswer === "number") {
+      return q.correctAnswer;
+    }
+
+    const normalized = String(q.correctAnswer).trim().toLowerCase();
+
+    // Handle letter answers (a, b, c, d)
+    if (/^[a-d]$/.test(normalized)) {
+      return ["a", "b", "c", "d"].indexOf(normalized);
+    }
+
+    // Handle numeric string
+    const parsed = parseInt(normalized, 10);
+    return isNaN(parsed) ? -1 : parsed;
+  };
+
   const getAIExplanation = async (questionIndex: number) => {
     if (!currentQuestion || correctAnswerIndex === undefined) return;
 
@@ -156,9 +174,7 @@ export default function ExamReviewPage() {
 
   // Parse correctAnswer to number if it's a string
   const correctAnswerIndex = currentQuestion
-    ? typeof currentQuestion.correctAnswer === "string"
-      ? parseInt(currentQuestion.correctAnswer, 10)
-      : currentQuestion.correctAnswer
+    ? getCorrectAnswerIndex(currentQuestion)
     : undefined;
 
   const isCorrect =
@@ -231,18 +247,12 @@ export default function ExamReviewPage() {
   }
 
   const correctCount = reviewData.questions.filter((q) => {
-    const correctIdx =
-      typeof q.correctAnswer === "string"
-        ? parseInt(q.correctAnswer, 10)
-        : q.correctAnswer;
+    const correctIdx = getCorrectAnswerIndex(q);
     return reviewData.answers[q.id] === correctIdx;
   }).length;
 
   const incorrectCount = reviewData.questions.filter((q) => {
-    const correctIdx =
-      typeof q.correctAnswer === "string"
-        ? parseInt(q.correctAnswer, 10)
-        : q.correctAnswer;
+    const correctIdx = getCorrectAnswerIndex(q);
     return (
       reviewData.answers[q.id] !== undefined &&
       reviewData.answers[q.id] !== correctIdx
@@ -471,10 +481,7 @@ export default function ExamReviewPage() {
             <div className="grid grid-cols-10 gap-2">
               {reviewData.questions.map((q, index) => {
                 const answer = reviewData.answers[q.id];
-                const correctIdx =
-                  typeof q.correctAnswer === "string"
-                    ? parseInt(q.correctAnswer, 10)
-                    : q.correctAnswer;
+                const correctIdx = getCorrectAnswerIndex(q);
                 const isCorrect = answer === correctIdx;
                 const isAnswered = answer !== undefined;
 
