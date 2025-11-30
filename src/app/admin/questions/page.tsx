@@ -825,6 +825,9 @@ export default function QuestionsAdminPage() {
                           Question
                         </TableHead>
                         <TableHead className="w-24">Type</TableHead>
+                        <TableHead className="min-w-[150px]">
+                          Correct Answer
+                        </TableHead>
                         <TableHead className="w-16">Marks</TableHead>
                         <TableHead className="w-20">Actions</TableHead>
                       </TableRow>
@@ -875,6 +878,14 @@ export default function QuestionsAdminPage() {
                           </TableCell>
                           <TableCell>
                             {getQuestionTypeBadge(question.type)}
+                          </TableCell>
+                          <TableCell>
+                            <div
+                              className="max-w-xs truncate text-green-600 font-medium"
+                              title={question.correctAnswer}
+                            >
+                              {question.correctAnswer || "-"}
+                            </div>
                           </TableCell>
                           <TableCell>{question.marks}</TableCell>
                           <TableCell>

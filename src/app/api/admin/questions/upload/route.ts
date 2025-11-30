@@ -240,20 +240,34 @@ function parseQuestionsFromText(
       // Stop expecting question text since we're now in options
       expectingQuestionText = false;
 
-      // More flexible option matching - require space after punctuation
-      // Updated regex to handle trailing spaces and wider range of option letters
-      const optionMatch = line.match(
-        /^[\(\s]*([a-z])[\)\.]\s+(.+?)(\s*\*\*|\s*\(correct\)|\s*\[correct\])?\s*$/i
-      );
-      if (optionMatch) {
-        const [, optionLetter, optionText, isCorrect] = optionMatch;
+      // Robust option matching
+      // 1. Match the start (letter/number and separator)
+      const startMatch = line.match(/^[\(\s]*([a-z])[\)\.]\s+(.*)$/i);
+
+      if (startMatch) {
+        const [, optionLetter, content] = startMatch;
+        let optionText = content;
+        let isCorrect = false;
+
+        // 2. Search for marker in the content
+        const markerRegex = /(\s*\*\*|\s*\(correct\)|\s*\[correct\])/i;
+        const markerMatch = content.match(markerRegex);
+
+        if (markerMatch) {
+          isCorrect = true;
+          // Split at the marker to get the option text
+          const markerIndex = markerMatch.index!;
+          optionText = content.substring(0, markerIndex).trim();
+        } else {
+          optionText = content.trim();
+        }
 
         if (!currentQuestion.options) currentQuestion.options = [];
-        currentQuestion.options.push(optionText.trim());
+        currentQuestion.options.push(optionText);
 
         // If this option is marked as correct
         if (isCorrect) {
-          currentQuestion.correctAnswer = optionText.trim();
+          currentQuestion.correctAnswer = optionText;
         }
       }
     }
