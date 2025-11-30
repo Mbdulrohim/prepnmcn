@@ -465,11 +465,11 @@ export default function ExamPlayer({
   if (!currentQuestion) {
     if (isLoadingQuestions) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center text-slate-700">
+        <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
             <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto mb-4" />
-            <p className="text-lg font-medium">Loading questions...</p>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-lg font-medium text-foreground">Loading questions...</p>
+            <p className="text-sm text-muted-foreground mt-1">
               Hang tight, we’re getting your exam ready.
             </p>
           </div>
@@ -478,23 +478,23 @@ export default function ExamPlayer({
     }
 
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <p className="text-lg text-slate-700">No questions available</p>
+          <p className="text-lg text-muted-foreground">No questions available</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-background flex flex-col">
       {/* Header with Timer and Progress */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="bg-white dark:bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-gray-900">Exam</h1>
+              <h1 className="text-xl font-semibold text-foreground">Exam</h1>
               <div className="flex items-center space-x-2">
                 <Save
                   className={`h-4 w-4 ${
@@ -505,7 +505,7 @@ export default function ExamPlayer({
                       : "text-red-500"
                   }`}
                 />
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-muted-foreground">
                   {autoSaveStatus === "saved"
                     ? "Saved"
                     : autoSaveStatus === "saving"
@@ -521,7 +521,7 @@ export default function ExamPlayer({
                   className={`h-5 w-5 ${
                     timeLeft && timeLeft < 600
                       ? "text-red-600"
-                      : "text-gray-600"
+                      : "text-muted-foreground"
                   }`}
                 />
                 <span
@@ -530,7 +530,7 @@ export default function ExamPlayer({
                       ? "text-red-600 animate-pulse"
                       : timeLeft && timeLeft < 600
                       ? "text-orange-600"
-                      : "text-gray-900"
+                      : "text-foreground"
                   }`}
                 >
                   {timeLeft !== null ? formatTime(timeLeft) : "00:00:00"}
@@ -559,7 +559,7 @@ export default function ExamPlayer({
 
           {/* Progress Bar */}
           <div className="pb-4">
-            <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
               <span>
                 Question {current + 1} of {totalQuestions}
               </span>
@@ -576,9 +576,9 @@ export default function ExamPlayer({
       <div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Keyboard Shortcuts Help */}
         {showKeyboardHelp && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-blue-900">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
                 Keyboard Shortcuts
               </h3>
               <Button
@@ -591,10 +591,10 @@ export default function ExamPlayer({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <h4 className="font-medium text-blue-900 mb-2">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
                   Answer Options
                 </h4>
-                <div className="space-y-1 text-blue-800">
+                <div className="space-y-1 text-blue-800 dark:text-blue-200">
                   <div>
                     <kbd className="px-2 py-1 bg-white rounded text-xs">A</kbd>{" "}
                     Select option A
@@ -614,8 +614,8 @@ export default function ExamPlayer({
                 </div>
               </div>
               <div>
-                <h4 className="font-medium text-blue-900 mb-2">Navigation</h4>
-                <div className="space-y-1 text-blue-800">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Navigation</h4>
+                <div className="space-y-1 text-blue-800 dark:text-blue-200">
                   <div>
                     <kbd className="px-2 py-1 bg-white rounded text-xs">P</kbd>{" "}
                     Previous question
@@ -639,10 +639,10 @@ export default function ExamPlayer({
                 </div>
               </div>
               <div>
-                <h4 className="font-medium text-blue-900 mb-2">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
                   Other Actions
                 </h4>
-                <div className="space-y-1 text-blue-800">
+                <div className="space-y-1 text-blue-800 dark:text-blue-200">
                   <div>
                     <kbd className="px-2 py-1 bg-white rounded text-xs">F</kbd>{" "}
                     Toggle flag
@@ -665,12 +665,12 @@ export default function ExamPlayer({
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 lg:p-8 mb-6">
+        <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-border p-6 lg:p-8 mb-6">
           {/* Question Header */}
           <div className="flex justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm font-medium text-gray-500">
+                <span className="text-sm font-medium text-muted-foreground">
                   Question {current + 1} of {totalQuestions}
                 </span>
                 {flaggedQuestions.has(current) && (
@@ -713,7 +713,7 @@ export default function ExamPlayer({
 
           {/* Question Text */}
           <div className="mb-8">
-            <p className="text-lg text-gray-900 leading-relaxed">
+            <p className="text-lg text-foreground leading-relaxed">
               {currentQuestion.question || currentQuestion.text}
             </p>
           </div>
@@ -730,8 +730,8 @@ export default function ExamPlayer({
                   onClick={() => handleAnswerSelect(index)}
                   className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
                     isSelected
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : "border-border hover:border-gray-300 dark:hover:border-gray-600 hover:bg-muted/50"
                   }`}
                 >
                   <div className="flex items-start space-x-3">
@@ -739,12 +739,12 @@ export default function ExamPlayer({
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-sm font-medium flex-shrink-0 ${
                         isSelected
                           ? "border-blue-500 bg-blue-500 text-white"
-                          : "border-gray-300 text-gray-600"
+                          : "border-gray-300 dark:border-gray-600 text-muted-foreground"
                       }`}
                     >
                       {optionLabel}
                     </div>
-                    <span className="text-gray-900 leading-relaxed">
+                    <span className="text-foreground leading-relaxed">
                       {option}
                     </span>
                   </div>
@@ -782,21 +782,21 @@ export default function ExamPlayer({
       </div>
 
       {/* Bottom Question Navigator */}
-      <div className="bg-white border-t border-gray-200 sticky bottom-0 z-50">
+      <div className="bg-white dark:bg-card border-t border-border sticky bottom-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+          <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex items-center space-x-4">
-              <h3 className="font-medium text-gray-900">Question Navigator</h3>
+              <h3 className="font-medium text-foreground">Question Navigator</h3>
               <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 border-2 border-green-500 bg-green-100 rounded"></div>
-                  <span className="text-gray-600">
+                  <div className="w-3 h-3 border-2 border-green-500 bg-green-100 dark:bg-green-900/30 rounded"></div>
+                  <span className="text-muted-foreground">
                     Answered ({answeredCount})
                   </span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 border-2 border-gray-300 bg-white rounded"></div>
-                  <span className="text-gray-600">
+                  <div className="w-3 h-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-card rounded"></div>
+                  <span className="text-muted-foreground">
                     Not Answered ({unansweredCount})
                   </span>
                 </div>
@@ -846,8 +846,8 @@ export default function ExamPlayer({
                         isCurrent
                           ? "border-blue-500 bg-blue-500 text-white"
                           : isAnswered
-                          ? "border-green-500 bg-green-100 text-green-700 hover:bg-green-200"
-                          : "border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                          ? "border-green-500 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50"
+                          : "border-gray-300 dark:border-gray-600 bg-white dark:bg-card text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-muted/50"
                       } ${isFlagged ? "ring-2 ring-yellow-400" : ""}`}
                     >
                       {index + 1}
@@ -863,11 +863,11 @@ export default function ExamPlayer({
       {/* Calculator */}
       {showCalculator && (
         <div className="fixed top-4 right-4 z-50">
-          <div className="bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-64">
+          <div className="bg-white dark:bg-card border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-4 w-64">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <CalculatorIcon className="h-4 w-4 mr-2 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">
+                <CalculatorIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">
                   Calculator
                 </span>
               </div>
@@ -881,8 +881,8 @@ export default function ExamPlayer({
               </Button>
             </div>
 
-            <div className="bg-gray-50 border rounded p-3 mb-4">
-              <div className="text-right text-lg font-mono text-gray-900 truncate">
+            <div className="bg-gray-50 dark:bg-muted/30 border dark:border-gray-600 rounded p-3 mb-4">
+              <div className="text-right text-lg font-mono text-foreground truncate">
                 {calcDisplay}
               </div>
             </div>
@@ -1014,7 +1014,7 @@ export default function ExamPlayer({
               </Button>
             </div>
 
-            <div className="mt-3 text-xs text-gray-500 text-center">
+            <div className="mt-3 text-xs text-muted-foreground text-center">
               Use keyboard: 0-9, +, -, *, /, Enter, Esc
             </div>
           </div>
@@ -1024,18 +1024,18 @@ export default function ExamPlayer({
       {/* Submit Warning Modal */}
       {showSubmitModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+          <div className="bg-white dark:bg-card rounded-lg p-6 max-w-md mx-4 border dark:border-gray-700">
             <div className="flex items-center space-x-3 mb-4">
               <AlertTriangle className="h-6 w-6 text-yellow-500" />
               <h3 className="text-lg font-semibold">Submit Exam?</h3>
             </div>
 
             <div className="space-y-3 mb-6">
-              <p className="text-gray-700">
+              <p className="text-muted-foreground">
                 Are you sure you want to submit your exam? This action cannot be
                 undone.
               </p>
-              <div className="bg-gray-50 p-3 rounded">
+              <div className="bg-gray-50 dark:bg-muted/30 p-3 rounded">
                 <div className="text-sm space-y-1">
                   <div>Total Questions: {totalQuestions}</div>
                   <div>Answered: {answeredCount}</div>

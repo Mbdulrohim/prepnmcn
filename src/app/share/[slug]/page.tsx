@@ -121,10 +121,10 @@ export default function ShareableExamPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg text-slate-700">Loading exam...</p>
+          <p className="text-lg text-muted-foreground">Loading exam...</p>
         </div>
       </div>
     );
@@ -132,14 +132,14 @@ export default function ShareableExamPage() {
 
   if (status === "unauthenticated") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
         <Card className="max-w-md">
           <CardHeader>
-            <Lock className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+            <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
             <CardTitle className="text-center">Login Required</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               You need to be logged in to access this exam.
             </p>
             <Button
@@ -157,14 +157,14 @@ export default function ShareableExamPage() {
 
   if (error || !exam) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
         <Card className="max-w-md">
           <CardHeader>
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-2" />
             <CardTitle className="text-center">Exam Not Found</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               {error || "This exam link is invalid or has been removed."}
             </p>
             <Button onClick={() => router.push("/dashboard")}>
@@ -189,16 +189,16 @@ export default function ShareableExamPage() {
 
   // Exam overview page
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between mb-4">
-              <Badge className="bg-blue-100 text-blue-700 border-blue-300">
+              <Badge className="bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
                 Shared Exam
               </Badge>
               {attempt?.isCompleted && (
-                <Badge className="bg-green-100 text-green-700 border-green-300">
+                <Badge className="bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Completed
                 </Badge>
@@ -206,35 +206,35 @@ export default function ShareableExamPage() {
             </div>
             <CardTitle className="text-3xl mb-2">{exam.title}</CardTitle>
             {exam.subject && (
-              <p className="text-gray-600">Subject: {exam.subject}</p>
+              <p className="text-muted-foreground">Subject: {exam.subject}</p>
             )}
           </CardHeader>
 
           <CardContent className="space-y-6">
             {exam.description && (
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Description</h3>
-                <p className="text-gray-600">{exam.description}</p>
+                <h3 className="font-medium text-foreground mb-2">Description</h3>
+                <p className="text-muted-foreground">{exam.description}</p>
               </div>
             )}
 
             {/* Exam Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-muted/30 rounded-lg">
               <div className="flex items-center space-x-3">
-                <Clock className="h-5 w-5 text-gray-600" />
+                <Clock className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <div className="text-sm text-gray-600">Duration</div>
-                  <div className="font-medium text-gray-900">
+                  <div className="text-sm text-muted-foreground">Duration</div>
+                  <div className="font-medium text-foreground">
                     {exam.duration} minutes
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center space-x-3">
-                <BookOpen className="h-5 w-5 text-gray-600" />
+                <BookOpen className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <div className="text-sm text-gray-600">Questions</div>
-                  <div className="font-medium text-gray-900">
+                  <div className="text-sm text-muted-foreground">Questions</div>
+                  <div className="font-medium text-foreground">
                     {exam.totalQuestions} questions
                   </div>
                 </div>
@@ -242,11 +242,11 @@ export default function ShareableExamPage() {
             </div>
 
             {/* Instructions */}
-            <div className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded">
-              <h4 className="font-medium text-blue-900 mb-2">
+            <div className="border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 p-4 rounded">
+              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
                 Before You Start:
               </h4>
-              <ul className="space-y-1 text-sm text-blue-800">
+              <ul className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
                 <li>• Make sure you have a stable internet connection</li>
                 <li>• You have {exam.duration} minutes to complete the exam</li>
                 <li>• Your progress will be auto-saved every 30 seconds</li>

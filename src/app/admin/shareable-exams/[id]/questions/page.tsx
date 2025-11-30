@@ -93,7 +93,28 @@ export default function ManageShareableExamQuestions() {
       const questionsData = await questionsRes.json();
 
       if (questionsData.success) {
-        setQuestions(questionsData.data || []);
+        const mappedQuestions = (questionsData.data || []).map((q: any) => {
+          const options = q.options || [];
+          const correctIndex = options.findIndex(
+            (opt: string) => opt === q.correctAnswer
+          );
+          const correctLetter =
+            correctIndex >= 0 ? ["A", "B", "C", "D"][correctIndex] : "A";
+
+          return {
+            id: q.id,
+            questionText: q.question,
+            optionA: options[0] || "",
+            optionB: options[1] || "",
+            optionC: options[2] || "",
+            optionD: options[3] || "",
+            correctAnswer: correctLetter as "A" | "B" | "C" | "D",
+            explanation: q.explanation || "",
+            difficulty: "medium",
+            marks: q.marks || 1,
+          };
+        });
+        setQuestions(mappedQuestions);
       }
     } catch (error) {
       console.error("Error loading exam and questions:", error);
@@ -172,17 +193,26 @@ export default function ManageShareableExamQuestions() {
       }
 
       // Convert uploaded questions to our format
-      const uploadedQuestions = data.data.questions.map((q: any) => ({
-        questionText: q.question,
-        optionA: q.options?.[0] || "",
-        optionB: q.options?.[1] || "",
-        optionC: q.options?.[2] || "",
-        optionD: q.options?.[3] || "",
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation || "",
-        difficulty: "medium",
-        marks: q.marks || 1,
-      }));
+      const uploadedQuestions = data.data.questions.map((q: any) => {
+        const options = q.options || [];
+        const correctIndex = options.findIndex(
+          (opt: string) => opt === q.correctAnswer
+        );
+        const correctLetter =
+          correctIndex >= 0 ? ["A", "B", "C", "D"][correctIndex] : "A";
+
+        return {
+          questionText: q.question,
+          optionA: options[0] || "",
+          optionB: options[1] || "",
+          optionC: options[2] || "",
+          optionD: options[3] || "",
+          correctAnswer: correctLetter as "A" | "B" | "C" | "D",
+          explanation: q.explanation || "",
+          difficulty: "medium",
+          marks: q.marks || 1,
+        };
+      });
 
       setQuestions([...questions, ...uploadedQuestions]);
       setUploadFile(null);
@@ -277,16 +307,16 @@ export default function ManageShareableExamQuestions() {
 
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{exam?.title}</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-2xl font-bold text-foreground">{exam?.title}</h1>
+            <p className="text-muted-foreground mt-1">
               {exam?.subject} • {questions.length} questions added
             </p>
           </div>
           <Badge
             className={
               exam?.status === "published"
-                ? "bg-green-100 text-green-700"
-                : "bg-yellow-100 text-yellow-700"
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
             }
           >
             {exam?.status}
@@ -469,14 +499,14 @@ export default function ManageShareableExamQuestions() {
               <div className="space-y-4">
                 <div className="border-2 border-dashed rounded-lg p-6">
                   <div className="flex flex-col items-center space-y-4">
-                    <div className="rounded-full bg-blue-100 p-3">
-                      <FileText className="h-8 w-8 text-blue-600" />
+                    <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-3">
+                      <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="text-center">
-                      <h3 className="font-medium text-gray-900">
+                      <h3 className="font-medium text-foreground">
                         Upload Question Document
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         Upload PDF, DOCX, or TXT files containing questions
                       </p>
                     </div>
@@ -491,11 +521,11 @@ export default function ManageShareableExamQuestions() {
                         className="cursor-pointer"
                       />
                       {uploadFile && (
-                        <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+                        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
                           <p className="font-medium truncate">
                             {uploadFile.name}
                           </p>
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-muted-foreground">
                             {(uploadFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                         </div>
@@ -519,11 +549,11 @@ export default function ManageShareableExamQuestions() {
                   </div>
                 </div>
 
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-2">
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
                     Document Format Guidelines:
                   </h4>
-                  <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
                     <li>Format questions as "Question X: Question text"</li>
                     <li>
                       Format options as "a) Option text", "b) Option text", etc.
@@ -536,11 +566,11 @@ export default function ManageShareableExamQuestions() {
                     <li>Supports 3-4 options per question</li>
                   </ul>
 
-                  <div className="mt-3 p-3 bg-white rounded border border-blue-200">
-                    <p className="text-xs font-medium text-gray-700 mb-1">
+                  <div className="mt-3 p-3 bg-card rounded border border-blue-200 dark:border-blue-800">
+                    <p className="text-xs font-medium text-muted-foreground mb-1">
                       Example:
                     </p>
-                    <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
                       {`Question 1:
 What is the capital of France?
 a) London
@@ -565,7 +595,7 @@ c) Earth`}
       {/* Questions List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-foreground">
             Questions ({questions.length})
           </h2>
           <div className="flex items-center space-x-2">
@@ -600,7 +630,7 @@ c) Earth`}
 
         {questions.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center text-gray-500">
+            <CardContent className="py-12 text-center text-muted-foreground">
               No questions added yet. Add your first question above.
             </CardContent>
           </Card>
@@ -639,8 +669,8 @@ c) Earth`}
                     <div
                       className={`p-2 rounded ${
                         question.correctAnswer === "A"
-                          ? "bg-green-100 border border-green-300"
-                          : "bg-gray-50"
+                          ? "bg-green-100 border border-green-300 dark:bg-green-900/30 dark:border-green-800"
+                          : "bg-muted/50"
                       }`}
                     >
                       <span className="font-semibold">A:</span>{" "}
@@ -652,8 +682,8 @@ c) Earth`}
                     <div
                       className={`p-2 rounded ${
                         question.correctAnswer === "B"
-                          ? "bg-green-100 border border-green-300"
-                          : "bg-gray-50"
+                          ? "bg-green-100 border border-green-300 dark:bg-green-900/30 dark:border-green-800"
+                          : "bg-muted/50"
                       }`}
                     >
                       <span className="font-semibold">B:</span>{" "}
@@ -665,8 +695,8 @@ c) Earth`}
                     <div
                       className={`p-2 rounded ${
                         question.correctAnswer === "C"
-                          ? "bg-green-100 border border-green-300"
-                          : "bg-gray-50"
+                          ? "bg-green-100 border border-green-300 dark:bg-green-900/30 dark:border-green-800"
+                          : "bg-muted/50"
                       }`}
                     >
                       <span className="font-semibold">C:</span>{" "}
@@ -678,8 +708,8 @@ c) Earth`}
                     <div
                       className={`p-2 rounded ${
                         question.correctAnswer === "D"
-                          ? "bg-green-100 border border-green-300"
-                          : "bg-gray-50"
+                          ? "bg-green-100 border border-green-300 dark:bg-green-900/30 dark:border-green-800"
+                          : "bg-muted/50"
                       }`}
                     >
                       <span className="font-semibold">D:</span>{" "}
@@ -690,7 +720,7 @@ c) Earth`}
                     </div>
                   </div>
                   {question.explanation && (
-                    <div className="text-sm text-gray-600 mt-2 p-2 bg-blue-50 rounded">
+                    <div className="text-sm text-muted-foreground mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
                       <span className="font-semibold">Explanation:</span>{" "}
                       {question.explanation}
                     </div>

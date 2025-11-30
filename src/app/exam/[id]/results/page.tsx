@@ -68,7 +68,7 @@ export default function ExamResultsPage() {
       const attempt = data.data;
 
       // Fetch questions to calculate correct answers count
-      const questionsResponse = await fetch(`/api/exams/${examId}/questions`);
+      const questionsResponse = await fetch(`/api/exams/${examId}/questions?includeAnswers=true`);
       const questionsData = await questionsResponse.json();
 
       let correctCount = 0;
@@ -79,6 +79,7 @@ export default function ExamResultsPage() {
         totalQuestions = questions.length;
 
         // Count correct answers by comparing with actual questions
+        // Count correct answers by comparing with actual questions
         questions.forEach((q: any) => {
           const submitted = attempt.answers?.[q.id];
           if (submitted !== undefined && submitted !== null) {
@@ -87,9 +88,21 @@ export default function ExamResultsPage() {
               .trim()
               .toLowerCase();
 
+            // Check if direct match (text vs text or index vs index)
             if (normalizedCorrect === normalizedSubmitted) {
               correctCount++;
-            } else if (Array.isArray(q.options)) {
+            }
+            // Check if correct answer is a letter (A, B, C, D) and submitted is index
+            else if (/^[a-d]$/.test(normalizedCorrect)) {
+              const correctIndex = ["a", "b", "c", "d"].indexOf(
+                normalizedCorrect
+              );
+              if (parseInt(normalizedSubmitted) === correctIndex) {
+                correctCount++;
+              }
+            }
+            // Check if submitted is index and correct answer is text (legacy/other format)
+            else if (Array.isArray(q.options)) {
               // Check if submitted is numeric index
               const maybeIndex = parseInt(submitted as any, 10);
               if (!isNaN(maybeIndex) && q.options[maybeIndex]) {
