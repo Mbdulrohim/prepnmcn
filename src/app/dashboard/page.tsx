@@ -111,6 +111,22 @@ interface User {
   institution: string;
   role: string;
   points: number;
+  streak?: number;
+  dashboardStats?: {
+    hoursStudied: number;
+    recentActivity: {
+      id: string;
+      examTitle: string;
+      score: number;
+      totalMarks: number;
+      date: string;
+    }[];
+    overallProgress: number;
+    subjectProgress: {
+      subject: string;
+      progress: number;
+    }[];
+  };
 }
 
 interface ExamEnrollment {
@@ -148,6 +164,10 @@ export default function Dashboard() {
 
       if (userResponse.ok) {
         const userData = await userResponse.json();
+        // Merge dashboardStats into user object if it comes separately or nested
+        if (userData.dashboardStats) {
+          userData.user.dashboardStats = userData.dashboardStats;
+        }
         setUser(userData.user);
       }
 
@@ -241,9 +261,11 @@ export default function Dashboard() {
               <Target className="h-4 w-4 text-chart-2" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-chart-2">0 days</div>
+              <div className="text-2xl font-bold text-chart-2">
+                {user?.streak || 0} days
+              </div>
               <p className="text-xs text-muted-foreground">
-                Start your streak!
+                {(user?.streak || 0) > 0 ? "Keep it up!" : "Start your streak!"}
               </p>
             </CardContent>
           </Card>
@@ -256,8 +278,10 @@ export default function Dashboard() {
               <Clock className="h-4 w-4 text-chart-3" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-chart-3">0h</div>
-              <p className="text-xs text-muted-foreground">This week</p>
+              <div className="text-2xl font-bold text-chart-3">
+                {user?.dashboardStats?.hoursStudied || 0}h
+              </div>
+              <p className="text-xs text-muted-foreground">All time</p>
             </CardContent>
           </Card>
 
@@ -267,8 +291,13 @@ export default function Dashboard() {
               <TrendingUp className="h-4 w-4 text-chart-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-chart-4">0%</div>
-              <Progress value={0} className="mt-2" />
+              <div className="text-2xl font-bold text-chart-4">
+                {user?.dashboardStats?.overallProgress || 0}%
+              </div>
+              <Progress
+                value={user?.dashboardStats?.overallProgress || 0}
+                className="mt-2"
+              />
             </CardContent>
           </Card>
         </div>
@@ -297,17 +326,23 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button className="w-full justify-start" variant="outline">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Start Study Session
+                  <Button className="w-full justify-start" variant="outline" asChild>
+                    <Link href="/study-session">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Start Study Session
+                    </Link>
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <BarChart3 className="mr-2 h-4 w-4" />
-                    Take Practice Test
+                  <Button className="w-full justify-start" variant="outline" asChild>
+                    <Link href="/exams">
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      Take Practice Test
+                    </Link>
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <Users className="mr-2 h-4 w-4" />
-                    Join Study Group
+                  <Button className="w-full justify-start" variant="outline" asChild>
+                    <Link href="/community">
+                      <Users className="mr-2 h-4 w-4" />
+                      Join Study Group
+                    </Link>
                   </Button>
                   <Link href="/resources" passHref>
                     <Button className="w-full justify-start" variant="outline">
@@ -327,15 +362,40 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">
-                      No activity yet
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Start studying to see your activity here.
-                    </p>
-                  </div>
+                  {user?.dashboardStats?.recentActivity &&
+                  user.dashboardStats.recentActivity.length > 0 ? (
+                    <div className="space-y-4">
+                      {user.dashboardStats.recentActivity.map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
+                        >
+                          <div>
+                            <p className="font-medium">{activity.examTitle}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(activity.date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">
+                              {activity.score}/{activity.totalMarks}
+                            </p>
+                            <Badge variant="outline">Completed</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">
+                        No activity yet
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Start studying to see your activity here.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -488,31 +548,27 @@ export default function Dashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Overall Progress</span>
-                      <span>0%</span>
+                      <span>{user?.dashboardStats?.overallProgress || 0}%</span>
                     </div>
-                    <Progress value={0} />
+                    <Progress
+                      value={user?.dashboardStats?.overallProgress || 0}
+                    />
                   </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Biology</span>
-                      <span>0%</span>
+                  {user?.dashboardStats?.subjectProgress?.map((subject) => (
+                    <div key={subject.subject}>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span>{subject.subject}</span>
+                        <span>{subject.progress}%</span>
+                      </div>
+                      <Progress value={subject.progress} />
                     </div>
-                    <Progress value={0} />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Chemistry</span>
-                      <span>0%</span>
-                    </div>
-                    <Progress value={0} />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Physics</span>
-                      <span>0%</span>
-                    </div>
-                    <Progress value={0} />
-                  </div>
+                  ))}
+                  {(!user?.dashboardStats?.subjectProgress ||
+                    user.dashboardStats.subjectProgress.length === 0) && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No subject progress data available yet.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

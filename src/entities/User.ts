@@ -38,6 +38,12 @@ export class User {
   @Column({ type: "int", default: 0 })
   points!: number;
 
+  @Column({ type: "int", default: 0 })
+  streak!: number;
+
+  @Column({ type: "timestamp", nullable: true })
+  lastStudyDate?: Date | null;
+
   @Column({
     type: "varchar",
     length: 50,

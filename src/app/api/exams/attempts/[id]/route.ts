@@ -4,6 +4,7 @@ import { getDataSource } from "@/lib/database";
 import { ExamAttempt } from "@/entities/ExamAttempt";
 import { ExamEnrollment, EnrollmentStatus } from "@/entities/ExamEnrollment";
 import { Question, QuestionType } from "@/entities/Question";
+import { User } from "@/entities/User";
 
 export const runtime = "nodejs";
 
@@ -216,6 +217,43 @@ export async function POST(
         enrollment.status = EnrollmentStatus.COMPLETED;
         enrollment.completedAt = new Date();
         await enrollmentRepo.save(enrollment);
+      }
+    }
+
+    // Update User Streak
+    const userRepo = dataSource.getRepository(User);
+    const user = await userRepo.findOne({ where: { id: session.user.id } });
+
+    if (user) {
+      const now = new Date();
+      const lastStudyDate = user.lastStudyDate ? new Date(user.lastStudyDate) : null;
+
+      // Check if studied today
+      const isToday = lastStudyDate &&
+        lastStudyDate.getDate() === now.getDate() &&
+        lastStudyDate.getMonth() === now.getMonth() &&
+        lastStudyDate.getFullYear() === now.getFullYear();
+
+      if (!isToday) {
+        // Check if studied yesterday
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const isYesterday = lastStudyDate &&
+          lastStudyDate.getDate() === yesterday.getDate() &&
+          lastStudyDate.getMonth() === yesterday.getMonth() &&
+          lastStudyDate.getFullYear() === yesterday.getFullYear();
+
+        if (isYesterday) {
+          user.streak = (user.streak || 0) + 1;
+        } else {
+          // Reset streak if not yesterday (and not today)
+          // If it's the first time ever, streak becomes 1
+          user.streak = 1;
+        }
+
+        user.lastStudyDate = now;
+        await userRepo.save(user);
       }
     }
 
