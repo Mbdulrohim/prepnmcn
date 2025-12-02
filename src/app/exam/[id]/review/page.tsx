@@ -31,7 +31,7 @@ interface ReviewData {
   id: string;
   examId: string;
   questions: Question[];
-  answers: Record<string, number>;
+  answers: Record<string, any>; // Changed to any to handle various answer formats
   score: number;
   totalQuestions: number;
 }
@@ -59,31 +59,50 @@ export default function ExamReviewPage() {
     }
   }, [attemptId]);
 
-  // Helper to get correct answer index regardless of format
-  const getCorrectAnswerIndex = (q: Question): number => {
-    if (typeof q.correctAnswer === "number") {
-      return q.correctAnswer;
+  // Helper to normalize any answer format to an index
+  const getAnswerIndex = (answer: any, options: string[] = []): number => {
+    if (answer === undefined || answer === null) return -1;
+
+    // If it's already a number
+    if (typeof answer === "number") return answer;
+
+    const str = String(answer).trim().toLowerCase();
+
+    // Check if it's a numeric string "0", "1"
+    if (/^\d+$/.test(str)) {
+      const idx = parseInt(str, 10);
+      // Only return if it's a valid index range, or if we don't have options to check against
+      if (options.length === 0 || (idx >= 0 && idx < options.length))
+        return idx;
     }
 
-    const normalized = String(q.correctAnswer).trim().toLowerCase();
-
-    // Handle letter answers (a, b, c, d)
-    if (/^[a-d]$/.test(normalized)) {
-      return ["a", "b", "c", "d"].indexOf(normalized);
+    // Check if it's a letter "a", "b"...
+    if (/^[a-d]$/.test(str)) {
+      return ["a", "b", "c", "d"].indexOf(str);
     }
 
-    // Handle numeric string
-    const parsed = parseInt(normalized, 10);
-    return isNaN(parsed) ? -1 : parsed;
+    // Check if it matches option text
+    if (options.length > 0) {
+      const optionIdx = options.findIndex(
+        (opt) => opt.trim().toLowerCase() === str
+      );
+      if (optionIdx !== -1) return optionIdx;
+    }
+
+    return -1;
   };
 
   const getAIExplanation = async (questionIndex: number) => {
-    if (!currentQuestion || correctAnswerIndex === undefined) return;
+    if (!currentQuestion || correctAnswerIndex === -1) return;
 
     setLoadingAI(questionIndex);
 
     try {
-      const userAnswer = reviewData?.answers[currentQuestion.id];
+      const userAnswerRaw = reviewData?.answers[currentQuestion.id];
+      const userAnswerIdx = getAnswerIndex(
+        userAnswerRaw,
+        currentQuestion.options
+      );
 
       const response = await fetch("/api/ai-explanation", {
         method: "POST",
@@ -94,8 +113,8 @@ export default function ExamReviewPage() {
           question: currentQuestion.question,
           options: currentQuestion.options,
           correctAnswer: correctAnswerIndex,
-          userAnswer,
-          isCorrect: userAnswer === correctAnswerIndex,
+          userAnswer: userAnswerIdx,
+          isCorrect: userAnswerIdx === correctAnswerIndex,
         }),
       });
 
@@ -168,31 +187,37 @@ export default function ExamReviewPage() {
   };
 
   const currentQuestion = reviewData?.questions[currentIndex];
-  const userAnswer = currentQuestion
+
+  // Calculate indices for current question
+  const userAnswerRaw = currentQuestion
     ? reviewData?.answers[currentQuestion.id]
     : undefined;
 
-  // Parse correctAnswer to number if it's a string
+  const userAnswerIndex = currentQuestion
+    ? getAnswerIndex(userAnswerRaw, currentQuestion.options)
+    : -1;
+
   const correctAnswerIndex = currentQuestion
-    ? getCorrectAnswerIndex(currentQuestion)
-    : undefined;
+    ? getAnswerIndex(currentQuestion.correctAnswer, currentQuestion.options)
+    : -1;
 
   const isCorrect =
-    userAnswer !== undefined &&
-    correctAnswerIndex !== undefined &&
-    userAnswer === correctAnswerIndex;
-  const isAnswered = userAnswer !== undefined;
+    userAnswerIndex !== -1 &&
+    correctAnswerIndex !== -1 &&
+    userAnswerIndex === correctAnswerIndex;
+
+  const isAnswered = userAnswerIndex !== -1;
 
   // Debug logging
   if (currentQuestion) {
     console.log("Current Question:", {
       id: currentQuestion.id,
-      userAnswer,
-      correctAnswer: currentQuestion.correctAnswer,
+      userAnswerRaw,
+      userAnswerIndex,
+      correctAnswerRaw: currentQuestion.correctAnswer,
       correctAnswerIndex,
       isCorrect,
       isAnswered,
-      allAnswers: reviewData?.answers,
     });
   }
 
@@ -214,10 +239,12 @@ export default function ExamReviewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg text-slate-700">Loading review data...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-lg text-muted-foreground">
+            Loading review data...
+          </p>
         </div>
       </div>
     );
@@ -225,13 +252,13 @@ export default function ExamReviewPage() {
 
   if (error || !reviewData || !currentQuestion) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md">
-          <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <AlertTriangle className="h-16 w-16 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Error Loading Review
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             {error || "No review data available"}
           </p>
           <Button
@@ -246,25 +273,26 @@ export default function ExamReviewPage() {
     );
   }
 
+  // Calculate stats using the robust index comparison
   const correctCount = reviewData.questions.filter((q) => {
-    const correctIdx = getCorrectAnswerIndex(q);
-    return reviewData.answers[q.id] === correctIdx;
+    const uIdx = getAnswerIndex(reviewData.answers[q.id], q.options);
+    const cIdx = getAnswerIndex(q.correctAnswer, q.options);
+    return uIdx !== -1 && cIdx !== -1 && uIdx === cIdx;
   }).length;
 
   const incorrectCount = reviewData.questions.filter((q) => {
-    const correctIdx = getCorrectAnswerIndex(q);
-    return (
-      reviewData.answers[q.id] !== undefined &&
-      reviewData.answers[q.id] !== correctIdx
-    );
+    const uIdx = getAnswerIndex(reviewData.answers[q.id], q.options);
+    const cIdx = getAnswerIndex(q.correctAnswer, q.options);
+    return uIdx !== -1 && (cIdx === -1 || uIdx !== cIdx);
   }).length;
+
   const unansweredCount =
     reviewData.totalQuestions - correctCount - incorrectCount;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -277,7 +305,7 @@ export default function ExamReviewPage() {
               Back to Results
             </Button>
 
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-xl font-semibold text-foreground">
               Review Answers
             </h1>
 
@@ -289,19 +317,19 @@ export default function ExamReviewPage() {
 
           {/* Progress */}
           <div className="mt-4 flex items-center justify-between text-sm">
-            <span className="text-gray-600">
+            <span className="text-muted-foreground">
               Question {currentIndex + 1} of {reviewData.totalQuestions}
             </span>
             <div className="flex items-center space-x-4">
-              <span className="text-green-600 flex items-center">
+              <span className="text-green-600 dark:text-green-400 flex items-center">
                 <CheckCircle className="h-4 w-4 mr-1" />
                 {correctCount} Correct
               </span>
-              <span className="text-red-600 flex items-center">
+              <span className="text-red-600 dark:text-red-400 flex items-center">
                 <XCircle className="h-4 w-4 mr-1" />
                 {incorrectCount} Wrong
               </span>
-              <span className="text-gray-600 flex items-center">
+              <span className="text-muted-foreground flex items-center">
                 <AlertTriangle className="h-4 w-4 mr-1" />
                 {unansweredCount} Unanswered
               </span>
@@ -317,28 +345,26 @@ export default function ExamReviewPage() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
-                  <span className="text-sm font-medium text-gray-500">
+                  <span className="text-sm font-medium text-muted-foreground">
                     Question {currentIndex + 1}
                   </span>
                   {isAnswered ? (
                     isCorrect ? (
-                      <Badge className="bg-green-100 text-green-700 border-green-300">
+                      <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Correct
                       </Badge>
                     ) : (
-                      <Badge className="bg-red-100 text-red-700 border-red-300">
+                      <Badge className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800">
                         <XCircle className="h-3 w-3 mr-1" />
                         Incorrect
                       </Badge>
                     )
                   ) : (
-                    <Badge className="bg-gray-100 text-gray-700 border-gray-300">
-                      Not Answered
-                    </Badge>
+                    <Badge variant="secondary">Not Answered</Badge>
                   )}
                 </div>
-                <CardTitle className="text-lg text-gray-900">
+                <CardTitle className="text-lg text-foreground">
                   {currentQuestion.question}
                 </CardTitle>
               </div>
@@ -349,48 +375,56 @@ export default function ExamReviewPage() {
             {/* Options */}
             <div className="space-y-3 mb-6">
               {currentQuestion.options.map((option, index) => {
-                const isUserAnswer = userAnswer === index;
+                const isUserAnswer = userAnswerIndex === index;
                 const isCorrectAnswer =
-                  correctAnswerIndex !== undefined &&
-                  index === correctAnswerIndex;
+                  correctAnswerIndex !== -1 && index === correctAnswerIndex;
 
-                let className = "w-full p-4 text-left rounded-lg border-2 ";
+                let className =
+                  "w-full p-4 text-left rounded-lg border-2 transition-colors ";
+                let markerClass =
+                  "w-6 h-6 rounded-full border-2 flex items-center justify-center text-sm font-medium flex-shrink-0 ";
+                let textClass = "flex-1 ";
+
                 if (isCorrectAnswer && isUserAnswer) {
                   // User got it right - green
-                  className += "border-green-500 bg-green-50";
+                  className +=
+                    "border-green-500 bg-green-50 dark:bg-green-900/20";
+                  markerClass += "border-green-500 bg-green-500 text-white";
+                  textClass += "text-foreground";
                 } else if (isCorrectAnswer) {
                   // Correct answer (not selected) - green border
-                  className += "border-green-500 bg-green-50";
+                  className +=
+                    "border-green-500 bg-green-50 dark:bg-green-900/20";
+                  markerClass += "border-green-500 bg-green-500 text-white";
+                  textClass += "text-foreground";
                 } else if (isUserAnswer && !isCorrect) {
                   // User's wrong answer - red
-                  className += "border-red-500 bg-red-50";
+                  className += "border-red-500 bg-red-50 dark:bg-red-900/20";
+                  markerClass += "border-red-500 bg-red-500 text-white";
+                  textClass += "text-foreground";
                 } else {
-                  className += "border-gray-200 bg-white";
+                  // Normal option
+                  className += "border-border bg-card hover:bg-muted/50";
+                  markerClass +=
+                    "border-muted-foreground/30 text-muted-foreground";
+                  textClass += "text-foreground";
                 }
 
                 return (
                   <div key={index} className={className}>
                     <div className="flex items-start space-x-3">
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-sm font-medium flex-shrink-0 ${
-                          isCorrectAnswer
-                            ? "border-green-500 bg-green-500 text-white"
-                            : isUserAnswer
-                            ? "border-red-500 bg-red-500 text-white"
-                            : "border-gray-300 text-gray-600"
-                        }`}
-                      >
+                      <div className={markerClass}>
                         {String.fromCharCode(65 + index)}
                       </div>
-                      <div className="flex-1">
-                        <span className="text-gray-900">{option}</span>
+                      <div className={textClass}>
+                        <span className="text-base">{option}</span>
                         {isCorrectAnswer && (
-                          <span className="ml-2 text-sm text-green-700 font-medium">
+                          <span className="ml-2 text-sm text-green-600 dark:text-green-400 font-medium">
                             ✓ Correct Answer
                           </span>
                         )}
                         {isUserAnswer && !isCorrect && (
-                          <span className="ml-2 text-sm text-red-700 font-medium">
+                          <span className="ml-2 text-sm text-red-600 dark:text-red-400 font-medium">
                             ✗ Your Answer
                           </span>
                         )}
@@ -403,9 +437,11 @@ export default function ExamReviewPage() {
 
             {/* Explanation */}
             {currentQuestion.explanation && (
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Explanation:</h4>
-                <p className="text-blue-800 text-sm">
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  Explanation:
+                </h4>
+                <p className="text-blue-800 dark:text-blue-200 text-sm">
                   {currentQuestion.explanation}
                 </p>
               </div>
@@ -432,14 +468,14 @@ export default function ExamReviewPage() {
                   )}
                 </Button>
               ) : (
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-300 rounded-lg shadow-sm">
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-lg shadow-sm">
                   <div className="flex items-center mb-2">
-                    <Lightbulb className="h-5 w-5 text-purple-600 mr-2" />
-                    <h4 className="font-semibold text-purple-900">
+                    <Lightbulb className="h-5 w-5 text-purple-600 dark:text-purple-400 mr-2" />
+                    <h4 className="font-semibold text-purple-900 dark:text-purple-100">
                       AI Explanation
                     </h4>
                   </div>
-                  <p className="text-gray-800 text-sm leading-relaxed">
+                  <p className="text-foreground text-sm leading-relaxed">
                     {aiExplanations[currentIndex]}
                   </p>
                 </div>
@@ -447,7 +483,7 @@ export default function ExamReviewPage() {
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between pt-4 border-t">
+            <div className="flex items-center justify-between pt-4 border-t border-border">
               <Button
                 onClick={goToPrevious}
                 disabled={currentIndex === 0}
@@ -457,7 +493,7 @@ export default function ExamReviewPage() {
                 Previous
               </Button>
 
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 {currentIndex + 1} / {reviewData.totalQuestions}
               </span>
 
@@ -478,12 +514,15 @@ export default function ExamReviewPage() {
             <CardTitle className="text-base">All Questions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-10 gap-2">
+            <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
               {reviewData.questions.map((q, index) => {
-                const answer = reviewData.answers[q.id];
-                const correctIdx = getCorrectAnswerIndex(q);
-                const isCorrect = answer === correctIdx;
-                const isAnswered = answer !== undefined;
+                const uIdx = getAnswerIndex(
+                  reviewData.answers[q.id],
+                  q.options
+                );
+                const cIdx = getAnswerIndex(q.correctAnswer, q.options);
+                const isCorrect = uIdx !== -1 && cIdx !== -1 && uIdx === cIdx;
+                const isAnswered = uIdx !== -1;
 
                 return (
                   <button
@@ -491,12 +530,12 @@ export default function ExamReviewPage() {
                     onClick={() => goToQuestion(index)}
                     className={`w-10 h-10 text-sm font-medium rounded-lg border-2 transition-all ${
                       index === currentIndex
-                        ? "border-blue-500 bg-blue-500 text-white"
+                        ? "border-primary bg-primary text-primary-foreground"
                         : isCorrect
-                        ? "border-green-500 bg-green-100 text-green-700"
+                        ? "border-green-500 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                         : isAnswered
-                        ? "border-red-500 bg-red-100 text-red-700"
-                        : "border-gray-300 bg-gray-100 text-gray-700"
+                        ? "border-red-500 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                        : "border-border bg-muted text-muted-foreground"
                     }`}
                   >
                     {index + 1}
