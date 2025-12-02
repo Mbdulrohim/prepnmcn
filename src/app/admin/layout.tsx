@@ -285,6 +285,20 @@ export default function AdminLayout({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}
+                {(session?.user as any)?.role === "super_admin" && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive("/admin/emails")}
+                      tooltip="Emails"
+                    >
+                      <Link href="/admin/emails">
+                        <Mail />
+                        <span>Emails</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild

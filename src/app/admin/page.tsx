@@ -489,6 +489,7 @@ export default function AdminDashboard() {
                   variant="outline"
                   onClick={handleDownloadStudentBios}
                   className="flex items-center gap-2"
+                  disabled
                 >
                   <Download className="h-4 w-4" />
                   Download Student Bios

@@ -23,6 +23,7 @@ import { CommunityVoice } from "../entities/CommunityVoice";
 import { CampusStory } from "../entities/CampusStory";
 import { LearnerTestimonial } from "../entities/LearnerTestimonial";
 import { BlogPost } from "../entities/BlogPost";
+import { Email } from "../entities/Email";
 
 let AppDataSource: DataSource;
 
@@ -64,8 +65,14 @@ export async function getDataSource(): Promise<DataSource> {
       Challenge,
       AccessCode,
       ChatMessage,
+      Email,
     ],
-    ssl: { rejectUnauthorized: false }, // Allow self-signed certificates
+    ssl: true,
+    extra: {
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    },
   });
 
   await AppDataSource.initialize();

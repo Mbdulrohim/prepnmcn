@@ -13,7 +13,8 @@ const nextConfig: NextConfig = {
     return config;
   },
   // Move problematic packages to server external packages to avoid bundling issues
-  serverExternalPackages: ['typeorm', 'reflect-metadata', '@types/node'],
+  serverExternalPackages: ["typeorm", "reflect-metadata", "@types/node"],
+  turbopack: {},
 };
 
 export default nextConfig;
