@@ -52,6 +52,41 @@ export default function ExamReviewPage() {
     {}
   );
   const [loadingAI, setLoadingAI] = useState<number | null>(null);
+  const [showNavigator, setShowNavigator] = useState(true);
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+
+      switch (key) {
+        case "p":
+        case "arrowleft":
+          event.preventDefault();
+          if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
+          break;
+        case "n":
+        case "arrowright":
+          event.preventDefault();
+          if (reviewData && currentIndex < reviewData.questions.length - 1)
+            setCurrentIndex((prev) => prev + 1);
+          break;
+        case " ":
+          event.preventDefault();
+          setShowNavigator((prev) => !prev);
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [currentIndex, reviewData]);
 
   useEffect(() => {
     if (attemptId) {
@@ -309,10 +344,19 @@ export default function ExamReviewPage() {
               Review Answers
             </h1>
 
-            <Button onClick={() => router.push("/dashboard")} variant="ghost">
-              <Home className="h-4 w-4 mr-2" />
-              Dashboard
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                onClick={() => setShowNavigator(!showNavigator)}
+                className="hidden sm:flex"
+              >
+                {showNavigator ? "Hide Navigator" : "Show Navigator"}
+              </Button>
+              <Button onClick={() => router.push("/dashboard")} variant="ghost">
+                <Home className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
+            </div>
           </div>
 
           {/* Progress */}
@@ -509,42 +553,44 @@ export default function ExamReviewPage() {
         </Card>
 
         {/* Question Navigator */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-base">All Questions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
-              {reviewData.questions.map((q, index) => {
-                const uIdx = getAnswerIndex(
-                  reviewData.answers[q.id],
-                  q.options
-                );
-                const cIdx = getAnswerIndex(q.correctAnswer, q.options);
-                const isCorrect = uIdx !== -1 && cIdx !== -1 && uIdx === cIdx;
-                const isAnswered = uIdx !== -1;
+        {showNavigator && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="text-base">All Questions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                {reviewData.questions.map((q, index) => {
+                  const uIdx = getAnswerIndex(
+                    reviewData.answers[q.id],
+                    q.options
+                  );
+                  const cIdx = getAnswerIndex(q.correctAnswer, q.options);
+                  const isCorrect = uIdx !== -1 && cIdx !== -1 && uIdx === cIdx;
+                  const isAnswered = uIdx !== -1;
 
-                return (
-                  <button
-                    key={index}
-                    onClick={() => goToQuestion(index)}
-                    className={`w-10 h-10 text-sm font-medium rounded-lg border-2 transition-all ${
-                      index === currentIndex
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : isCorrect
-                        ? "border-green-500 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                        : isAnswered
-                        ? "border-red-500 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                        : "border-border bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => goToQuestion(index)}
+                      className={`w-10 h-10 text-sm font-medium rounded-lg border-2 transition-all ${
+                        index === currentIndex
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : isCorrect
+                          ? "border-green-500 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                          : isAnswered
+                          ? "border-red-500 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                          : "border-border bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {index + 1}
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -295,12 +295,6 @@ export default function ExamPlayer({
   };
 
   const confirmSubmit = async (auto?: boolean) => {
-    if (
-      !auto &&
-      !confirm("Submit exam? You cannot change answers after submission.")
-    )
-      return;
-
     try {
       await saveAnswers();
       setIsSubmitting(true);
@@ -468,7 +462,9 @@ export default function ExamPlayer({
         <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto mb-4" />
-            <p className="text-lg font-medium text-foreground">Loading questions...</p>
+            <p className="text-lg font-medium text-foreground">
+              Loading questions...
+            </p>
             <p className="text-sm text-muted-foreground mt-1">
               Hang tight, we’re getting your exam ready.
             </p>
@@ -481,7 +477,9 @@ export default function ExamPlayer({
       <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <p className="text-lg text-muted-foreground">No questions available</p>
+          <p className="text-lg text-muted-foreground">
+            No questions available
+          </p>
         </div>
       </div>
     );
@@ -614,7 +612,9 @@ export default function ExamPlayer({
                 </div>
               </div>
               <div>
-                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Navigation</h4>
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  Navigation
+                </h4>
                 <div className="space-y-1 text-blue-800 dark:text-blue-200">
                   <div>
                     <kbd className="px-2 py-1 bg-white rounded text-xs">P</kbd>{" "}
@@ -786,7 +786,9 @@ export default function ExamPlayer({
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex items-center space-x-4">
-              <h3 className="font-medium text-foreground">Question Navigator</h3>
+              <h3 className="font-medium text-foreground">
+                Question Navigator
+              </h3>
               <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 border-2 border-green-500 bg-green-100 dark:bg-green-900/30 rounded"></div>
