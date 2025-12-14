@@ -32,6 +32,8 @@ export async function POST(req: NextRequest) {
 
     const body = JSON.parse(rawBody);
 
+    console.log(body);
+
     const dataSource = await getDataSource();
     const emailRepository = dataSource.getRepository(Email);
 
