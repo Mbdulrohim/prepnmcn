@@ -23,22 +23,26 @@ export async function GET(
     }
 
     const dataSource = await getDataSource();
-    
-    // Check if user is premium
     const userRepo = dataSource.getRepository(User);
     const user = await userRepo.findOne({ where: { id: session.user.id } });
-    
-    if (!user?.isPremium) {
-      return NextResponse.json(
-        { success: false, error: "Premium subscription required to access shareable exams" },
-        { status: 403 }
-      );
-    }
 
-    // Check if premium has expired
-    if (user.premiumExpiresAt && new Date() > new Date(user.premiumExpiresAt)) {
+    // Check if user has any active program enrollment
+    const { getUserActiveEnrollments } = await import(
+      "@/lib/enrollmentHelpers"
+    );
+    const activeEnrollments = await getUserActiveEnrollments(session.user.id);
+
+    // Fallback to legacy premium check for backward compatibility
+    const hasLegacyPremium =
+      user?.isPremium &&
+      (!user.premiumExpiresAt || new Date() <= new Date(user.premiumExpiresAt));
+
+    if (activeEnrollments.length === 0 && !hasLegacyPremium) {
       return NextResponse.json(
-        { success: false, error: "Premium subscription has expired" },
+        {
+          success: false,
+          error: "Active program enrollment required to access exams",
+        },
         { status: 403 }
       );
     }
@@ -46,110 +50,86 @@ export async function GET(
     const examRepo = dataSource.getRepository(Exam);
     const attemptRepo = dataSource.getRepository(ExamAttempt);
 
-    // Debug: Check all exams with shareSlug
-    const allShareableExams = await examRepo
-      .createQueryBuilder("exam")
-      .select([
-        "exam.id",
-        "exam.title",
-        "exam.shareSlug",
-        "exam.isShareable",
-        "exam.status",
-      ])
-      .where("exam.shareSlug IS NOT NULL")
-      .getMany();
-
-    console.log("All shareable exams in DB:", allShareableExams);
-    console.log("Looking for slug:", slug);
-
-    // Find exam by share slug using query builder to select only existing columns
-    const exam = await examRepo
-      .createQueryBuilder("exam")
-      .select([
-        "exam.id",
-        "exam.title",
-        "exam.description",
-        "exam.subject",
-        "exam.duration",
-        "exam.isShareable",
-        "exam.shareSlug",
-        "exam.status",
-      ])
-      .leftJoinAndSelect("exam.examQuestions", "questions")
-      .where("exam.shareSlug = :slug", { slug })
-      .getOne();
-
-    console.log(
-      "Found exam:",
-      exam
-        ? {
-            id: exam.id,
-            title: exam.title,
-            status: exam.status,
-            isShareable: exam.isShareable,
-            questionsCount: exam.examQuestions?.length,
-          }
-        : null
-    );
+    // Find exam by shareSlug with program relationship
+    const exam = await examRepo.findOne({
+      where: { shareSlug: slug, isShareable: true },
+      relations: ["program"],
+    });
 
     if (!exam) {
       return NextResponse.json(
-        { success: false, error: "Exam not found with this slug" },
+        { success: false, error: "Exam not found or not shareable" },
         { status: 404 }
       );
     }
 
-    if (!exam.isShareable) {
-      return NextResponse.json(
-        { success: false, error: "Exam is not shareable" },
-        { status: 403 }
-      );
+    // Check program access if exam is program-specific
+    if (exam.programId && !exam.isGlobal) {
+      const enrolledProgramIds = activeEnrollments.map((e: any) => e.programId);
+      const hasAccess = enrolledProgramIds.includes(exam.programId);
+
+      if (!hasAccess && !hasLegacyPremium) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "You don't have access to this exam. Please enroll in the required program.",
+            requiredProgram: exam.program,
+          },
+          { status: 403 }
+        );
+      }
     }
 
-    // Check if exam is published
-    if (exam.status !== "published") {
-      return NextResponse.json(
-        { success: false, error: `Exam is ${exam.status}, not published yet` },
-        { status: 403 }
-      );
-    }
-
-    // Check if user has an existing attempt
-    const existingAttempt = await attemptRepo.findOne({
+    // Get existing attempts
+    const attempts = await attemptRepo.find({
       where: {
-        examId: exam.id,
         userId: session.user.id,
+        examId: exam.id,
       },
       order: {
         createdAt: "DESC",
       },
     });
 
-    // Count total questions
-    const totalQuestions = exam.examQuestions?.length || 0;
+    const hasCompletedAttempt = attempts.some(
+      (attempt) => attempt.completed === true
+    );
 
-    return NextResponse.json({
+    // Construct response
+    const response = {
       success: true,
-      data: {
-        exam: {
-          id: exam.id,
-          title: exam.title,
-          description: exam.description,
-          subject: exam.subject,
-          duration: exam.duration,
-          totalQuestions,
-          isShareable: exam.isShareable,
-          shareSlug: exam.shareSlug,
-        },
-        attempt: existingAttempt
+      exam: {
+        id: exam.id,
+        title: exam.title,
+        description: exam.description,
+        duration: exam.duration,
+        passingScore: exam.passingScore,
+        totalQuestions: exam.totalQuestions,
+        status: exam.status,
+        type: exam.type,
+        programId: exam.programId,
+        isGlobal: exam.isGlobal,
+        program: exam.program
           ? {
-              id: existingAttempt.id,
-              status: existingAttempt.isCompleted ? "completed" : "in_progress",
-              isCompleted: existingAttempt.isCompleted,
+              id: exam.program.id,
+              name: exam.program.name,
+              code: exam.program.code,
             }
           : null,
       },
-    });
+      attempts: attempts.map((attempt) => ({
+        id: attempt.id,
+        score: attempt.score,
+        passed: attempt.passed,
+        completed: attempt.completed,
+        createdAt: attempt.createdAt,
+        timeSpent: attempt.timeSpent,
+      })),
+      hasCompletedAttempt,
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching shareable exam:", error);
     return NextResponse.json(
