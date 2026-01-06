@@ -23,6 +23,20 @@ export enum PaymentMethod {
   OTHER = "other",
 }
 
+export enum PaymentType {
+  PROGRAM_ENROLLMENT = "program_enrollment",
+  EXAM_PACKAGE = "exam_package",
+  COURSE_ENROLLMENT = "course_enrollment",
+  OTHER = "other",
+}
+
+export enum ApprovalStatus {
+  NOT_REQUIRED = "not_required",
+  PENDING_APPROVAL = "pending_approval",
+  APPROVED = "approved",
+  REJECTED = "rejected",
+}
+
 @Entity("payments")
 export class Payment {
   @PrimaryGeneratedColumn("uuid")
@@ -66,4 +80,34 @@ export class Payment {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  // Multi-program support fields
+  @Column({ type: "json", nullable: true })
+  programIds?: string[]; // Array of program IDs for multi-program purchases
+
+  @Column({
+    type: "enum",
+    enum: PaymentType,
+    default: PaymentType.OTHER,
+  })
+  paymentType!: PaymentType;
+
+  @Column({
+    type: "enum",
+    enum: ApprovalStatus,
+    default: ApprovalStatus.NOT_REQUIRED,
+  })
+  approvalStatus!: ApprovalStatus;
+
+  @Column("uuid", { nullable: true })
+  approvedBy?: string; // Admin user ID who approved manual payment
+
+  @Column("timestamp", { nullable: true })
+  approvedAt?: Date;
+
+  @Column("text", { nullable: true })
+  approvalNotes?: string; // Admin notes for approval/rejection
+
+  @Column("text", { nullable: true })
+  paymentProof?: string; // URL or reference for manual payment proof
 }
