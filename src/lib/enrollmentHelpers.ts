@@ -1,26 +1,37 @@
-import { UserProgramEnrollment } from "../entities/UserProgramEnrollment";
+import {
+  UserProgramEnrollment,
+  EnrollmentStatus,
+} from "../entities/UserProgramEnrollment";
+import { getDataSource } from "./database";
 
 /**
- * Get list of active enrollments for a user
+ * Get all active (non-expired) enrollments for a user
  */
-export async function getActiveEnrollments(
+export async function getUserActiveEnrollments(
   userId: string
 ): Promise<UserProgramEnrollment[]> {
-  const { getDataSource } = await import("./database");
   const dataSource = await getDataSource();
   const enrollmentRepo = dataSource.getRepository(UserProgramEnrollment);
 
   const enrollments = await enrollmentRepo.find({
-    where: { userId, status: "active" as any },
+    where: {
+      userId,
+      status: EnrollmentStatus.ACTIVE,
+    },
     relations: ["program"],
   });
 
   // Filter out expired enrollments
-  return enrollments.filter((e) => {
-    if (!e.expiresAt) return true;
-    return new Date() <= new Date(e.expiresAt);
+  return enrollments.filter((enrollment) => {
+    if (!enrollment.expiresAt) return true;
+    return new Date() <= new Date(enrollment.expiresAt);
   });
 }
+
+/**
+ * Alias for backward compatibility
+ */
+export const getActiveEnrollments = getUserActiveEnrollments;
 
 /**
  * Check if user has access to a specific program
@@ -29,7 +40,7 @@ export async function hasAccessToProgram(
   userId: string,
   programCode: string
 ): Promise<boolean> {
-  const activeEnrollments = await getActiveEnrollments(userId);
+  const activeEnrollments = await getUserActiveEnrollments(userId);
   return activeEnrollments.some(
     (e) => e.program && (e.program as any).code === programCode
   );
@@ -60,7 +71,7 @@ export function getEnrollmentExpiryDate(months: number): Date {
  * Check if user has any active program enrollment
  */
 export async function hasAnyActiveEnrollment(userId: string): Promise<boolean> {
-  const enrollments = await getActiveEnrollments(userId);
+  const enrollments = await getUserActiveEnrollments(userId);
   return enrollments.length > 0;
 }
 
@@ -68,8 +79,8 @@ export async function hasAnyActiveEnrollment(userId: string): Promise<boolean> {
  * Get program codes user is enrolled in
  */
 export async function getUserProgramCodes(userId: string): Promise<string[]> {
-  const enrollments = await getActiveEnrollments(userId);
+  const enrollments = await getUserActiveEnrollments(userId);
   return enrollments
     .map((e) => (e.program as any)?.code)
-    .filter((code): code is string => !!code);
+    .filter((code: any): code is string => !!code);
 }

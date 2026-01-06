@@ -93,7 +93,7 @@ export async function GET(
     });
 
     const hasCompletedAttempt = attempts.some(
-      (attempt) => attempt.completed === true
+      (attempt) => attempt.completedAt !== null
     );
 
     // Construct response
@@ -104,8 +104,6 @@ export async function GET(
         title: exam.title,
         description: exam.description,
         duration: exam.duration,
-        passingScore: exam.passingScore,
-        totalQuestions: exam.totalQuestions,
         status: exam.status,
         type: exam.type,
         programId: exam.programId,
@@ -121,10 +119,10 @@ export async function GET(
       attempts: attempts.map((attempt) => ({
         id: attempt.id,
         score: attempt.score,
-        passed: attempt.passed,
-        completed: attempt.completed,
+        totalMarks: attempt.totalMarks,
+        completedAt: attempt.completedAt,
         createdAt: attempt.createdAt,
-        timeSpent: attempt.timeSpent,
+        timeTaken: attempt.timeTaken,
       })),
       hasCompletedAttempt,
     };
