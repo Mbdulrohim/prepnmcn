@@ -7,10 +7,12 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Index,
 } from "typeorm";
 import { Institution } from "./Institution";
 import { ExamPackage } from "./ExamPackage";
 import { Question } from "./Question";
+import { Program } from "./Program";
 
 export enum ExamStatus {
   DRAFT = "draft",
@@ -30,6 +32,7 @@ export enum ExamType {
 }
 
 @Entity("exams")
+@Index(["programId"])
 export class Exam {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
@@ -129,4 +132,15 @@ export class Exam {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  // Multi-program support
+  @Column({ type: "uuid", nullable: true })
+  programId?: string;
+
+  @ManyToOne(() => Program, { nullable: true })
+  @JoinColumn({ name: "programId" })
+  program?: Program;
+
+  @Column({ type: "boolean", default: false })
+  isGlobal!: boolean; // If true, available to all programs
 }

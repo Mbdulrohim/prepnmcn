@@ -4,9 +4,14 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Index,
 } from "typeorm";
+import { Program } from "./Program";
 
 @Entity("resources")
+@Index(["programId"])
 export class Resource {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -28,4 +33,15 @@ export class Resource {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  // Multi-program support
+  @Column({ type: "uuid", nullable: true })
+  programId?: string;
+
+  @ManyToOne(() => Program, { nullable: true })
+  @JoinColumn({ name: "programId" })
+  program?: Program;
+
+  @Column({ type: "boolean", default: false })
+  isGlobal!: boolean; // If true, available to all programs
 }
