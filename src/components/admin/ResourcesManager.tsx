@@ -166,7 +166,7 @@ export default function ResourcesManager() {
       const res = await fetch("/api/programs");
       if (res.ok) {
         const data = await res.json();
-        setPrograms(data);
+        setPrograms(data.programs ?? []);
       }
     } catch (error) {
       console.error("Error fetching programs:", error);
