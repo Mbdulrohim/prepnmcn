@@ -12,8 +12,13 @@ import { isSuperAdmin } from "@/lib/programPermissions";
 
 export const runtime = "nodejs";
 
-// POST /api/admin/migrate-premium - Migrate existing premium users to RM program
-// Super admin only
+/**
+ * POST /api/admin/migrate-premium
+ * Two modes controlled by `mode`:
+ *   - "premium" (default): Migrate premium users → active enrollment in target program
+ *   - "all-users": Assign ALL users who have NO enrollment in target program → pending enrollment
+ * Super admin only. Safe to run multiple times (skips existing enrollments).
+ */
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -31,29 +36,38 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { targetProgramCode = ProgramCode.RM, dryRun = false } = body;
+    const {
+      targetProgramCode = ProgramCode.RM,
+      targetProgramId,
+      dryRun = false,
+      mode = "premium", // "premium" | "all-users"
+    } = body;
 
     const dataSource = await getDataSource();
     const userRepo = dataSource.getRepository(User);
     const programRepo = dataSource.getRepository(Program);
     const enrollmentRepo = dataSource.getRepository(UserProgramEnrollment);
 
-    // Find the target program
-    const targetProgram = await programRepo.findOne({
-      where: { code: targetProgramCode, isActive: true },
-    });
+    // Find the target program (by ID or code)
+    let targetProgram: Program | null = null;
+    if (targetProgramId) {
+      targetProgram = await programRepo.findOne({
+        where: { id: targetProgramId, isActive: true },
+      });
+    } else {
+      targetProgram = await programRepo.findOne({
+        where: { code: targetProgramCode, isActive: true },
+      });
+    }
 
     if (!targetProgram) {
       return NextResponse.json(
-        { error: `Program ${targetProgramCode} not found` },
+        {
+          error: `Program not found (code=${targetProgramCode}, id=${targetProgramId || "none"})`,
+        },
         { status: 404 },
       );
     }
-
-    // Find all premium users
-    const premiumUsers = await userRepo.find({
-      where: { isPremium: true },
-    });
 
     let migrated = 0;
     let skipped = 0;
@@ -63,8 +77,96 @@ export async function POST(req: NextRequest) {
       action: string;
     }> = [];
 
+    if (mode === "all-users") {
+      // ── Assign ALL users to this program (pending enrollment) ──
+      const allUsers = await userRepo.find();
+
+      for (const user of allUsers) {
+        // Check if user already has ANY enrollment in the target program
+        const existingEnrollment = await enrollmentRepo.findOne({
+          where: { userId: user.id, programId: targetProgram.id },
+        });
+
+        if (existingEnrollment) {
+          skipped++;
+          results.push({
+            userId: user.id,
+            email: user.email,
+            action: `skipped — already has enrollment (${existingEnrollment.status})`,
+          });
+          continue;
+        }
+
+        if (!dryRun) {
+          // Premium users get ACTIVE, non-premium get PENDING
+          const isPremiumUser =
+            user.isPremium &&
+            (!user.premiumExpiresAt ||
+              new Date(user.premiumExpiresAt) > new Date());
+
+          const status = isPremiumUser
+            ? EnrollmentStatus.ACTIVE
+            : EnrollmentStatus.PENDING_APPROVAL;
+
+          const expiresAt = isPremiumUser
+            ? user.premiumExpiresAt &&
+              new Date(user.premiumExpiresAt) > new Date()
+              ? user.premiumExpiresAt
+              : (() => {
+                  const d = new Date();
+                  d.setMonth(d.getMonth() + 12);
+                  return d;
+                })()
+            : null;
+
+          const enrollment = enrollmentRepo.create({
+            userId: user.id,
+            programId: targetProgram.id,
+            paymentMethod: PaymentMethod.MANUAL,
+            status,
+            expiresAt,
+            approvedBy: isPremiumUser ? session.user.id : undefined,
+            approvedAt: isPremiumUser ? new Date() : undefined,
+            notes: isPremiumUser
+              ? `Migrated from legacy premium on ${new Date().toISOString()}`
+              : `Bulk-assigned to ${targetProgram.code} on ${new Date().toISOString()} — pending approval`,
+          });
+
+          await enrollmentRepo.save(enrollment);
+        }
+
+        migrated++;
+        results.push({
+          userId: user.id,
+          email: user.email,
+          action: dryRun ? "would assign" : "assigned",
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        dryRun,
+        mode,
+        targetProgram: {
+          id: targetProgram.id,
+          code: targetProgram.code,
+          name: targetProgram.name,
+        },
+        summary: {
+          totalUsers: allUsers.length,
+          migrated,
+          skipped,
+        },
+        results: results.slice(0, 100), // Cap results in response
+      });
+    }
+
+    // ── Default mode: migrate premium users only ──
+    const premiumUsers = await userRepo.find({
+      where: { isPremium: true },
+    });
+
     for (const user of premiumUsers) {
-      // Check if user already has an active enrollment in the target program
       const existingEnrollment = await enrollmentRepo.findOne({
         where: {
           userId: user.id,
@@ -84,7 +186,6 @@ export async function POST(req: NextRequest) {
       }
 
       if (!dryRun) {
-        // Create active enrollment preserving their premium expiry
         const expiresAt =
           user.premiumExpiresAt && new Date(user.premiumExpiresAt) > new Date()
             ? user.premiumExpiresAt
@@ -119,6 +220,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       dryRun,
+      mode,
       targetProgram: {
         id: targetProgram.id,
         code: targetProgram.code,
@@ -129,12 +231,12 @@ export async function POST(req: NextRequest) {
         migrated,
         skipped,
       },
-      results,
+      results: results.slice(0, 100),
     });
   } catch (error) {
-    console.error("Error migrating premium users:", error);
+    console.error("Error migrating users:", error);
     return NextResponse.json(
-      { error: "Failed to migrate premium users" },
+      { error: "Failed to migrate users" },
       { status: 500 },
     );
   }

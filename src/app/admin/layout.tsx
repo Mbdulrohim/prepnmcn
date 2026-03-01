@@ -39,6 +39,7 @@ import {
   BookOpen,
   HelpCircle,
   Globe,
+  Layers,
 } from "lucide-react";
 import { ADMIN_ROLES } from "@/lib/roles";
 
@@ -178,6 +179,18 @@ export default function AdminLayout({
                     <Link href="/admin/users">
                       <Users />
                       <span>Users</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive("/admin/programs")}
+                    tooltip="Programs"
+                  >
+                    <Link href="/admin/programs">
+                      <Layers />
+                      <span>Programs</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

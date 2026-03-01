@@ -24,7 +24,7 @@ export class Program {
     length: 50,
     unique: true,
   })
-  code!: ProgramCode;
+  code!: string;
 
   @Column({ type: "varchar", length: 255 })
   name!: string;
