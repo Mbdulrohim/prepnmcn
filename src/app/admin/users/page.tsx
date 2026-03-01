@@ -932,8 +932,17 @@ export default function UsersPage() {
       <Dialog
         open={premiumDialog.open}
         onOpenChange={(open) => setPremiumDialog((prev) => ({ ...prev, open }))}
+        modal={false}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          onInteractOutside={(e) => {
+            const target = e.target as HTMLElement;
+            if (target?.getAttribute("data-slot") === "dialog-overlay") {
+              setPremiumDialog((prev) => ({ ...prev, open: false }));
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Grant Program Access</DialogTitle>
             <DialogDescription>

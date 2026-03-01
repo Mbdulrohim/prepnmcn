@@ -21,8 +21,7 @@ export async function POST() {
 
     const sessionRole = (session.user as any)?.role;
     const isSuper =
-      sessionRole === "super_admin" ||
-      (await isSuperAdmin(session.user.id));
+      sessionRole === "super_admin" || (await isSuperAdmin(session.user.id));
 
     if (!isSuper) {
       return NextResponse.json(

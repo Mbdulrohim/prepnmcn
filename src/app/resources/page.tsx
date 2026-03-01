@@ -61,11 +61,11 @@ export default function ResourcesPage() {
         <Alert className="mb-4 sm:mb-6 border-yellow-300 bg-yellow-50">
           <Lock className="h-4 w-4 text-yellow-600" />
           <AlertTitle className="text-yellow-800">
-            Premium Access Required
+            Program Enrollment Required
           </AlertTitle>
           <AlertDescription className="text-yellow-700 text-sm">
             {errorMessage ||
-              "You need a premium subscription to access study resources. Contact an administrator to upgrade your account."}
+              "You need an active program enrollment to access study resources. Contact an administrator to enroll you in a program."}
           </AlertDescription>
         </Alert>
       )}
@@ -110,14 +110,14 @@ export default function ResourcesPage() {
             </div>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold mb-2">
-            Upgrade to Premium
+            Program Enrollment Required
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-4">
-            Access all study resources, shareable exams, and more with a premium
-            subscription.
+            Access all study resources, shareable exams, and more with an active
+            program enrollment.
           </p>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Contact your administrator to upgrade your account.
+            Contact your administrator to enroll you in a program.
           </p>
         </Card>
       ) : resources.length === 0 ? (

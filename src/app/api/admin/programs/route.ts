@@ -4,10 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getDataSource } from "@/lib/database";
 import { Program } from "@/entities/Program";
-import {
-  isSuperAdmin,
-  getUserManagedPrograms,
-} from "@/lib/programPermissions";
+import { isSuperAdmin, getUserManagedPrograms } from "@/lib/programPermissions";
 
 // GET /api/admin/programs - List programs
 export async function GET(req: NextRequest) {
