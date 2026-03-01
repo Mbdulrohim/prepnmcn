@@ -54,15 +54,16 @@ export async function GET(req: NextRequest) {
     const joinedForumIds = new Set(memberships.map((m) => m.forumId));
 
     // Get member count per forum
-    const memberCounts = await memberRepo
-      .createQueryBuilder("fm")
-      .select("fm.forumId", "forumId")
-      .addSelect("COUNT(*)", "count")
-      .where("fm.forumId IN (:...ids)", {
-        ids: accessibleForums.length > 0 ? accessibleForums.map((f) => f.id) : ["none"],
-      })
-      .groupBy("fm.forumId")
-      .getRawMany();
+    let memberCounts: { forumId: string; count: string }[] = [];
+    if (accessibleForums.length > 0) {
+      memberCounts = await memberRepo
+        .createQueryBuilder("fm")
+        .select("fm.forumId", "forumId")
+        .addSelect("COUNT(*)", "count")
+        .where("fm.forumId IN (:...ids)", { ids: accessibleForums.map((f) => f.id) })
+        .groupBy("fm.forumId")
+        .getRawMany();
+    }
 
     const memberCountMap = new Map(memberCounts.map((r) => [r.forumId, parseInt(r.count)]));
 

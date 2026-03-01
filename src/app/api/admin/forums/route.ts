@@ -22,24 +22,29 @@ export async function GET() {
 
     const forums = await forumRepo.find({ order: { isPinned: "DESC", createdAt: "ASC" } });
 
-    const forumIds = forums.length > 0 ? forums.map((f) => f.id) : ["none"];
+    const forumIds = forums.length > 0 ? forums.map((f) => f.id) : null;
 
-    const memberCounts = await memberRepo
-      .createQueryBuilder("fm")
-      .select("fm.forumId", "forumId")
-      .addSelect("COUNT(*)", "count")
-      .where("fm.forumId IN (:...ids)", { ids: forumIds })
-      .groupBy("fm.forumId")
-      .getRawMany();
+    let memberCounts: { forumId: string; count: string }[] = [];
+    let postCounts: { forumId: string; count: string }[] = [];
 
-    const postCounts = await postRepo
-      .createQueryBuilder("p")
-      .select("p.forumId", "forumId")
-      .addSelect("COUNT(*)", "count")
-      .where("p.forumId IN (:...ids)", { ids: forumIds })
-      .andWhere("p.isDeleted = false")
-      .groupBy("p.forumId")
-      .getRawMany();
+    if (forumIds) {
+      memberCounts = await memberRepo
+        .createQueryBuilder("fm")
+        .select("fm.forumId", "forumId")
+        .addSelect("COUNT(*)", "count")
+        .where("fm.forumId IN (:...ids)", { ids: forumIds })
+        .groupBy("fm.forumId")
+        .getRawMany();
+
+      postCounts = await postRepo
+        .createQueryBuilder("p")
+        .select("p.forumId", "forumId")
+        .addSelect("COUNT(*)", "count")
+        .where("p.forumId IN (:...ids)", { ids: forumIds })
+        .andWhere("p.isDeleted = false")
+        .groupBy("p.forumId")
+        .getRawMany();
+    }
 
     const memberCountMap = new Map(memberCounts.map((r) => [r.forumId, parseInt(r.count)]));
     const postCountMap = new Map(postCounts.map((r) => [r.forumId, parseInt(r.count)]));
