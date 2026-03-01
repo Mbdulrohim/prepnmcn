@@ -110,9 +110,9 @@ export default function ProgramsPage() {
 
   // Migration state
   const [migrationTarget, setMigrationTarget] = useState<string>("");
-  const [migrationMode, setMigrationMode] = useState<
-    "premium" | "all-users"
-  >("all-users");
+  const [migrationMode, setMigrationMode] = useState<"premium" | "all-users">(
+    "all-users",
+  );
   const [migrating, setMigrating] = useState(false);
   const [dryRunning, setDryRunning] = useState(false);
   const [migrationResult, setMigrationResult] = useState<any>(null);
@@ -358,7 +358,8 @@ export default function ProgramsPage() {
       {programs.length === 0 && !loading && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-200">
           <strong>No programs found.</strong> Click &quot;Seed Defaults&quot; to
-          create the standard RM, RN, RPHN, and Specialty programs automatically.
+          create the standard RM, RN, RPHN, and Specialty programs
+          automatically.
         </div>
       )}
 
@@ -378,7 +379,9 @@ export default function ProgramsPage() {
             ))
           : programs.map((program) => {
               const color =
-                program.metadata?.color || PROGRAM_COLORS[program.code] || "#64748b";
+                program.metadata?.color ||
+                PROGRAM_COLORS[program.code] ||
+                "#64748b";
               const icon = PROGRAM_ICONS[program.code] || (
                 <GraduationCap className="h-6 w-6" />
               );
@@ -387,7 +390,9 @@ export default function ProgramsPage() {
                 <Card
                   key={program.id}
                   className={
-                    program.isActive ? "border-border" : "border-dashed opacity-60"
+                    program.isActive
+                      ? "border-border"
+                      : "border-dashed opacity-60"
                   }
                 >
                   <CardHeader className="pb-3">
@@ -404,7 +409,10 @@ export default function ProgramsPage() {
                             {program.name}
                           </CardTitle>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs px-1.5 py-0">
+                            <Badge
+                              variant="outline"
+                              className="text-xs px-1.5 py-0"
+                            >
                               {program.code}
                             </Badge>
                             {program.isActive ? (
@@ -453,7 +461,9 @@ export default function ProgramsPage() {
                         </p>
                       </div>
                       <div className="rounded-md bg-muted px-2 py-1.5">
-                        <p className="text-xs text-muted-foreground">Duration</p>
+                        <p className="text-xs text-muted-foreground">
+                          Duration
+                        </p>
                         <p className="text-sm font-semibold">
                           {program.durationMonths}mo
                         </p>
@@ -671,9 +681,7 @@ export default function ProgramsPage() {
                 onClick={handleCreateProgram}
                 disabled={creating || !createForm.code || !createForm.name}
               >
-                {creating && (
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                )}
+                {creating && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
                 Create Program
               </Button>
             </div>
@@ -690,9 +698,7 @@ export default function ProgramsPage() {
               <div className="flex items-center gap-2">
                 <ArrowRightLeft className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <CardTitle className="text-lg">
-                    User Migration Tool
-                  </CardTitle>
+                  <CardTitle className="text-lg">User Migration Tool</CardTitle>
                   <p className="text-sm text-muted-foreground mt-0.5">
                     Assign existing users to a program. Premium users get active
                     enrollment; others get pending status.
@@ -757,9 +763,9 @@ export default function ProgramsPage() {
                     <>
                       <strong>All Users mode:</strong> Every user without an
                       enrollment in the target program will be assigned.
-                      Currently-premium users get <strong>Active</strong> status;
-                      non-premium users get <strong>Pending</strong> status.
-                      Users who already have an enrollment are skipped.
+                      Currently-premium users get <strong>Active</strong>{" "}
+                      status; non-premium users get <strong>Pending</strong>{" "}
+                      status. Users who already have an enrollment are skipped.
                     </>
                   ) : (
                     <>
@@ -832,10 +838,8 @@ export default function ProgramsPage() {
                         </strong>
                       </p>
                       <p>
-                        {migrationResult.dryRun
-                          ? "Would migrate"
-                          : "Migrated"}
-                        : <strong>{migrationResult.summary.migrated}</strong>
+                        {migrationResult.dryRun ? "Would migrate" : "Migrated"}:{" "}
+                        <strong>{migrationResult.summary.migrated}</strong>
                       </p>
                       <p>
                         Skipped:{" "}

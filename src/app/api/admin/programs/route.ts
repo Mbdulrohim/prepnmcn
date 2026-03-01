@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getDataSource } from "@/lib/database";
 import { Program } from "@/entities/Program";
-import { isSuperAdmin, getUserManagedPrograms } from "@/lib/programPermissions";
+import { isSuperAdmin, isAdminOrAbove, getUserManagedPrograms } from "@/lib/programPermissions";
 
 // GET /api/admin/programs - List programs
 export async function GET(req: NextRequest) {
@@ -18,8 +18,8 @@ export async function GET(req: NextRequest) {
     const dataSource = await getDataSource();
     const programRepo = dataSource.getRepository(Program);
 
-    // Check if user is super admin
-    const isSuper = await isSuperAdmin(session.user.id);
+    // Check if user is admin or super admin
+    const isSuper = await isAdminOrAbove(session.user.id);
 
     if (isSuper) {
       // Super admin sees all programs

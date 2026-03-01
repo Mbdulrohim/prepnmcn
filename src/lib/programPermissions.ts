@@ -17,6 +17,19 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
 }
 
 /**
+ * Check if a user is admin or super_admin
+ */
+export async function isAdminOrAbove(userId: string): Promise<boolean> {
+  const dataSource = await getDataSource();
+  const userRepo = dataSource.getRepository("User");
+  const user = await userRepo.findOne({ where: { id: userId } });
+  return (
+    user?.role === USER_ROLES.SUPER_ADMIN ||
+    user?.role === USER_ROLES.ADMIN
+  );
+}
+
+/**
  * Check if a user can manage a specific program
  * Super admins can manage all programs
  * Program admins can only manage programs they're assigned to
@@ -25,8 +38,8 @@ export async function canManageProgram(
   userId: string,
   programId: string
 ): Promise<boolean> {
-  // Check if super admin
-  if (await isSuperAdmin(userId)) {
+  // Check if admin or super admin — both can manage all programs
+  if (await isAdminOrAbove(userId)) {
     return true;
   }
 
@@ -54,8 +67,8 @@ export async function getUserManagedPrograms(
 ): Promise<string[]> {
   const dataSource = await getDataSource();
 
-  // If super admin, return all program IDs
-  if (await isSuperAdmin(userId)) {
+  // If admin or super admin, return all program IDs
+  if (await isAdminOrAbove(userId)) {
     const programRepo = dataSource.getRepository("Program");
     const programs = await programRepo.find({ where: { isActive: true } });
     return programs.map((p: any) => p.id);
