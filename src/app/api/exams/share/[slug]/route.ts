@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const { slug } = await params;
@@ -18,7 +18,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -27,9 +27,8 @@ export async function GET(
     const user = await userRepo.findOne({ where: { id: session.user.id } });
 
     // Check if user has any active program enrollment
-    const { getUserActiveEnrollments } = await import(
-      "@/lib/enrollmentHelpers"
-    );
+    const { getUserActiveEnrollments } =
+      await import("@/lib/enrollmentHelpers");
     const activeEnrollments = await getUserActiveEnrollments(session.user.id);
 
     // Fallback to legacy premium check for backward compatibility
@@ -43,7 +42,7 @@ export async function GET(
           success: false,
           error: "Active program enrollment required to access exams",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -59,7 +58,7 @@ export async function GET(
     if (!exam) {
       return NextResponse.json(
         { success: false, error: "Exam not found or not shareable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -76,7 +75,7 @@ export async function GET(
               "You don't have access to this exam. Please enroll in the required program.",
             requiredProgram: exam.program,
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -93,7 +92,7 @@ export async function GET(
     });
 
     const hasCompletedAttempt = attempts.some(
-      (attempt) => attempt.completedAt !== null
+      (attempt) => attempt.completedAt !== null,
     );
 
     // Construct response
@@ -117,16 +116,19 @@ export async function GET(
               }
             : null,
         },
-        attempt: attempts.length > 0 ? {
-          id: attempts[0].id,
-          score: attempts[0].score,
-          totalMarks: attempts[0].totalMarks,
-          completedAt: attempts[0].completedAt,
-          createdAt: attempts[0].createdAt,
-          timeTaken: attempts[0].timeTaken,
-          status: attempts[0].completedAt ? "completed" : "in-progress",
-          isCompleted: !!attempts[0].completedAt,
-        } : null,
+        attempt:
+          attempts.length > 0
+            ? {
+                id: attempts[0].id,
+                score: attempts[0].score,
+                totalMarks: attempts[0].totalMarks,
+                completedAt: attempts[0].completedAt,
+                createdAt: attempts[0].createdAt,
+                timeTaken: attempts[0].timeTaken,
+                status: attempts[0].completedAt ? "completed" : "in-progress",
+                isCompleted: !!attempts[0].completedAt,
+              }
+            : null,
         attempts: attempts.map((attempt) => ({
           id: attempt.id,
           score: attempt.score,
@@ -144,7 +146,7 @@ export async function GET(
     console.error("Error fetching shareable exam:", error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch exam" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

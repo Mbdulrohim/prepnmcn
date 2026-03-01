@@ -937,10 +937,9 @@ export default function UsersPage() {
         <DialogContent
           className="sm:max-w-md"
           onInteractOutside={(e) => {
-            const target = e.target as HTMLElement;
-            if (target?.getAttribute("data-slot") === "dialog-overlay") {
-              setPremiumDialog((prev) => ({ ...prev, open: false }));
-            }
+            // Prevent dialog closing when clicking Select portal or anywhere outside.
+            // Dialog is only closed via the X button or Cancel button.
+            e.preventDefault();
           }}
         >
           <DialogHeader>
