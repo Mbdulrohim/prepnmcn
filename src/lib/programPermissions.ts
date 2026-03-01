@@ -24,8 +24,7 @@ export async function isAdminOrAbove(userId: string): Promise<boolean> {
   const userRepo = dataSource.getRepository("User");
   const user = await userRepo.findOne({ where: { id: userId } });
   return (
-    user?.role === USER_ROLES.SUPER_ADMIN ||
-    user?.role === USER_ROLES.ADMIN
+    user?.role === USER_ROLES.SUPER_ADMIN || user?.role === USER_ROLES.ADMIN
   );
 }
 
@@ -36,7 +35,7 @@ export async function isAdminOrAbove(userId: string): Promise<boolean> {
  */
 export async function canManageProgram(
   userId: string,
-  programId: string
+  programId: string,
 ): Promise<boolean> {
   // Check if admin or super admin — both can manage all programs
   if (await isAdminOrAbove(userId)) {
@@ -63,7 +62,7 @@ export async function canManageProgram(
  * Returns all programs for super admin, or only assigned programs for program admins
  */
 export async function getUserManagedPrograms(
-  userId: string
+  userId: string,
 ): Promise<string[]> {
   const dataSource = await getDataSource();
 
@@ -93,7 +92,7 @@ export async function getUserManagedPrograms(
  */
 export async function canGrantPremiumAccess(
   adminId: string,
-  programId: string
+  programId: string,
 ): Promise<boolean> {
   return await canManageProgram(adminId, programId);
 }
@@ -104,7 +103,7 @@ export async function canGrantPremiumAccess(
  */
 export async function canViewProgramResources(
   userId: string,
-  programId: string
+  programId: string,
 ): Promise<boolean> {
   const dataSource = await getDataSource();
   const enrollmentRepo = dataSource.getRepository(UserProgramEnrollment);
@@ -135,7 +134,7 @@ export async function canViewProgramResources(
  */
 export async function canAccessProgramExam(
   userId: string,
-  programId: string
+  programId: string,
 ): Promise<boolean> {
   return await canViewProgramResources(userId, programId);
 }
@@ -146,7 +145,7 @@ export async function canAccessProgramExam(
  */
 export async function canEditProgram(
   adminId: string,
-  programId: string
+  programId: string,
 ): Promise<boolean> {
   return await canManageProgram(adminId, programId);
 }
@@ -196,7 +195,7 @@ export async function hasAnyProgramAccess(userId: string): Promise<boolean> {
  */
 export async function hasAccessToProgramByCode(
   userId: string,
-  programCode: string
+  programCode: string,
 ): Promise<boolean> {
   const dataSource = await getDataSource();
   const enrollmentRepo = dataSource.getRepository(UserProgramEnrollment);

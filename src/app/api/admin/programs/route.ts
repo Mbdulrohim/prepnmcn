@@ -4,7 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getDataSource } from "@/lib/database";
 import { Program } from "@/entities/Program";
-import { isSuperAdmin, isAdminOrAbove, getUserManagedPrograms } from "@/lib/programPermissions";
+import {
+  isSuperAdmin,
+  getUserManagedPrograms,
+} from "@/lib/programPermissions";
 
 // GET /api/admin/programs - List programs
 export async function GET(req: NextRequest) {
@@ -18,13 +21,14 @@ export async function GET(req: NextRequest) {
     const dataSource = await getDataSource();
     const programRepo = dataSource.getRepository(Program);
 
-    // Check if user is admin or super admin
-    const isSuper = await isAdminOrAbove(session.user.id);
+    const sessionRole = (session.user as any)?.role;
+    const isAdminOrSuper =
+      sessionRole === "admin" || sessionRole === "super_admin";
 
-    if (isSuper) {
-      // Super admin sees all programs
+    if (isAdminOrSuper) {
+      // Admin/super-admin sees all programs
       const programs = await programRepo.find({
-        order: { metadata: "ASC" }, // Sort by displayOrder in metadata
+        order: { createdAt: "ASC" },
       });
 
       // Get enrollment counts for each program
@@ -40,7 +44,7 @@ export async function GET(req: NextRequest) {
             ...program,
             enrollmentCount,
           };
-        })
+        }),
       );
 
       return NextResponse.json({ success: true, programs: programsWithCounts });
@@ -51,7 +55,7 @@ export async function GET(req: NextRequest) {
       if (managedProgramIds.length === 0) {
         return NextResponse.json(
           { error: "You are not assigned to manage any programs" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -73,7 +77,7 @@ export async function GET(req: NextRequest) {
             ...program,
             enrollmentCount,
           };
-        })
+        }),
       );
 
       return NextResponse.json({ success: true, programs: programsWithCounts });
@@ -82,7 +86,7 @@ export async function GET(req: NextRequest) {
     console.error("Error fetching programs:", error);
     return NextResponse.json(
       { error: "Failed to fetch programs" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -101,7 +105,7 @@ export async function POST(req: NextRequest) {
     if (!isSuper) {
       return NextResponse.json(
         { error: "Only super admins can create programs" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -111,7 +115,7 @@ export async function POST(req: NextRequest) {
     if (!code || !name) {
       return NextResponse.json(
         { error: "Code and name are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -123,7 +127,7 @@ export async function POST(req: NextRequest) {
     if (existing) {
       return NextResponse.json(
         { error: "Program with this code already exists" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -148,7 +152,7 @@ export async function POST(req: NextRequest) {
     console.error("Error creating program:", error);
     return NextResponse.json(
       { error: "Failed to create program" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

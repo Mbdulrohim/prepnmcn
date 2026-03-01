@@ -19,7 +19,11 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const isSuper = await isSuperAdmin(session.user.id);
+    const sessionRole = (session.user as any)?.role;
+    const isSuper =
+      sessionRole === "super_admin" ||
+      (await isSuperAdmin(session.user.id));
+
     if (!isSuper) {
       return NextResponse.json(
         { error: "Only super admins can seed programs" },
