@@ -28,6 +28,9 @@ import { Email } from "../entities/Email";
 import { Program } from "../entities/Program";
 import { ProgramAdmin } from "../entities/ProgramAdmin";
 import { UserProgramEnrollment } from "../entities/UserProgramEnrollment";
+import { Forum } from "../entities/Forum";
+import { ForumPost } from "../entities/ForumPost";
+import { ForumMember } from "../entities/ForumMember";
 
 let AppDataSource: DataSource;
 
@@ -70,6 +73,9 @@ export async function getDataSource(): Promise<DataSource> {
       Program,
       ProgramAdmin,
       UserProgramEnrollment,
+      Forum,
+      ForumPost,
+      ForumMember,
     ],
     ssl: true,
     extra: {
