@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { User } from "../entities/User";
 import { EmailCode } from "../entities/EmailCode";
@@ -34,9 +35,6 @@ export async function getDataSource(): Promise<DataSource> {
   if (AppDataSource && AppDataSource.isInitialized) {
     return AppDataSource;
   }
-
-  // Import reflect-metadata dynamically to avoid bundling issues
-  await import("reflect-metadata");
 
   AppDataSource = new DataSource({
     type: "postgres",
@@ -85,8 +83,11 @@ export async function getDataSource(): Promise<DataSource> {
 
   // Auto-seed default programs (RM, RN, RPHN, SPECIALTY) on first init
   try {
-    const { seedDefaultPrograms } = await import("./seedPrograms");
-    await seedDefaultPrograms(AppDataSource);
+    // Verify entity metadata is available before seeding
+    if (AppDataSource.hasMetadata(Program)) {
+      const { seedDefaultPrograms } = await import("./seedPrograms");
+      await seedDefaultPrograms(AppDataSource);
+    }
   } catch (error) {
     console.error("[database] Failed to seed default programs:", error);
   }

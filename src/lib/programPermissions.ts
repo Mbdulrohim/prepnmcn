@@ -1,4 +1,6 @@
 import { getDataSource } from "./database";
+import { User } from "../entities/User";
+import { Program } from "../entities/Program";
 import { ProgramAdmin } from "../entities/ProgramAdmin";
 import {
   UserProgramEnrollment,
@@ -11,7 +13,7 @@ import { USER_ROLES, UserRole } from "./roles";
  */
 export async function isSuperAdmin(userId: string): Promise<boolean> {
   const dataSource = await getDataSource();
-  const userRepo = dataSource.getRepository("User");
+  const userRepo = dataSource.getRepository(User);
   const user = await userRepo.findOne({ where: { id: userId } });
   return user?.role === USER_ROLES.SUPER_ADMIN;
 }
@@ -21,7 +23,7 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
  */
 export async function isAdminOrAbove(userId: string): Promise<boolean> {
   const dataSource = await getDataSource();
-  const userRepo = dataSource.getRepository("User");
+  const userRepo = dataSource.getRepository(User);
   const user = await userRepo.findOne({ where: { id: userId } });
   return (
     user?.role === USER_ROLES.SUPER_ADMIN || user?.role === USER_ROLES.ADMIN
@@ -68,9 +70,9 @@ export async function getUserManagedPrograms(
 
   // If admin or super admin, return all program IDs
   if (await isAdminOrAbove(userId)) {
-    const programRepo = dataSource.getRepository("Program");
+    const programRepo = dataSource.getRepository(Program);
     const programs = await programRepo.find({ where: { isActive: true } });
-    return programs.map((p: any) => p.id);
+    return programs.map((p) => p.id);
   }
 
   // Otherwise, get admin's assigned programs

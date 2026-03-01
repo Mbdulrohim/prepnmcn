@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getDataSource } from "@/lib/database";
 import { Program } from "@/entities/Program";
+import { UserProgramEnrollment } from "@/entities/UserProgramEnrollment";
 import { isSuperAdmin, getUserManagedPrograms } from "@/lib/programPermissions";
 
 // GET /api/admin/programs - List programs
@@ -32,9 +33,9 @@ export async function GET(req: NextRequest) {
       const programsWithCounts = await Promise.all(
         programs.map(async (program) => {
           const enrollmentCount = await dataSource
-            .getRepository("UserProgramEnrollment")
+            .getRepository(UserProgramEnrollment)
             .count({
-              where: { programId: program.id, status: "active" },
+              where: { programId: program.id, status: "active" as any },
             });
 
           return {
@@ -65,9 +66,9 @@ export async function GET(req: NextRequest) {
       const programsWithCounts = await Promise.all(
         programs.map(async (program) => {
           const enrollmentCount = await dataSource
-            .getRepository("UserProgramEnrollment")
+            .getRepository(UserProgramEnrollment)
             .count({
-              where: { programId: program.id, status: "active" },
+              where: { programId: program.id, status: "active" as any },
             });
 
           return {

@@ -99,32 +99,44 @@ export async function GET(
     // Construct response
     const response = {
       success: true,
-      exam: {
-        id: exam.id,
-        title: exam.title,
-        description: exam.description,
-        duration: exam.duration,
-        status: exam.status,
-        type: exam.type,
-        programId: exam.programId,
-        isGlobal: exam.isGlobal,
-        program: exam.program
-          ? {
-              id: exam.program.id,
-              name: exam.program.name,
-              code: exam.program.code,
-            }
-          : null,
+      data: {
+        exam: {
+          id: exam.id,
+          title: exam.title,
+          description: exam.description,
+          duration: exam.duration,
+          status: exam.status,
+          type: exam.type,
+          programId: exam.programId,
+          isGlobal: exam.isGlobal,
+          program: exam.program
+            ? {
+                id: exam.program.id,
+                name: exam.program.name,
+                code: exam.program.code,
+              }
+            : null,
+        },
+        attempt: attempts.length > 0 ? {
+          id: attempts[0].id,
+          score: attempts[0].score,
+          totalMarks: attempts[0].totalMarks,
+          completedAt: attempts[0].completedAt,
+          createdAt: attempts[0].createdAt,
+          timeTaken: attempts[0].timeTaken,
+          status: attempts[0].completedAt ? "completed" : "in-progress",
+          isCompleted: !!attempts[0].completedAt,
+        } : null,
+        attempts: attempts.map((attempt) => ({
+          id: attempt.id,
+          score: attempt.score,
+          totalMarks: attempt.totalMarks,
+          completedAt: attempt.completedAt,
+          createdAt: attempt.createdAt,
+          timeTaken: attempt.timeTaken,
+        })),
+        hasCompletedAttempt,
       },
-      attempts: attempts.map((attempt) => ({
-        id: attempt.id,
-        score: attempt.score,
-        totalMarks: attempt.totalMarks,
-        completedAt: attempt.completedAt,
-        createdAt: attempt.createdAt,
-        timeTaken: attempt.timeTaken,
-      })),
-      hasCompletedAttempt,
     };
 
     return NextResponse.json(response);

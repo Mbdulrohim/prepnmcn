@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
+import { Program } from "@/entities/Program";
 import { isSuperAdmin } from "@/lib/programPermissions";
 import { seedDefaultPrograms } from "@/lib/seedPrograms";
 
@@ -34,9 +35,9 @@ export async function POST() {
     await seedDefaultPrograms(dataSource);
 
     // Return updated list
-    const programRepo = dataSource.getRepository("Program");
+    const programRepo = dataSource.getRepository(Program);
     const programs = await programRepo.find({
-      order: { createdAt: "ASC" } as any,
+      order: { createdAt: "ASC" },
     });
 
     return NextResponse.json({
