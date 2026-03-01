@@ -142,172 +142,32 @@ function queueEmail(options: {
 }
 
 export async function sendVerificationEmail(email: string, code: string) {
-  const mailOptions = {
-    from: `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${
-      process.env.LOGIN_CODE_FROM_EMAIL ||
-      process.env.SMTP_FROM_EMAIL ||
-      "noreply@prepnmcn.com"
-    }>`,
-    to: email,
-    subject: "Your O'Prep Login Code",
-    html: `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your O'Prep Verification Code</title>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-          }
-          .container {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          }
-          .code {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-            color: #007bff;
-            letter-spacing: 4px;
-            margin: 30px 0;
-          }
-          .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-            font-size: 14px;
-            color: #6c757d;
-            text-align: center;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-
-          <h1 style="text-align: center; color: #333; margin-bottom: 10px;">Welcome to O'Prep!</h1>
-          <p style="text-align: center; color: #666; margin-bottom: 30px;">Use this code to sign in to your account</p>
-
-          <div class="code">
-            ${code}
-          </div>
-
-          <p style="text-align: center; color: #666; margin-bottom: 20px;">
-            This code will expire in 10 minutes for your security.
-          </p>
-
-          <p style="text-align: center; color: #666;">
-            If you didn't request this code, you can safely ignore this email.
-          </p>
-
-          <div class="footer">
-            <p>Questions? Contact us at <a href="mailto:hello@prepnmcn.com" style="color: #007bff;">hello@oprep.com</a></p>
-            <p style="margin-top: 10px; font-size: 12px; color: #999;">
-              © 2025 O'Prep. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `,
-  };
-
   try {
     console.log("Queueing verification email to:", email);
 
-    const htmlBody = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your O'Prep Verification Code</title>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-          }
-          .container {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          }
-          .code {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-            color: #007bff;
-            letter-spacing: 4px;
-            margin: 30px 0;
-          }
-          .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-            font-size: 14px;
-            color: #6c757d;
-            text-align: center;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
+    const { wrapEmailTemplate, codeBlock, emailParagraph } =
+      await import("./email-template");
 
-          <h1 style="text-align: center; color: #333; margin-bottom: 10px;">Welcome to O'Prep!</h1>
-          <p style="text-align: center; color: #666; margin-bottom: 30px;">Use this code to sign in to your account</p>
+    const htmlBody = wrapEmailTemplate({
+      preheader: `Your O'Prep login code is ${code}`,
+      body: `
+        ${emailParagraph("Use the code below to sign in to your <strong>O'Prep</strong> account:")}
+        ${codeBlock(code)}
+        ${emailParagraph("This code will expire in <strong>10 minutes</strong> for your security.")}
+        ${emailParagraph("If you didn't request this code, you can safely ignore this email.")}
+      `,
+    });
 
-          <div class="code">
-            ${code}
-          </div>
+    const textBody = `Your O'Prep login code is: ${code}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, you can safely ignore this email.`;
 
-          <p style="text-align: center; color: #666; margin-bottom: 20px;">
-            This code will expire in 10 minutes for your security.
-          </p>
-
-          <p style="text-align: center; color: #666;">
-            If you didn't request this code, you can safely ignore this email.
-          </p>
-
-          <div class="footer">
-            <p>Questions? Contact us at <a href="mailto:hello@prepnmcn.com" style="color: #007bff;">hello@oprep.com</a></p>
-            <p style="margin-top: 10px; font-size: 12px; color: #999;">
-              © 2025 O'Prep. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const textBody = htmlBody
-      .replace(/<[^>]*>/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
+    const from = `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${
+      process.env.LOGIN_CODE_FROM_EMAIL ||
+      process.env.SMTP_FROM_EMAIL ||
+      "noreply@prepnmcn.com"
+    }>`;
 
     return await queueEmail({
+      from,
       to: email,
       subject: "Your O'Prep Login Code",
       html: htmlBody,

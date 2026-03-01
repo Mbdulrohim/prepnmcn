@@ -52,18 +52,33 @@ import {
   BookOpen,
   DollarSign,
   File,
+  Share2,
+  Link,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+
+import { DialogDescription, DialogFooter } from "@/components/ui/dialog";
+
+interface ProgramInfo {
+  id: string;
+  code: string;
+  name: string;
+}
 
 interface Resource {
   id: number;
   name: string;
   contentText: string;
   isFree: boolean;
+  isGlobal: boolean;
   fileUrl: string;
   createdAt: string;
   updatedAt: string;
+  programId?: string;
+  program?: ProgramInfo;
 }
 
 interface ResourceStats {
@@ -79,23 +94,42 @@ export default function ResourcesManager() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
   const [selectedResources, setSelectedResources] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [stats, setStats] = useState<ResourceStats | null>(null);
+  const [programs, setPrograms] = useState<ProgramInfo[]>([]);
+  const [selectedProgramFilter, setSelectedProgramFilter] = useState("all");
   const [uploadForm, setUploadForm] = useState({
     file: null as File | null,
     name: "",
     isFree: true,
+    programId: "" as string,
+    isGlobal: false,
   });
   const [isUploading, setIsUploading] = useState(false);
   const [limit, setLimit] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [deleteResourceId, setDeleteResourceId] = useState<number | null>(null);
+  const [shareDialog, setShareDialog] = useState<{
+    open: boolean;
+    resourceId: number | null;
+    resourceName: string;
+    currentSlug: string;
+    isShareable: boolean;
+  }>({
+    open: false,
+    resourceId: null,
+    resourceName: "",
+    currentSlug: "",
+    isShareable: false,
+  });
+  const [shareSlugInput, setShareSlugInput] = useState("");
+  const [isSavingShare, setIsSavingShare] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -107,12 +141,19 @@ export default function ResourcesManager() {
       router.push("/dashboard");
     } else if (status === "authenticated") {
       fetchResources();
+      fetchPrograms();
     }
   }, [session, status, router]);
 
   useEffect(() => {
     filterResources();
-  }, [resources, searchTerm, selectedType]);
+  }, [resources, searchTerm, selectedType, selectedProgramFilter]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchResources();
+    }
+  }, [selectedProgramFilter]);
 
   useEffect(() => {
     if (resources.length > 0 || totalCount > 0) {
@@ -120,10 +161,26 @@ export default function ResourcesManager() {
     }
   }, [resources, totalCount]);
 
+  const fetchPrograms = async () => {
+    try {
+      const res = await fetch("/api/programs");
+      if (res.ok) {
+        const data = await res.json();
+        setPrograms(data);
+      }
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+    }
+  };
+
   const fetchResources = async (newLimit?: number) => {
     try {
       const currentLimit = newLimit || limit;
-      const res = await fetch(`/api/admin/resources?limit=${currentLimit}`);
+      const params = new URLSearchParams({ limit: String(currentLimit) });
+      if (selectedProgramFilter && selectedProgramFilter !== "all") {
+        params.set("programId", selectedProgramFilter);
+      }
+      const res = await fetch(`/api/admin/resources?${params}`);
       const data = await res.json();
 
       if (res.ok) {
@@ -156,7 +213,7 @@ export default function ResourcesManager() {
       filtered = filtered.filter(
         (resource) =>
           resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          resource.contentText.toLowerCase().includes(searchTerm.toLowerCase())
+          resource.contentText.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -218,6 +275,10 @@ export default function ResourcesManager() {
     formData.append("file", uploadForm.file);
     formData.append("name", uploadForm.name);
     formData.append("isFree", String(uploadForm.isFree));
+    if (uploadForm.programId) {
+      formData.append("programId", uploadForm.programId);
+    }
+    formData.append("isGlobal", String(uploadForm.isGlobal));
 
     try {
       const response = await fetch("/api/admin/resources", {
@@ -228,7 +289,13 @@ export default function ResourcesManager() {
       if (response.ok) {
         const newResource = await response.json();
         setResources([newResource, ...resources]);
-        setUploadForm({ file: null, name: "", isFree: true });
+        setUploadForm({
+          file: null,
+          name: "",
+          isFree: true,
+          programId: "",
+          isGlobal: false,
+        });
         setIsUploadOpen(false);
         toast.success("Resource uploaded successfully.");
       } else {
@@ -278,7 +345,7 @@ export default function ResourcesManager() {
           console.error(
             "Upload failed - invalid JSON response:",
             response.status,
-            response.statusText
+            response.statusText,
           );
         }
         toast.error(errorMessage);
@@ -297,7 +364,7 @@ export default function ResourcesManager() {
         `/api/admin/resources/${resource.id}?download=true`,
         {
           method: "GET",
-        }
+        },
       );
 
       if (response.ok) {
@@ -335,10 +402,10 @@ export default function ResourcesManager() {
       if (response.ok) {
         const updatedResource = await response.json();
         setResources(
-          resources.map((r) => (r.id === resource.id ? updatedResource : r))
+          resources.map((r) => (r.id === resource.id ? updatedResource : r)),
         );
         toast.success(
-          `Resource changed to ${updatedResource.isFree ? "Free" : "Premium"}`
+          `Resource changed to ${updatedResource.isFree ? "Free" : "Premium"}`,
         );
       } else {
         let errorMessage = "Failed to update resource type";
@@ -406,6 +473,120 @@ export default function ResourcesManager() {
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedType("all");
+    setSelectedProgramFilter("all");
+  };
+
+  const getProgramBadge = (resource: Resource) => {
+    if (resource.isGlobal)
+      return (
+        <Badge variant="outline" className="text-xs">
+          Global
+        </Badge>
+      );
+    if (resource.program)
+      return (
+        <Badge variant="secondary" className="text-xs">
+          {resource.program.code}
+        </Badge>
+      );
+    return (
+      <Badge variant="outline" className="text-xs text-muted-foreground">
+        Unassigned
+      </Badge>
+    );
+  };
+
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 80);
+  };
+
+  const openShareDialog = (resource: Resource) => {
+    const isShareable = !!(resource as any).isShareable;
+    const currentSlug = (resource as any).shareSlug || "";
+    setShareDialog({
+      open: true,
+      resourceId: resource.id,
+      resourceName: resource.name,
+      currentSlug,
+      isShareable,
+    });
+    setShareSlugInput(currentSlug || generateSlug(resource.name));
+  };
+
+  const handleEnableShare = async () => {
+    if (!shareDialog.resourceId || !shareSlugInput) {
+      toast.error("Please enter a share slug");
+      return;
+    }
+
+    setIsSavingShare(true);
+    try {
+      const response = await fetch(
+        `/api/admin/resources/${shareDialog.resourceId}/share`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shareSlug: shareSlugInput }),
+        },
+      );
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success("Sharing enabled! Link copied to clipboard.");
+        const shareUrl = `${window.location.origin}/share/resource/${shareSlugInput}`;
+        await navigator.clipboard.writeText(shareUrl);
+        setShareDialog((prev) => ({
+          ...prev,
+          isShareable: true,
+          currentSlug: shareSlugInput,
+        }));
+        fetchResources();
+      } else {
+        toast.error(data.error || "Failed to enable sharing");
+      }
+    } catch {
+      toast.error("Failed to enable sharing");
+    } finally {
+      setIsSavingShare(false);
+    }
+  };
+
+  const handleDisableShare = async () => {
+    if (!shareDialog.resourceId) return;
+
+    setIsSavingShare(true);
+    try {
+      const response = await fetch(
+        `/api/admin/resources/${shareDialog.resourceId}/share`,
+        { method: "DELETE" },
+      );
+
+      if (response.ok) {
+        toast.success("Sharing disabled");
+        setShareDialog((prev) => ({
+          ...prev,
+          isShareable: false,
+          currentSlug: "",
+        }));
+        fetchResources();
+      } else {
+        toast.error("Failed to disable sharing");
+      }
+    } catch {
+      toast.error("Failed to disable sharing");
+    } finally {
+      setIsSavingShare(false);
+    }
+  };
+
+  const copyShareLink = async (slug: string) => {
+    const url = `${window.location.origin}/share/resource/${slug}`;
+    await navigator.clipboard.writeText(url);
+    toast.success("Share link copied!");
   };
 
   if (isLoading || status === "loading") {
@@ -589,7 +770,7 @@ export default function ResourcesManager() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <Label htmlFor="search">Search Resources</Label>
               <Input
@@ -609,6 +790,25 @@ export default function ResourcesManager() {
                   <SelectItem value="all">All types</SelectItem>
                   <SelectItem value="free">Free Resources</SelectItem>
                   <SelectItem value="premium">Premium Resources</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="program-filter">Program</Label>
+              <Select
+                value={selectedProgramFilter}
+                onValueChange={setSelectedProgramFilter}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All programs" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All programs</SelectItem>
+                  {programs.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.code} - {p.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -658,6 +858,54 @@ export default function ResourcesManager() {
                         }
                         required
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="upload-program">Program</Label>
+                      <Select
+                        value={
+                          uploadForm.isGlobal
+                            ? "global"
+                            : uploadForm.programId || "none"
+                        }
+                        onValueChange={(val) => {
+                          if (val === "global") {
+                            setUploadForm({
+                              ...uploadForm,
+                              programId: "",
+                              isGlobal: true,
+                            });
+                          } else if (val === "none") {
+                            setUploadForm({
+                              ...uploadForm,
+                              programId: "",
+                              isGlobal: false,
+                            });
+                          } else {
+                            setUploadForm({
+                              ...uploadForm,
+                              programId: val,
+                              isGlobal: false,
+                            });
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select program" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">
+                            No program (unassigned)
+                          </SelectItem>
+                          <SelectItem value="global">
+                            Global (all programs)
+                          </SelectItem>
+                          {programs.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                              {p.code} - {p.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex items-center space-x-2">
                       <input
@@ -717,6 +965,7 @@ export default function ResourcesManager() {
               <TableRow>
                 <TableHead className="w-12"></TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Program</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Content Preview</TableHead>
                 <TableHead>Created</TableHead>
@@ -741,6 +990,7 @@ export default function ResourcesManager() {
                     />
                   </TableCell>
                   <TableCell className="font-medium">{resource.name}</TableCell>
+                  <TableCell>{getProgramBadge(resource)}</TableCell>
                   <TableCell>
                     <Badge variant={resource.isFree ? "secondary" : "default"}>
                       {resource.isFree ? "Free" : "Premium"}
@@ -791,6 +1041,26 @@ export default function ResourcesManager() {
                       >
                         <Download className="h-4 w-4" />
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openShareDialog(resource);
+                        }}
+                        className={
+                          (resource as any).isShareable
+                            ? "text-green-600 hover:text-green-700"
+                            : "text-muted-foreground"
+                        }
+                        title={
+                          (resource as any).isShareable
+                            ? "Sharing enabled"
+                            : "Enable sharing"
+                        }
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
@@ -836,6 +1106,105 @@ export default function ResourcesManager() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Share Dialog */}
+      <Dialog
+        open={shareDialog.open}
+        onOpenChange={(open) => setShareDialog((prev) => ({ ...prev, open }))}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="h-5 w-5" />
+              Share Resource
+            </DialogTitle>
+            <DialogDescription>
+              Make &quot;{shareDialog.resourceName}&quot; accessible via a
+              shareable link.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {shareDialog.isShareable ? (
+              <>
+                <div className="space-y-2">
+                  <Label>Share Link</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/share/resource/${shareDialog.currentSlug}`}
+                      readOnly
+                      className="text-sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyShareLink(shareDialog.currentSlug)}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        window.open(
+                          `/share/resource/${shareDialog.currentSlug}`,
+                          "_blank",
+                        )
+                      }
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 rounded-lg p-3">
+                  <Share2 className="h-4 w-4" />
+                  <span>
+                    Sharing is enabled. Anyone with the link can access this
+                    resource.
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="share-slug">Share Slug</Label>
+                <Input
+                  id="share-slug"
+                  value={shareSlugInput}
+                  onChange={(e) =>
+                    setShareSlugInput(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                    )
+                  }
+                  placeholder="e.g. anatomy-notes-2026"
+                />
+                <p className="text-xs text-muted-foreground">
+                  URL will be: /share/resource/{shareSlugInput || "your-slug"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            {shareDialog.isShareable ? (
+              <Button
+                variant="destructive"
+                onClick={handleDisableShare}
+                disabled={isSavingShare}
+              >
+                {isSavingShare ? "Disabling..." : "Disable Sharing"}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleEnableShare}
+                disabled={isSavingShare || !shareSlugInput}
+              >
+                <Link className="mr-2 h-4 w-4" />
+                {isSavingShare ? "Enabling..." : "Enable Sharing"}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

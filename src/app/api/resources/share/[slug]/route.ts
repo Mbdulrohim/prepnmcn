@@ -1,0 +1,64 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { getDataSource } from "@/lib/database";
+import { Resource } from "@/entities/Resource";
+
+export const runtime = "nodejs";
+
+/**
+ * GET /api/resources/share/[slug] — Fetch a shared resource by its slug
+ * Requires authentication. Returns resource metadata (not the file itself).
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  try {
+    const { slug } = await params;
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: "Please sign in to view this resource" },
+        { status: 401 },
+      );
+    }
+
+    const dataSource = await getDataSource();
+    const resourceRepo = dataSource.getRepository(Resource);
+
+    const resource = await resourceRepo.findOne({
+      where: { shareSlug: slug, isShareable: true },
+      relations: ["program"],
+    });
+
+    if (!resource) {
+      return NextResponse.json(
+        { success: false, error: "Resource not found or sharing is disabled" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: resource.id,
+        name: resource.name,
+        isFree: resource.isFree,
+        isShareable: resource.isShareable,
+        shareSlug: resource.shareSlug,
+        programName: resource.program?.name || null,
+        programCode: (resource.program as any)?.code || null,
+        createdAt: resource.createdAt,
+        // Include download URL for authenticated users
+        fileUrl: resource.fileUrl,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching shared resource:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to load resource" },
+      { status: 500 },
+    );
+  }
+}

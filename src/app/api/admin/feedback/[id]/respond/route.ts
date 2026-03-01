@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
-// import { Feedback } from "@/entities/Feedback";
-// import { User } from "@/entities/User";
 import { sendFeedbackEmail } from "@/lib/email";
+import {
+  wrapEmailTemplate,
+  emailHeading,
+  emailParagraph,
+  quoteBlock,
+  infoBlock,
+  signatureBlock,
+} from "@/lib/email-template";
 
 export const runtime = "nodejs"; // Force Node.js runtime
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
 
@@ -26,7 +32,7 @@ export async function POST(
     if (!response || !response.trim()) {
       return NextResponse.json(
         { error: "Response message is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -44,7 +50,7 @@ export async function POST(
     if (!feedback) {
       return NextResponse.json(
         { error: "Feedback not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -62,41 +68,25 @@ export async function POST(
       await sendFeedbackEmail({
         to: userDetails.email,
         subject: "Response to Your Feedback - O'Prep",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #1e40af;">Response to Your Feedback</h2>
-            <p>Hi ${userDetails.name},</p>
-
-            <p>Thank you for your feedback on O'Prep. We've received your message:</p>
-
-            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af;">
-              <p style="margin: 0; font-style: italic;">"${
-                feedback.message
-              }"</p>
-            </div>
-
-            <p><strong>Our Response:</strong></p>
-
-            <div style="background-color: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-              <p style="margin: 0;">${response.replace(/\n/g, "<br>")}</p>
-            </div>
-
-            <p>If you have any further questions or need additional assistance, please don't hesitate to reach out.</p>
-
-            <p>Best regards,<br>The O'Prep Team</p>
-
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
-            <p style="font-size: 12px; color: #6b7280;">
-              This is an automated response to your feedback submission.
-            </p>
-          </div>
-        `,
+        html: wrapEmailTemplate({
+          preheader: "We've responded to your feedback",
+          body: `
+            ${emailHeading("Response to Your Feedback")}
+            ${emailParagraph(`Hi <strong>${userDetails.name}</strong>,`)}
+            ${emailParagraph("Thank you for your feedback on O'Prep. We've received your message:")}
+            ${quoteBlock(feedback.message)}
+            ${emailParagraph("<strong>Our Response:</strong>")}
+            ${infoBlock(response.replace(/\n/g, "<br>"))}
+            ${emailParagraph("If you have any further questions or need additional assistance, please don't hesitate to reach out.")}
+            ${signatureBlock()}
+          `,
+        }),
       });
     } catch (emailError) {
       console.error("Failed to send response email:", emailError);
       return NextResponse.json(
         { error: "Failed to send email response" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -115,7 +105,7 @@ export async function POST(
     console.error("Error sending feedback response:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

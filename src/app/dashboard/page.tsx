@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_ROLES } from "@/lib/roles";
+import { ProgramSelectionPrompt } from "@/components/ProgramSelectionPrompt";
 
 function DashboardSkeleton() {
   return (
@@ -194,6 +195,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Prompt existing users to select a program if they haven't */}
+      <ProgramSelectionPrompt />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
@@ -326,19 +329,31 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button className="w-full justify-start" variant="outline" asChild>
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    asChild
+                  >
                     <Link href="/study-session">
                       <Calendar className="mr-2 h-4 w-4" />
                       Start Study Session
                     </Link>
                   </Button>
-                  <Button className="w-full justify-start" variant="outline" asChild>
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    asChild
+                  >
                     <Link href="/exams">
                       <BarChart3 className="mr-2 h-4 w-4" />
                       Take Practice Test
                     </Link>
                   </Button>
-                  <Button className="w-full justify-start" variant="outline" asChild>
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    asChild
+                  >
                     <Link href="/community">
                       <Users className="mr-2 h-4 w-4" />
                       Join Study Group
@@ -424,8 +439,8 @@ export default function Dashboard() {
                             enrollment.status === "completed"
                               ? "default"
                               : enrollment.status === "in_progress"
-                              ? "secondary"
-                              : "outline"
+                                ? "secondary"
+                                : "outline"
                           }
                         >
                           {enrollment.status.replace("_", " ")}
@@ -451,7 +466,7 @@ export default function Dashboard() {
                           <div className="text-xs text-muted-foreground">
                             Enrolled{" "}
                             {new Date(
-                              enrollment.enrolledAt
+                              enrollment.enrolledAt,
                             ).toLocaleDateString()}
                           </div>
                           <Button size="sm" asChild>

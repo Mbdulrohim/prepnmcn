@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,8 +16,20 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,8 +55,24 @@ import {
   Crown,
   GraduationCap,
   Star,
+  BookOpen,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+
+interface ProgramInfo {
+  id: string;
+  code: string;
+  name: string;
+}
+
+interface UserEnrollmentInfo {
+  programId: string;
+  programCode: string;
+  programName: string;
+  status: string;
+  expiresAt?: string | null;
+}
 
 interface User {
   id: string;
@@ -58,6 +86,7 @@ interface User {
   premiumExpiresAt?: string | null;
   createdAt: string;
   lastLogin?: string;
+  programEnrollments?: UserEnrollmentInfo[];
 }
 
 interface UserStats {
@@ -78,6 +107,21 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedProgramFilter, setSelectedProgramFilter] = useState("all");
+  const [programs, setPrograms] = useState<ProgramInfo[]>([]);
+  const [managedProgramIds, setManagedProgramIds] = useState<string[]>([]);
+
+  // Premium grant dialog state
+  const [premiumDialog, setPremiumDialog] = useState<{
+    open: boolean;
+    userId: string;
+    userName: string;
+  }>({ open: false, userId: "", userName: "" });
+  const [premiumProgramId, setPremiumProgramId] = useState("");
+  const [premiumDurationType, setPremiumDurationType] = useState<
+    "days" | "months"
+  >("days");
+  const [premiumDuration, setPremiumDuration] = useState("30");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -89,12 +133,28 @@ export default function UsersPage() {
       router.push("/dashboard");
     } else if (status === "authenticated") {
       fetchUsers();
+      fetchPrograms();
     }
   }, [session, status, router]);
 
   useEffect(() => {
     filterUsers();
-  }, [users, searchTerm, selectedRole, selectedStatus]);
+  }, [users, searchTerm, selectedRole, selectedStatus, selectedProgramFilter]);
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await fetch("/api/admin/programs");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.programs) {
+          setPrograms(data.programs);
+          setManagedProgramIds(data.programs.map((p: any) => p.id));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch programs:", error);
+    }
+  };
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -120,9 +180,13 @@ export default function UsersPage() {
       totalUsers: userData.length,
       activeUsers: userData.filter((u) => u.isActive).length,
       adminUsers: userData.filter(
-        (u) => u.role === "admin" || u.role === "super_admin"
+        (u) => u.role === "admin" || u.role === "super_admin",
       ).length,
-      premiumUsers: userData.filter((u) => u.isPremium).length,
+      premiumUsers: userData.filter(
+        (u) =>
+          u.isPremium ||
+          (u.programEnrollments?.some((e) => e.status === "active") ?? false),
+      ).length,
       totalPoints: userData.reduce((sum, u) => sum + u.points, 0),
     };
     setStats(stats);
@@ -137,7 +201,7 @@ export default function UsersPage() {
         (user) =>
           user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.institution.toLowerCase().includes(searchTerm.toLowerCase())
+          user.institution.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -152,6 +216,15 @@ export default function UsersPage() {
       filtered = filtered.filter((user) => user.isActive === isActive);
     }
 
+    // Program filter
+    if (selectedProgramFilter !== "all") {
+      filtered = filtered.filter((user) =>
+        user.programEnrollments?.some(
+          (e) => e.programId === selectedProgramFilter,
+        ),
+      );
+    }
+
     setFilteredUsers(filtered);
   };
 
@@ -159,64 +232,97 @@ export default function UsersPage() {
     setSearchTerm("");
     setSelectedRole("all");
     setSelectedStatus("all");
+    setSelectedProgramFilter("all");
+  };
+
+  const openPremiumDialog = (userId: string, userName: string) => {
+    setPremiumDialog({ open: true, userId, userName });
+    setPremiumProgramId(programs[0]?.id || "");
+    setPremiumDurationType("days");
+    setPremiumDuration("30");
+  };
+
+  const handleGrantPremium = async () => {
+    if (!premiumProgramId || !premiumDuration) {
+      toast.error("Please select a program and duration");
+      return;
+    }
+
+    try {
+      const body: any = { programId: premiumProgramId };
+      if (premiumDurationType === "days") {
+        body.durationDays = parseInt(premiumDuration);
+      } else {
+        body.durationMonths = parseInt(premiumDuration);
+      }
+
+      const response = await fetch(
+        `/api/admin/users/${premiumDialog.userId}/promote-premium`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        setPremiumDialog({ open: false, userId: "", userName: "" });
+        fetchUsers();
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to grant premium access");
+      }
+    } catch (error) {
+      toast.error("Failed to grant premium access");
+    }
+  };
+
+  const handleRevokeProgramPremium = async (
+    userId: string,
+    programId: string,
+    programName: string,
+  ) => {
+    if (
+      !confirm(
+        `Are you sure you want to revoke premium access for ${programName}?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/admin/users/${userId}/promote-premium?programId=${programId}`,
+        { method: "DELETE" },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        fetchUsers();
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to revoke premium access");
+      }
+    } catch (error) {
+      toast.error("Failed to revoke premium access");
+    }
   };
 
   const handleUserAction = async (
     action: string,
     userId: string,
-    durationMonths?: number
+    durationMonths?: number,
   ) => {
-    if (action === "Promote to Premium") {
-      try {
-        const response = await fetch(
-          `/api/admin/users/${userId}/promote-premium`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ durationMonths: durationMonths || 1 }),
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          toast.success(data.message);
-          fetchUsers();
-        } else {
-          const error = await response.json();
-          toast.error(error.message || "Failed to promote user to premium");
-        }
-      } catch (error) {
-        console.error("Failed to promote user to premium:", error);
-        toast.error("Failed to promote user to premium");
-      }
-    } else if (action === "Revoke Premium") {
-      try {
-        const response = await fetch(
-          `/api/admin/users/${userId}/promote-premium`,
-          {
-            method: "DELETE",
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          toast.success(data.message);
-          fetchUsers();
-        } else {
-          const error = await response.json();
-          toast.error(error.message || "Failed to revoke premium status");
-        }
-      } catch (error) {
-        console.error("Failed to revoke premium status:", error);
-        toast.error("Failed to revoke premium status");
-      }
-    } else if (action === "Promote to Admin") {
+    if (action === "Promote to Admin") {
       try {
         const response = await fetch(
           `/api/admin/users/${userId}/promote-admin`,
           {
             method: "POST",
-          }
+          },
         );
 
         if (response.ok) {
@@ -227,10 +333,9 @@ export default function UsersPage() {
               "The user needs to sign out and sign back in to access new permissions",
               {
                 duration: 10000,
-              }
+              },
             );
           }
-          // Refresh the users list
           fetchUsers();
         } else {
           const error = await response.json();
@@ -246,7 +351,7 @@ export default function UsersPage() {
           `/api/admin/users/${userId}/promote-super`,
           {
             method: "POST",
-          }
+          },
         );
 
         if (response.ok) {
@@ -257,10 +362,9 @@ export default function UsersPage() {
               "The user needs to sign out and sign back in to access new permissions",
               {
                 duration: 10000,
-              }
+              },
             );
           }
-          // Refresh the users list
           fetchUsers();
         } else {
           const error = await response.json();
@@ -285,7 +389,7 @@ export default function UsersPage() {
         } else {
           const error = await response.json();
           toast.error(
-            error.message || `Failed to ${action.toLowerCase()} user`
+            error.message || `Failed to ${action.toLowerCase()} user`,
           );
         }
       } catch (error) {
@@ -293,10 +397,9 @@ export default function UsersPage() {
         toast.error(`Failed to ${action.toLowerCase()} user`);
       }
     } else if (action === "Delete User") {
-      // Show confirmation dialog
       if (
         !confirm(
-          "Are you sure you want to delete this user? This action cannot be undone."
+          "Are you sure you want to delete this user? This action cannot be undone.",
         )
       ) {
         return;
@@ -320,15 +423,42 @@ export default function UsersPage() {
         toast.error("Failed to delete user");
       }
     } else {
-      // Placeholder for other actions
       toast.info(`${action} functionality would be implemented here`);
     }
+  };
+
+  const getUserProgramBadges = (user: User) => {
+    if (!user.programEnrollments || user.programEnrollments.length === 0)
+      return null;
+
+    return user.programEnrollments.map((e) => {
+      const isActive = e.status === "active";
+      const isPending = e.status === "pending_approval";
+
+      return (
+        <Badge
+          key={e.programId}
+          variant={isActive ? "default" : isPending ? "outline" : "secondary"}
+          className={
+            isActive
+              ? "bg-green-100 text-green-800 border-green-300 text-[10px]"
+              : isPending
+                ? "bg-yellow-50 border-yellow-300 text-yellow-700 text-[10px]"
+                : "text-[10px]"
+          }
+        >
+          {e.programCode}
+          {isPending && " (pending)"}
+          {e.status === "expired" && " (expired)"}
+          {e.status === "revoked" && " (revoked)"}
+        </Badge>
+      );
+    });
   };
 
   if (isLoading || status === "loading") {
     return (
       <div className="space-y-6">
-        {/* Header Skeleton */}
         <div className="text-center space-y-2">
           <Skeleton className="h-10 w-64 mx-auto" />
           <div className="flex justify-center gap-2 mt-4">
@@ -337,8 +467,6 @@ export default function UsersPage() {
             <Skeleton className="h-6 w-20" />
           </div>
         </div>
-
-        {/* Stats Cards Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
@@ -351,15 +479,11 @@ export default function UsersPage() {
             </Card>
           ))}
         </div>
-
-        {/* Filters Skeleton */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Skeleton className="h-10 flex-1" />
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-10 w-24" />
         </div>
-
-        {/* Table Skeleton */}
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-32" />
@@ -388,7 +512,7 @@ export default function UsersPage() {
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-bold text-primary">User Management</h1>
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex justify-center gap-2 mt-4 flex-wrap">
           <Badge variant="secondary" className="flex items-center gap-1">
             <Users className="h-3 w-3" />
             {stats?.totalUsers || 0} Total Users
@@ -527,6 +651,27 @@ export default function UsersPage() {
               </Select>
             </div>
 
+            {/* Program Filter */}
+            <div>
+              <Label htmlFor="program">Program</Label>
+              <Select
+                value={selectedProgramFilter}
+                onValueChange={setSelectedProgramFilter}
+              >
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="All programs" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Programs</SelectItem>
+                  {programs.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.code} - {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Status Filter */}
             <div>
               <Label htmlFor="status">Status</Label>
@@ -547,10 +692,6 @@ export default function UsersPage() {
               <Button variant="outline" onClick={clearFilters}>
                 Clear Filters
               </Button>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add User
-              </Button>
             </div>
           </div>
 
@@ -561,10 +702,10 @@ export default function UsersPage() {
                 <TableRow>
                   <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Programs</TableHead>
                   <TableHead>Institution</TableHead>
                   <TableHead>Points</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Last Login</TableHead>
                   <TableHead className="w-12">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -600,27 +741,24 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
+                        <Badge
+                          variant={
+                            user.role === "admin" || user.role === "super_admin"
+                              ? "destructive"
+                              : "default"
+                          }
+                        >
+                          {user.role === "super_admin"
+                            ? "Super Admin"
+                            : user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <div className="flex gap-1 flex-wrap">
-                          <Badge
-                            variant={
-                              user.role === "admin" ||
-                              user.role === "super_admin"
-                                ? "destructive"
-                                : "default"
-                            }
-                          >
-                            {user.role === "super_admin"
-                              ? "Super Admin"
-                              : user.role}
-                          </Badge>
-                          {user.isPremium && (
-                            <Badge
-                              variant="outline"
-                              className="bg-yellow-50 border-yellow-300 text-yellow-700"
-                            >
-                              <Star className="h-3 w-3 mr-1" />
-                              Premium
-                            </Badge>
+                          {getUserProgramBadges(user) || (
+                            <span className="text-xs text-muted-foreground">
+                              No program
+                            </span>
                           )}
                         </div>
                       </TableCell>
@@ -637,11 +775,6 @@ export default function UsersPage() {
                           {user.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {user.lastLogin
-                          ? new Date(user.lastLogin).toLocaleDateString()
-                          : "Never"}
-                      </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -650,7 +783,7 @@ export default function UsersPage() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="w-56">
                             <DropdownMenuItem
                               onClick={() =>
                                 handleUserAction("View Profile", user.id)
@@ -665,20 +798,60 @@ export default function UsersPage() {
                             >
                               Edit User
                             </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* Program Premium Access */}
                             <DropdownMenuItem
                               onClick={() =>
-                                handleUserAction("Reset Password", user.id)
+                                openPremiumDialog(user.id, user.name)
                               }
+                              className="text-green-600"
                             >
-                              Reset Password
+                              <Star className="mr-2 h-4 w-4" />
+                              Grant Program Access
                             </DropdownMenuItem>
+
+                            {/* Revoke per-program access */}
+                            {user.programEnrollments?.filter(
+                              (e) => e.status === "active",
+                            ).length ? (
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="text-orange-600">
+                                  <UserX className="mr-2 h-4 w-4" />
+                                  Revoke Program Access
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  {user.programEnrollments
+                                    ?.filter((e) => e.status === "active")
+                                    .map((e) => (
+                                      <DropdownMenuItem
+                                        key={e.programId}
+                                        onClick={() =>
+                                          handleRevokeProgramPremium(
+                                            user.id,
+                                            e.programId,
+                                            e.programName,
+                                          )
+                                        }
+                                        className="text-orange-600"
+                                      >
+                                        Revoke {e.programCode}
+                                      </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                            ) : null}
+
+                            <DropdownMenuSeparator />
+
                             {user.role !== "admin" &&
                               user.role !== "super_admin" && (
                                 <DropdownMenuItem
                                   onClick={() =>
                                     handleUserAction(
                                       "Promote to Admin",
-                                      user.id
+                                      user.id,
                                     )
                                   }
                                   className="text-blue-600"
@@ -692,7 +865,7 @@ export default function UsersPage() {
                                 onClick={() =>
                                   handleUserAction(
                                     "Promote to Super Admin",
-                                    user.id
+                                    user.id,
                                   )
                                 }
                                 className="text-purple-600"
@@ -701,36 +874,14 @@ export default function UsersPage() {
                                 Promote to Super Admin
                               </DropdownMenuItem>
                             )}
-                            {!user.isPremium ? (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleUserAction(
-                                    "Promote to Premium",
-                                    user.id,
-                                    1
-                                  )
-                                }
-                                className="text-yellow-600"
-                              >
-                                <Star className="mr-2 h-4 w-4" />
-                                Promote to Premium (1 month)
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleUserAction("Revoke Premium", user.id)
-                                }
-                                className="text-orange-600"
-                              >
-                                <Star className="mr-2 h-4 w-4" />
-                                Revoke Premium
-                              </DropdownMenuItem>
-                            )}
+
+                            <DropdownMenuSeparator />
+
                             <DropdownMenuItem
                               onClick={() =>
                                 handleUserAction(
                                   user.isActive ? "Deactivate" : "Activate",
-                                  user.id
+                                  user.id,
                                 )
                               }
                               className={
@@ -776,6 +927,115 @@ export default function UsersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Grant Premium Dialog */}
+      <Dialog
+        open={premiumDialog.open}
+        onOpenChange={(open) => setPremiumDialog((prev) => ({ ...prev, open }))}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Grant Program Access</DialogTitle>
+            <DialogDescription>
+              Grant premium access for{" "}
+              <span className="font-semibold">{premiumDialog.userName}</span> to
+              a specific program.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Program</Label>
+              <Select
+                value={premiumProgramId}
+                onValueChange={setPremiumProgramId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select program" />
+                </SelectTrigger>
+                <SelectContent>
+                  {programs.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.code} - {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Duration Type</Label>
+              <Select
+                value={premiumDurationType}
+                onValueChange={(v) =>
+                  setPremiumDurationType(v as "days" | "months")
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="days">Days</SelectItem>
+                  <SelectItem value="months">Months</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>
+                Duration ({premiumDurationType === "days" ? "days" : "months"})
+              </Label>
+              <div className="flex gap-2 flex-wrap">
+                {premiumDurationType === "days"
+                  ? [30, 40, 50, 60, 90, 120, 180, 365].map((d) => (
+                      <Button
+                        key={d}
+                        variant={
+                          premiumDuration === String(d) ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setPremiumDuration(String(d))}
+                      >
+                        {d}d
+                      </Button>
+                    ))
+                  : [1, 2, 3, 6, 12].map((m) => (
+                      <Button
+                        key={m}
+                        variant={
+                          premiumDuration === String(m) ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setPremiumDuration(String(m))}
+                      >
+                        {m}mo
+                      </Button>
+                    ))}
+              </div>
+              <Input
+                type="number"
+                value={premiumDuration}
+                onChange={(e) => setPremiumDuration(e.target.value)}
+                placeholder={`Custom ${premiumDurationType}`}
+                min="1"
+                className="mt-2"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setPremiumDialog({ open: false, userId: "", userName: "" })
+              }
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleGrantPremium}>Grant Access</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

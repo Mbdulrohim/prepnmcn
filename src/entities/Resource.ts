@@ -12,6 +12,7 @@ import { Program } from "./Program";
 
 @Entity("resources")
 @Index(["programId"])
+@Index(["shareSlug"], { unique: true, where: '"shareSlug" IS NOT NULL' })
 export class Resource {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -44,4 +45,11 @@ export class Resource {
 
   @Column({ type: "boolean", default: false })
   isGlobal!: boolean; // If true, available to all programs
+
+  // Shareable resource support
+  @Column({ type: "boolean", default: false })
+  isShareable!: boolean;
+
+  @Column({ type: "varchar", length: 100, unique: true, nullable: true })
+  shareSlug?: string;
 }

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InstitutionSelect } from "@/components/InstitutionSelect";
+import { ProgramSelect } from "@/components/ProgramSelect";
 import {
   Card,
   CardContent,
@@ -26,6 +27,7 @@ export default function SignIn() {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [institution, setInstitution] = useState("");
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -142,6 +144,11 @@ export default function SignIn() {
       return;
     }
 
+    if (selectedPrograms.length === 0) {
+      setError("Please select at least one program");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -150,7 +157,7 @@ export default function SignIn() {
       const institutionResponse = await fetch(`/api/institutions`);
       const institutionData = await institutionResponse.json();
       const selectedInstitution = institutionData.institutions?.find(
-        (inst: any) => inst.id === institution
+        (inst: any) => inst.id === institution,
       );
 
       if (!selectedInstitution) {
@@ -165,6 +172,7 @@ export default function SignIn() {
           email,
           name,
           institution: selectedInstitution.name,
+          programCodes: selectedPrograms,
         }),
       });
 
@@ -191,6 +199,7 @@ export default function SignIn() {
           setCode("");
           setName("");
           setInstitution("");
+          setSelectedPrograms([]);
         }
       } else {
         setError(data.error || "Failed to complete profile");
@@ -226,8 +235,8 @@ export default function SignIn() {
                 {step === 1
                   ? "Enter your email to receive a verification code"
                   : step === 2
-                  ? "Enter the 6-digit code sent to your email"
-                  : "Complete your profile to get started"}
+                    ? "Enter the 6-digit code sent to your email"
+                    : "Complete your profile to get started"}
               </CardDescription>
             </div>
 
@@ -380,9 +389,22 @@ export default function SignIn() {
                   disabled={loading}
                 />
 
+                <ProgramSelect
+                  value={selectedPrograms}
+                  onValueChange={setSelectedPrograms}
+                  multiple={false}
+                  disabled={loading}
+                  label="Select Your Program"
+                />
+
                 <Button
                   onClick={completeProfile}
-                  disabled={loading || !name || !institution}
+                  disabled={
+                    loading ||
+                    !name ||
+                    !institution ||
+                    selectedPrograms.length === 0
+                  }
                   className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
                   size="lg"
                 >

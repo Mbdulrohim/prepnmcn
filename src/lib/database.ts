@@ -24,6 +24,9 @@ import { CampusStory } from "../entities/CampusStory";
 import { LearnerTestimonial } from "../entities/LearnerTestimonial";
 import { BlogPost } from "../entities/BlogPost";
 import { Email } from "../entities/Email";
+import { Program } from "../entities/Program";
+import { ProgramAdmin } from "../entities/ProgramAdmin";
+import { UserProgramEnrollment } from "../entities/UserProgramEnrollment";
 
 let AppDataSource: DataSource;
 
@@ -66,6 +69,9 @@ export async function getDataSource(): Promise<DataSource> {
       AccessCode,
       ChatMessage,
       Email,
+      Program,
+      ProgramAdmin,
+      UserProgramEnrollment,
     ],
     ssl: true,
     extra: {
@@ -76,6 +82,15 @@ export async function getDataSource(): Promise<DataSource> {
   });
 
   await AppDataSource.initialize();
+
+  // Auto-seed default programs (RM, RN, RPHN, SPECIALTY) on first init
+  try {
+    const { seedDefaultPrograms } = await import("./seedPrograms");
+    await seedDefaultPrograms(AppDataSource);
+  } catch (error) {
+    console.error("[database] Failed to seed default programs:", error);
+  }
+
   return AppDataSource;
 }
 

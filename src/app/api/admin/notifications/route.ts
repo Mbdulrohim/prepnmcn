@@ -6,6 +6,7 @@ import { sendEmail } from "@/lib/email";
 import { getDataSource } from "@/lib/database";
 import { z } from "zod";
 import { NotificationAutomation } from "@/lib/notification-automation";
+import { wrapEmailTemplate, emailParagraph } from "@/lib/email-template";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,7 @@ const sendEmailSchema = z
     {
       message: "Either recipientEmails or recipientRole must be provided",
       path: ["recipientEmails"],
-    }
+    },
   );
 
 const createAutomationRuleSchema = z.object({
@@ -78,9 +79,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Return both email notifications and automation rules
-    const automationRules = await NotificationAutomation.getRules(
-      AppDataSource
-    );
+    const automationRules =
+      await NotificationAutomation.getRules(AppDataSource);
     return NextResponse.json({
       success: true,
       data: {
@@ -88,16 +88,16 @@ export async function GET(request: NextRequest) {
         automationRules,
         stats: {
           totalEmails: notifications.filter(
-            (n: Notification) => n.type === "email"
+            (n: Notification) => n.type === "email",
           ).length,
           sentEmails: notifications.filter(
-            (n: Notification) => n.type === "email" && n.status === "sent"
+            (n: Notification) => n.type === "email" && n.status === "sent",
           ).length,
           pendingEmails: notifications.filter(
-            (n: Notification) => n.type === "email" && n.status === "pending"
+            (n: Notification) => n.type === "email" && n.status === "pending",
           ).length,
           failedEmails: notifications.filter(
-            (n: Notification) => n.type === "email" && n.status === "failed"
+            (n: Notification) => n.type === "email" && n.status === "failed",
           ).length,
           activeAutomationRules: automationRules.filter((r) => r.isActive)
             .length,
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
           error:
             "Invalid or missing 'type' field. Must be 'automation' or 'email'",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
             error: "Validation failed",
             details: validation.error.issues,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
             error: "Validation failed",
             details: validation.error.issues,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
       if (finalRecipientEmails.length === 0) {
         return NextResponse.json(
           { error: "No recipients found for the specified criteria" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -228,7 +228,12 @@ export async function POST(request: NextRequest) {
           await sendEmail({
             to: email,
             subject,
-            html: emailBody,
+            html: wrapEmailTemplate({
+              preheader: subject,
+              body: emailBody.includes("<")
+                ? emailBody
+                : emailParagraph(emailBody.replace(/\n/g, "<br>")),
+            }),
             from: `"${
               process.env.ADMIN_NOTIFICATION_SENDER_NAME || "O'Prep Admin"
             }" <${
@@ -297,7 +302,7 @@ export async function POST(request: NextRequest) {
     console.error("Error in notifications POST:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -319,12 +324,12 @@ export async function PUT(request: NextRequest) {
 
     const existingRule = await NotificationAutomation.getRuleById(
       AppDataSource,
-      id
+      id,
     );
     if (!existingRule) {
       return NextResponse.json(
         { error: "Automation rule not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -333,7 +338,7 @@ export async function PUT(request: NextRequest) {
 
     const updatedRule = await NotificationAutomation.getRuleById(
       AppDataSource,
-      id
+      id,
     );
     return NextResponse.json({
       success: true,
@@ -344,7 +349,7 @@ export async function PUT(request: NextRequest) {
     console.error("Error updating automation rule:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -367,7 +372,7 @@ export async function DELETE(request: NextRequest) {
     if (!id || !type) {
       return NextResponse.json(
         { error: "Missing id or type parameter" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -376,12 +381,12 @@ export async function DELETE(request: NextRequest) {
     if (type === "automation") {
       const existingRule = await NotificationAutomation.getRuleById(
         AppDataSource,
-        id
+        id,
       );
       if (!existingRule) {
         return NextResponse.json(
           { error: "Automation rule not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -398,7 +403,7 @@ export async function DELETE(request: NextRequest) {
       if (!notification) {
         return NextResponse.json(
           { error: "Notification not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -415,7 +420,7 @@ export async function DELETE(request: NextRequest) {
     console.error("Error deleting:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
