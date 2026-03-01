@@ -13,7 +13,7 @@ const PAGE_SIZE = 50;
 // Returns posts in the forum, newest last (chronological), supports cursor pagination
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const session = await auth();
@@ -34,17 +34,27 @@ export async function GET(
       return NextResponse.json({ error: "Forum not found" }, { status: 404 });
     }
 
-    const isMember = await memberRepo.findOne({ where: { forumId: forum.id, userId } });
-    const isAdmin = ["admin", "super_admin"].includes((session.user as any).role);
+    const isMember = await memberRepo.findOne({
+      where: { forumId: forum.id, userId },
+    });
+    const isAdmin = ["admin", "super_admin"].includes(
+      (session.user as any).role,
+    );
 
     if (!isMember && !isAdmin) {
-      return NextResponse.json({ error: "You must join the forum first" }, { status: 403 });
+      return NextResponse.json(
+        { error: "You must join the forum first" },
+        { status: 403 },
+      );
     }
 
     const { searchParams } = new URL(req.url);
     const after = searchParams.get("after"); // ISO timestamp for polling (get newer than)
     const before = searchParams.get("before"); // ISO timestamp for infinite scroll (get older than)
-    const limit = Math.min(parseInt(searchParams.get("limit") ?? String(PAGE_SIZE)), 100);
+    const limit = Math.min(
+      parseInt(searchParams.get("limit") ?? String(PAGE_SIZE)),
+      100,
+    );
 
     let qb = postRepo
       .createQueryBuilder("p")
@@ -67,7 +77,7 @@ export async function GET(
     const rawPosts = await qb.getMany();
 
     // For DESC queries we need to reverse so messages appear in chronological order
-    const posts = (before || (!after && !before)) ? rawPosts.reverse() : rawPosts;
+    const posts = before || (!after && !before) ? rawPosts.reverse() : rawPosts;
 
     const formatted = posts.map((p) => ({
       id: p.id,
@@ -84,17 +94,24 @@ export async function GET(
       },
     }));
 
-    return NextResponse.json({ success: true, posts, hasMore: rawPosts.length === limit });
+    return NextResponse.json({
+      success: true,
+      posts,
+      hasMore: rawPosts.length === limit,
+    });
   } catch (error) {
     console.error("[GET /api/forums/[slug]/posts]", error);
-    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch posts" },
+      { status: 500 },
+    );
   }
 }
 
 // POST /api/forums/[slug]/posts - Send a message
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const session = await auth();
@@ -115,11 +132,18 @@ export async function POST(
       return NextResponse.json({ error: "Forum not found" }, { status: 404 });
     }
 
-    const isAdmin = ["admin", "super_admin"].includes((session.user as any).role);
-    const isMember = await memberRepo.findOne({ where: { forumId: forum.id, userId } });
+    const isAdmin = ["admin", "super_admin"].includes(
+      (session.user as any).role,
+    );
+    const isMember = await memberRepo.findOne({
+      where: { forumId: forum.id, userId },
+    });
 
     if (!isMember && !isAdmin) {
-      return NextResponse.json({ error: "You must join the forum first" }, { status: 403 });
+      return NextResponse.json(
+        { error: "You must join the forum first" },
+        { status: 403 },
+      );
     }
 
     const body = await req.json();
@@ -127,10 +151,18 @@ export async function POST(
     const parentPostId: string | undefined = body.parentPostId ?? undefined;
 
     if (!content || content.length > 5000) {
-      return NextResponse.json({ error: "Content must be 1–5000 characters" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Content must be 1–5000 characters" },
+        { status: 400 },
+      );
     }
 
-    const post = postRepo.create({ forumId: forum.id, userId, content, parentPostId });
+    const post = postRepo.create({
+      forumId: forum.id,
+      userId,
+      content,
+      parentPostId,
+    });
     const saved = await postRepo.save(post);
 
     // Re-fetch with user relation for the response
@@ -157,6 +189,9 @@ export async function POST(
     });
   } catch (error) {
     console.error("[POST /api/forums/[slug]/posts]", error);
-    return NextResponse.json({ error: "Failed to send message" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to send message" },
+      { status: 500 },
+    );
   }
 }

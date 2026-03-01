@@ -2,11 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Users, Lock, Globe, ArrowRight, Pin } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { MessageSquare, Users, Lock, Globe, ArrowRight, Pin, Hash } from "lucide-react";
 import { toast } from "sonner";
 
 interface ForumItem {
@@ -30,22 +29,44 @@ interface Program {
 
 function ForumSkeleton() {
   return (
-    <Card className="animate-pulse">
-      <CardHeader className="pb-3">
-        <div className="h-5 w-1/2 bg-muted rounded" />
-        <div className="h-4 w-3/4 bg-muted rounded mt-2" />
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-2">
-          <div className="h-8 w-20 bg-muted rounded" />
-          <div className="h-8 w-24 bg-muted rounded" />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-4 p-4 rounded-xl border bg-card animate-pulse">
+      <div className="h-11 w-11 bg-muted rounded-xl flex-shrink-0" />
+      <div className="flex-1 space-y-2">
+        <div className="h-4 w-1/3 bg-muted rounded" />
+        <div className="h-3 w-2/3 bg-muted rounded" />
+      </div>
+      <div className="h-8 w-20 bg-muted rounded-lg" />
+    </div>
   );
 }
 
-function ForumCard({
+function AccessBadge({
+  forum,
+  programCode,
+}: {
+  forum: ForumItem;
+  programCode: string | null;
+}) {
+  if (programCode) {
+    return (
+      <Badge variant="secondary" className="text-xs gap-1">
+        <Lock className="h-3 w-3" />
+        {programCode}
+      </Badge>
+    );
+  }
+  if (forum.isOpenToAll) {
+    return (
+      <Badge variant="outline" className="text-xs gap-1">
+        <Globe className="h-3 w-3" />
+        Open
+      </Badge>
+    );
+  }
+  return <Badge variant="outline" className="text-xs">Enrolled</Badge>;
+}
+
+function ForumRow({
   forum,
   programCode,
   isJoining,
@@ -59,67 +80,83 @@ function ForumCard({
   onLeave: (f: ForumItem) => void;
 }) {
   const router = useRouter();
+  const colorMap: Record<string, string> = {
+    blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    green: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+    purple: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+    orange: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
+    red: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+  };
+  const color = forum.metadata?.color;
+  const iconClass =
+    color && colorMap[color] ? colorMap[color] : "bg-primary/10 text-primary";
 
   return (
-    <Card className="hover:shadow-md transition-shadow border">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <CardTitle className="text-lg">{forum.name}</CardTitle>
-              {forum.isPinned && <Pin className="h-3.5 w-3.5 text-primary flex-shrink-0" />}
-              {programCode ? (
-                <Badge variant="secondary" className="text-xs font-medium">
-                  <Lock className="h-3 w-3 mr-1" />{programCode} only
-                </Badge>
-              ) : forum.isOpenToAll ? (
-                <Badge variant="outline" className="text-xs">
-                  <Globe className="h-3 w-3 mr-1" />Open
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-xs">Enrolled users</Badge>
-              )}
-              {forum.isMember && (
-                <Badge className="text-xs bg-green-100 text-green-800 border-green-200">Joined</Badge>
-              )}
-            </div>
-            {forum.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2">{forum.description}</p>
-            )}
-          </div>
+    <div className="group flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent/30 hover:border-primary/20 transition-all">
+      <div
+        className={`h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0 ${iconClass}`}
+      >
+        <Hash className="h-5 w-5" />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-sm truncate">{forum.name}</span>
+          {forum.isPinned && (
+            <Pin className="h-3 w-3 text-primary flex-shrink-0" />
+          )}
+          <AccessBadge forum={forum} programCode={programCode} />
+          {forum.isMember && (
+            <span className="text-xs font-medium text-green-600 dark:text-green-400">
+              ● Joined
+            </span>
+          )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>{forum.memberCount} member{forum.memberCount !== 1 ? "s" : ""}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {forum.isMember ? (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground text-xs"
-                  disabled={isJoining}
-                  onClick={() => onLeave(forum)}
-                >
-                  Leave
-                </Button>
-                <Button size="sm" onClick={() => router.push(`/forums/${forum.slug}`)}>
-                  Enter Forum <ArrowRight className="h-4 w-4 ml-1" />
-                </Button>
-              </>
-            ) : (
-              <Button size="sm" disabled={isJoining} onClick={() => onJoin(forum)}>
-                {isJoining ? "Joining…" : "Join Forum"}
-              </Button>
-            )}
-          </div>
+        <div className="flex items-center gap-3 mt-0.5">
+          {forum.description && (
+            <p className="text-xs text-muted-foreground truncate">
+              {forum.description}
+            </p>
+          )}
+          <span className="text-xs text-muted-foreground flex items-center gap-1 flex-shrink-0">
+            <Users className="h-3 w-3" />
+            {forum.memberCount}
+          </span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {forum.isMember ? (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+              disabled={isJoining}
+              onClick={() => onLeave(forum)}
+            >
+              Leave
+            </Button>
+            <Button
+              size="sm"
+              className="gap-1"
+              onClick={() => router.push(`/forums/${forum.slug}`)}
+            >
+              Open <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </>
+        ) : (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isJoining}
+            onClick={() => onJoin(forum)}
+          >
+            {isJoining ? "Joining…" : "Join"}
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -134,7 +171,10 @@ export default function ForumsPage() {
     try {
       const res = await fetch("/api/forums");
       if (!res.ok) {
-        if (res.status === 401) { router.push("/auth/login"); return; }
+        if (res.status === 401) {
+          router.push("/auth/login");
+          return;
+        }
         throw new Error("Failed");
       }
       const data = await res.json();
@@ -148,13 +188,18 @@ export default function ForumsPage() {
 
   useEffect(() => {
     fetchForums();
-    fetch("/api/programs").then((r) => r.json()).then((d) => setPrograms(d.programs ?? [])).catch(() => {});
+    fetch("/api/programs")
+      .then((r) => r.json())
+      .then((d) => setPrograms(d.programs ?? []))
+      .catch(() => {});
   }, [fetchForums]);
 
   const handleJoin = async (forum: ForumItem) => {
     setJoiningId(forum.id);
     try {
-      const res = await fetch(`/api/forums/${forum.slug}/join`, { method: "POST" });
+      const res = await fetch(`/api/forums/${forum.slug}/join`, {
+        method: "POST",
+      });
       if (!res.ok) {
         const err = await res.json();
         toast.error(err.error ?? "Cannot join");
@@ -162,7 +207,11 @@ export default function ForumsPage() {
       }
       toast.success(`You've joined ${forum.name}`);
       setForums((prev) =>
-        prev.map((f) => f.id === forum.id ? { ...f, isMember: true, memberCount: f.memberCount + 1 } : f)
+        prev.map((f) =>
+          f.id === forum.id
+            ? { ...f, isMember: true, memberCount: f.memberCount + 1 }
+            : f
+        )
       );
     } catch {
       toast.error("Failed to join forum");
@@ -177,7 +226,11 @@ export default function ForumsPage() {
       await fetch(`/api/forums/${forum.slug}/join`, { method: "DELETE" });
       toast.success(`You've left ${forum.name}`);
       setForums((prev) =>
-        prev.map((f) => f.id === forum.id ? { ...f, isMember: false, memberCount: Math.max(0, f.memberCount - 1) } : f)
+        prev.map((f) =>
+          f.id === forum.id
+            ? { ...f, isMember: false, memberCount: Math.max(0, f.memberCount - 1) }
+            : f
+        )
       );
     } catch {
       toast.error("Failed to leave");
@@ -191,65 +244,53 @@ export default function ForumsPage() {
     return programs.find((p) => p.id === programId)?.code ?? null;
   };
 
-  const pinnedForums = forums.filter((f) => f.isPinned);
-  const regularForums = forums.filter((f) => !f.isPinned);
+  const joinedForums = forums.filter((f) => f.isMember);
+  const pinnedForums = forums.filter((f) => f.isPinned && !f.isMember);
+  const otherForums = forums.filter((f) => !f.isMember && !f.isPinned);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <MessageSquare className="h-8 w-8 text-primary" />
-            Forums
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Join community discussions with students in your programs.
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      {/* Page header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <MessageSquare className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Forums</h1>
+            <p className="text-sm text-muted-foreground">
+              Community discussions for your programs
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <ForumSkeleton key={i} />
+          ))}
+        </div>
+      ) : forums.length === 0 ? (
+        <div className="text-center py-20 border rounded-2xl bg-card">
+          <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+            <MessageSquare className="h-7 w-7 text-muted-foreground" />
+          </div>
+          <h2 className="text-lg font-semibold mb-1">No forums yet</h2>
+          <p className="text-sm text-muted-foreground">
+            Forums will appear here once you have an active program enrollment.
           </p>
         </div>
-
-        {loading ? (
-          <div className="space-y-4">{[1, 2, 3].map((i) => <ForumSkeleton key={i} />)}</div>
-        ) : forums.length === 0 ? (
-          <Card>
-            <CardContent className="py-16 text-center">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No forums available</h2>
-              <p className="text-muted-foreground">
-                Forums will appear here once you enroll in an active program.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {pinnedForums.length > 0 && (
-              <section>
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-1">
-                  <Pin className="h-3.5 w-3.5" /> Pinned
-                </h2>
-                <div className="space-y-3">
-                  {pinnedForums.map((forum) => (
-                    <ForumCard
-                      key={forum.id}
-                      forum={forum}
-                      programCode={getProgramCode(forum.programId)}
-                      isJoining={joiningId === forum.id}
-                      onJoin={handleJoin}
-                      onLeave={handleLeave}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+      ) : (
+        <div className="space-y-6">
+          {joinedForums.length > 0 && (
             <section>
-              {pinnedForums.length > 0 && (
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  All Forums
-                </h2>
-              )}
-              <div className="space-y-3">
-                {regularForums.map((forum) => (
-                  <ForumCard
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                Your Forums
+              </p>
+              <div className="space-y-2">
+                {joinedForums.map((forum) => (
+                  <ForumRow
                     key={forum.id}
                     forum={forum}
                     programCode={getProgramCode(forum.programId)}
@@ -260,9 +301,30 @@ export default function ForumsPage() {
                 ))}
               </div>
             </section>
-          </div>
-        )}
-      </div>
+          )}
+
+          {(pinnedForums.length > 0 || otherForums.length > 0) && (
+            <section>
+              {joinedForums.length > 0 && <Separator className="mb-6" />}
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                {joinedForums.length > 0 ? "Discover" : "Available Forums"}
+              </p>
+              <div className="space-y-2">
+                {[...pinnedForums, ...otherForums].map((forum) => (
+                  <ForumRow
+                    key={forum.id}
+                    forum={forum}
+                    programCode={getProgramCode(forum.programId)}
+                    isJoining={joiningId === forum.id}
+                    onJoin={handleJoin}
+                    onLeave={handleLeave}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,10 @@ import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Forum } from "@/entities/Forum";
 import { ForumMember } from "@/entities/ForumMember";
-import { UserProgramEnrollment, EnrollmentStatus } from "@/entities/UserProgramEnrollment";
+import {
+  UserProgramEnrollment,
+  EnrollmentStatus,
+} from "@/entities/UserProgramEnrollment";
 
 export const runtime = "nodejs";
 
@@ -16,7 +19,9 @@ export async function GET(req: NextRequest) {
     }
 
     const userId = (session.user as any).id as string;
-    const isAdmin = ["admin", "super_admin"].includes((session.user as any).role);
+    const isAdmin = ["admin", "super_admin"].includes(
+      (session.user as any).role,
+    );
 
     const ds = await getDataSource();
     const forumRepo = ds.getRepository(Forum);
@@ -28,7 +33,9 @@ export async function GET(req: NextRequest) {
       where: { userId, status: EnrollmentStatus.ACTIVE },
       select: ["programId"],
     });
-    const activeProgramIds = activeEnrollments.map((e) => e.programId as string);
+    const activeProgramIds = activeEnrollments.map(
+      (e) => e.programId as string,
+    );
 
     // Fetch all active forums
     const allForums = await forumRepo.find({
@@ -60,12 +67,16 @@ export async function GET(req: NextRequest) {
         .createQueryBuilder("fm")
         .select("fm.forumId", "forumId")
         .addSelect("COUNT(*)", "count")
-        .where("fm.forumId IN (:...ids)", { ids: accessibleForums.map((f) => f.id) })
+        .where("fm.forumId IN (:...ids)", {
+          ids: accessibleForums.map((f) => f.id),
+        })
         .groupBy("fm.forumId")
         .getRawMany();
     }
 
-    const memberCountMap = new Map(memberCounts.map((r) => [r.forumId, parseInt(r.count)]));
+    const memberCountMap = new Map(
+      memberCounts.map((r) => [r.forumId, parseInt(r.count)]),
+    );
 
     const forums = accessibleForums.map((f) => ({
       id: f.id,
@@ -84,6 +95,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, forums });
   } catch (error) {
     console.error("[GET /api/forums]", error);
-    return NextResponse.json({ error: "Failed to fetch forums" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch forums" },
+      { status: 500 },
+    );
   }
 }

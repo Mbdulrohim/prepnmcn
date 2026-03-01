@@ -102,8 +102,14 @@ export default function AdminForumsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/auth/signin"); return; }
-    if (status === "authenticated" && !["admin", "super_admin"].includes((session?.user as any)?.role)) {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
+      return;
+    }
+    if (
+      status === "authenticated" &&
+      !["admin", "super_admin"].includes((session?.user as any)?.role)
+    ) {
       router.push("/dashboard");
     }
   }, [session, status, router]);
@@ -123,7 +129,10 @@ export default function AdminForumsPage() {
   useEffect(() => {
     if (status === "authenticated") {
       fetchForums();
-      fetch("/api/programs").then((r) => r.json()).then((d) => setPrograms(d.programs ?? [])).catch(() => {});
+      fetch("/api/programs")
+        .then((r) => r.json())
+        .then((d) => setPrograms(d.programs ?? []))
+        .catch(() => {});
     }
   }, [status, fetchForums]);
 
@@ -133,7 +142,10 @@ export default function AdminForumsPage() {
       ...prev,
       name: value,
       slug: !editForum
-        ? value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+        ? value
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "")
         : prev.slug,
     }));
   };
@@ -208,7 +220,11 @@ export default function AdminForumsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !f.isActive }),
       });
-      setForums((prev) => prev.map((fr) => fr.id === f.id ? { ...fr, isActive: !f.isActive } : fr));
+      setForums((prev) =>
+        prev.map((fr) =>
+          fr.id === f.id ? { ...fr, isActive: !f.isActive } : fr,
+        ),
+      );
     } catch {
       toast.error("Failed to update");
     }
@@ -221,7 +237,11 @@ export default function AdminForumsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPinned: !f.isPinned }),
       });
-      setForums((prev) => prev.map((fr) => fr.id === f.id ? { ...fr, isPinned: !f.isPinned } : fr));
+      setForums((prev) =>
+        prev.map((fr) =>
+          fr.id === f.id ? { ...fr, isPinned: !f.isPinned } : fr,
+        ),
+      );
     } catch {
       toast.error("Failed to update");
     }
@@ -241,7 +261,9 @@ export default function AdminForumsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Forums</h1>
-          <p className="text-muted-foreground">Manage community discussion forums</p>
+          <p className="text-muted-foreground">
+            Manage community discussion forums
+          </p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
@@ -252,10 +274,30 @@ export default function AdminForumsPage() {
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         {[
-          { label: "Total Forums", value: forums.length, icon: MessageSquare, sub: `${activeForums} active` },
-          { label: "Total Members", value: totalMembers, icon: Users, sub: "across all forums" },
-          { label: "Total Posts", value: totalPosts, icon: MessageSquare, sub: "messages sent" },
-          { label: "Pinned Forums", value: forums.filter((f) => f.isPinned).length, icon: Pin, sub: "shown first" },
+          {
+            label: "Total Forums",
+            value: forums.length,
+            icon: MessageSquare,
+            sub: `${activeForums} active`,
+          },
+          {
+            label: "Total Members",
+            value: totalMembers,
+            icon: Users,
+            sub: "across all forums",
+          },
+          {
+            label: "Total Posts",
+            value: totalPosts,
+            icon: MessageSquare,
+            sub: "messages sent",
+          },
+          {
+            label: "Pinned Forums",
+            value: forums.filter((f) => f.isPinned).length,
+            icon: Pin,
+            sub: "shown first",
+          },
         ].map(({ label, value, icon: Icon, sub }) => (
           <Card key={label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -278,14 +320,21 @@ export default function AdminForumsPage() {
         <CardContent>
           {loading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
           ) : forums.length === 0 ? (
             <div className="text-center py-12">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No forums yet</h3>
-              <p className="text-muted-foreground mb-4">Create your first forum to get started.</p>
-              <Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" />Create Forum</Button>
+              <p className="text-muted-foreground mb-4">
+                Create your first forum to get started.
+              </p>
+              <Button onClick={openCreate}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Forum
+              </Button>
             </div>
           ) : (
             <Table>
@@ -303,31 +352,46 @@ export default function AdminForumsPage() {
                 {forums.map((f) => {
                   const programCode = getProgramCode(f.programId);
                   return (
-                    <TableRow key={f.id} className={!f.isActive ? "opacity-50" : ""}>
+                    <TableRow
+                      key={f.id}
+                      className={!f.isActive ? "opacity-50" : ""}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {f.isPinned && <Pin className="h-3.5 w-3.5 text-primary flex-shrink-0" />}
+                          {f.isPinned && (
+                            <Pin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                          )}
                           <div>
                             <div className="font-medium">{f.name}</div>
-                            <div className="text-xs text-muted-foreground">/{f.slug}</div>
+                            <div className="text-xs text-muted-foreground">
+                              /{f.slug}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         {programCode ? (
                           <Badge variant="secondary" className="text-xs">
-                            <Lock className="h-3 w-3 mr-1" />{programCode} only
+                            <Lock className="h-3 w-3 mr-1" />
+                            {programCode} only
                           </Badge>
                         ) : f.isOpenToAll ? (
                           <Badge variant="outline" className="text-xs">
-                            <Globe className="h-3 w-3 mr-1" />Open
+                            <Globe className="h-3 w-3 mr-1" />
+                            Open
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs">Enrolled</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            Enrolled
+                          </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-center">{f.memberCount}</TableCell>
-                      <TableCell className="text-center">{f.postCount}</TableCell>
+                      <TableCell className="text-center">
+                        {f.memberCount}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {f.postCount}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={f.isActive ? "default" : "secondary"}>
                           {f.isActive ? "Active" : "Inactive"}
@@ -336,22 +400,52 @@ export default function AdminForumsPage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => window.open(`/forums/${f.slug}`, "_blank")}>
-                              <ExternalLink className="h-4 w-4 mr-2" />View Forum
+                            <DropdownMenuItem
+                              onClick={() =>
+                                window.open(`/forums/${f.slug}`, "_blank")
+                              }
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              View Forum
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openEdit(f)}>
-                              <Pencil className="h-4 w-4 mr-2" />Edit
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => togglePinned(f)}>
-                              {f.isPinned ? <><PinOff className="h-4 w-4 mr-2" />Unpin</> : <><Pin className="h-4 w-4 mr-2" />Pin</>}
+                              {f.isPinned ? (
+                                <>
+                                  <PinOff className="h-4 w-4 mr-2" />
+                                  Unpin
+                                </>
+                              ) : (
+                                <>
+                                  <Pin className="h-4 w-4 mr-2" />
+                                  Pin
+                                </>
+                              )}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => toggleActive(f)}>
-                              {f.isActive ? <><EyeOff className="h-4 w-4 mr-2" />Deactivate</> : <><Eye className="h-4 w-4 mr-2" />Activate</>}
+                              {f.isActive ? (
+                                <>
+                                  <EyeOff className="h-4 w-4 mr-2" />
+                                  Deactivate
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Activate
+                                </>
+                              )}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -372,9 +466,13 @@ export default function AdminForumsPage() {
           onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle>{editForum ? "Edit Forum" : "Create Forum"}</DialogTitle>
+            <DialogTitle>
+              {editForum ? "Edit Forum" : "Create Forum"}
+            </DialogTitle>
             <DialogDescription>
-              {editForum ? "Update forum settings." : "Set up a new discussion forum."}
+              {editForum
+                ? "Update forum settings."
+                : "Set up a new discussion forum."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -392,51 +490,87 @@ export default function AdminForumsPage() {
               <Input
                 id="f-slug"
                 value={form.slug}
-                onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") }))}
+                onChange={(e) =>
+                  setForm((p) => ({
+                    ...p,
+                    slug: e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9-]/g, "-"),
+                  }))
+                }
                 placeholder="e.g. rn-general"
               />
-              <p className="text-xs text-muted-foreground">Used in the URL: /forums/{form.slug || "…"}</p>
+              <p className="text-xs text-muted-foreground">
+                Used in the URL: /forums/{form.slug || "…"}
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="f-desc">Description</Label>
               <Textarea
                 id="f-desc"
                 value={form.description}
-                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, description: e.target.value }))
+                }
                 placeholder="What is this forum about?"
                 rows={2}
               />
             </div>
             <div className="space-y-1.5">
               <Label>Program Restriction</Label>
-              <Select value={form.programId} onValueChange={(v) => setForm((p) => ({ ...p, programId: v, isOpenToAll: v === "none" ? p.isOpenToAll : false }))}>
+              <Select
+                value={form.programId}
+                onValueChange={(v) =>
+                  setForm((p) => ({
+                    ...p,
+                    programId: v,
+                    isOpenToAll: v === "none" ? p.isOpenToAll : false,
+                  }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select program…" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No restriction (all enrolled users)</SelectItem>
+                  <SelectItem value="none">
+                    No restriction (all enrolled users)
+                  </SelectItem>
                   {programs.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.code} — {p.name}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.code} — {p.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">If set, only active enrollees of that program can join.</p>
+              <p className="text-xs text-muted-foreground">
+                If set, only active enrollees of that program can join.
+              </p>
             </div>
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="space-y-0.5">
                 <Label className="text-sm font-medium">Open to all users</Label>
-                <p className="text-xs text-muted-foreground">Allow any logged-in user to join (no enrollment required)</p>
+                <p className="text-xs text-muted-foreground">
+                  Allow any logged-in user to join (no enrollment required)
+                </p>
               </div>
               <Switch
                 checked={form.isOpenToAll}
-                onCheckedChange={(v) => setForm((p) => ({ ...p, isOpenToAll: v, programId: v ? "none" : p.programId }))}
+                onCheckedChange={(v) =>
+                  setForm((p) => ({
+                    ...p,
+                    isOpenToAll: v,
+                    programId: v ? "none" : p.programId,
+                  }))
+                }
                 disabled={form.programId !== "none"}
               />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="space-y-0.5">
                 <Label className="text-sm font-medium">Pin forum</Label>
-                <p className="text-xs text-muted-foreground">Show this forum at the top of the list</p>
+                <p className="text-xs text-muted-foreground">
+                  Show this forum at the top of the list
+                </p>
               </div>
               <Switch
                 checked={form.isPinned}
@@ -445,7 +579,9 @@ export default function AdminForumsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? "Saving…" : editForum ? "Save Changes" : "Create Forum"}
             </Button>

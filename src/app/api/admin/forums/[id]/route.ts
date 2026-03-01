@@ -8,17 +8,28 @@ export const runtime = "nodejs";
 // PUT /api/admin/forums/[id] - Update a forum
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { id } = await params;
     const body = await req.json();
-    const { name, description, programId, isOpenToAll, isPinned, isActive, metadata } = body;
+    const {
+      name,
+      description,
+      programId,
+      isOpenToAll,
+      isPinned,
+      isActive,
+      metadata,
+    } = body;
 
     const ds = await getDataSource();
     const forumRepo = ds.getRepository(Forum);
@@ -40,18 +51,24 @@ export async function PUT(
     return NextResponse.json({ success: true, forum: saved });
   } catch (error) {
     console.error("[PUT /api/admin/forums/[id]]", error);
-    return NextResponse.json({ error: "Failed to update forum" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update forum" },
+      { status: 500 },
+    );
   }
 }
 
 // DELETE /api/admin/forums/[id] - Delete a forum
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -71,6 +88,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[DELETE /api/admin/forums/[id]]", error);
-    return NextResponse.json({ error: "Failed to delete forum" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete forum" },
+      { status: 500 },
+    );
   }
 }

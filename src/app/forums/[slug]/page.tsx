@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +14,8 @@ import {
   Lock,
   Globe,
   Trash2,
-  Pin,
   MoreHorizontal,
+  Hash,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -55,7 +54,7 @@ interface Post {
   };
 }
 
-const POLL_INTERVAL = 5000; // 5 seconds
+const POLL_INTERVAL = 5000;
 
 function initials(name: string) {
   return name
@@ -70,13 +69,17 @@ function formatTime(iso: string) {
   const d = new Date(iso);
   const now = new Date();
   const diff = now.getTime() - d.getTime();
-
   if (diff < 60_000) return "just now";
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
   if (diff < 86_400_000) {
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
-  return d.toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function ForumChatPage() {
@@ -85,7 +88,9 @@ export default function ForumChatPage() {
   const slug = params.slug as string;
   const { data: session } = useSession();
   const currentUserId = (session?.user as any)?.id as string | undefined;
-  const isAdmin = ["admin", "super_admin"].includes((session?.user as any)?.role);
+  const isAdmin = ["admin", "super_admin"].includes(
+    (session?.user as any)?.role
+  );
 
   const [forum, setForum] = useState<ForumInfo | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -108,8 +113,15 @@ export default function ForumChatPage() {
   useEffect(() => {
     fetch(`/api/forums/${slug}`)
       .then((r) => {
-        if (r.status === 403) { setAccessDenied(true); setLoading(false); return null; }
-        if (r.status === 404) { router.push("/forums"); return null; }
+        if (r.status === 403) {
+          setAccessDenied(true);
+          setLoading(false);
+          return null;
+        }
+        if (r.status === 404) {
+          router.push("/forums");
+          return null;
+        }
         return r.json();
       })
       .then((d) => {
@@ -127,7 +139,11 @@ export default function ForumChatPage() {
   const loadInitialPosts = useCallback(async () => {
     try {
       const res = await fetch(`/api/forums/${slug}/posts?limit=50`);
-      if (res.status === 403) { setNotMember(true); setLoading(false); return; }
+      if (res.status === 403) {
+        setNotMember(true);
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       const fetched: Post[] = data.posts ?? [];
       setPosts(fetched);
@@ -163,7 +179,9 @@ export default function ForumChatPage() {
       const after = lastPostTimestampRef.current;
       if (!after) return;
       try {
-        const res = await fetch(`/api/forums/${slug}/posts?after=${encodeURIComponent(after)}&limit=50`);
+        const res = await fetch(
+          `/api/forums/${slug}/posts?after=${encodeURIComponent(after)}&limit=50`
+        );
         if (!res.ok) return;
         const data = await res.json();
         const newPosts: Post[] = data.posts ?? [];
@@ -172,12 +190,15 @@ export default function ForumChatPage() {
             const existingIds = new Set(prev.map((p) => p.id));
             const fresh = newPosts.filter((p) => !existingIds.has(p.id));
             if (fresh.length === 0) return prev;
-            lastPostTimestampRef.current = fresh[fresh.length - 1].createdAt;
+            lastPostTimestampRef.current =
+              fresh[fresh.length - 1].createdAt;
             return [...prev, ...fresh];
           });
-          // Auto-scroll if user is near the bottom
           if (isAtBottomRef.current) {
-            setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+            setTimeout(
+              () => bottomRef.current?.scrollIntoView({ behavior: "smooth" }),
+              50
+            );
           }
         }
       } catch {
@@ -191,11 +212,12 @@ export default function ForumChatPage() {
     };
   }, [slug, notMember, accessDenied]);
 
-  // Track scroll position to decide auto-scroll
+  // Track scroll position for auto-scroll
   const handleScroll = useCallback(() => {
     const el = scrollAreaRef.current;
     if (!el) return;
-    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const distFromBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight;
     isAtBottomRef.current = distFromBottom < 150;
   }, []);
 
@@ -205,13 +227,14 @@ export default function ForumChatPage() {
     setLoadingMore(true);
     const oldest = posts[0].createdAt;
     try {
-      const res = await fetch(`/api/forums/${slug}/posts?before=${encodeURIComponent(oldest)}&limit=30`);
+      const res = await fetch(
+        `/api/forums/${slug}/posts?before=${encodeURIComponent(oldest)}&limit=30`
+      );
       const data = await res.json();
       const older: Post[] = data.posts ?? [];
       if (older.length > 0) {
         setPosts((prev) => [...older, ...prev]);
         setHasMore(data.hasMore ?? false);
-        // Keep scroll position
         const el = scrollAreaRef.current;
         if (el) {
           const prevScrollHeight = el.scrollHeight;
@@ -253,7 +276,10 @@ export default function ForumChatPage() {
       });
       lastPostTimestampRef.current = newPost.createdAt;
       setMessage("");
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      setTimeout(
+        () => bottomRef.current?.scrollIntoView({ behavior: "smooth" }),
+        50
+      );
     } catch {
       toast.error("Failed to send message");
     } finally {
@@ -263,8 +289,13 @@ export default function ForumChatPage() {
 
   const handleDelete = async (post: Post) => {
     try {
-      const res = await fetch(`/api/forums/${slug}/posts/${post.id}`, { method: "DELETE" });
-      if (!res.ok) { toast.error("Could not delete message"); return; }
+      const res = await fetch(`/api/forums/${slug}/posts/${post.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        toast.error("Could not delete message");
+        return;
+      }
       setPosts((prev) => prev.filter((p) => p.id !== post.id));
     } catch {
       toast.error("Failed to delete message");
@@ -287,7 +318,11 @@ export default function ForumChatPage() {
         return;
       }
       setNotMember(false);
-      setForum((prev) => prev ? { ...prev, isMember: true, memberCount: prev.memberCount + 1 } : prev);
+      setForum((prev) =>
+        prev
+          ? { ...prev, isMember: true, memberCount: prev.memberCount + 1 }
+          : prev
+      );
       loadInitialPosts();
     } catch {
       toast.error("Failed to join");
@@ -296,39 +331,57 @@ export default function ForumChatPage() {
 
   if (accessDenied) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-          <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-muted-foreground mb-6">
-            You need to be enrolled in the required program to access this forum.
-          </p>
-          <Link href="/forums"><Button variant="outline"><ArrowLeft className="h-4 w-4 mr-2" />Back to Forums</Button></Link>
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+          <Lock className="h-8 w-8 text-muted-foreground" />
         </div>
+        <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+        <p className="text-muted-foreground mb-6">
+          You need to be enrolled in the required program to access this forum.
+        </p>
+        <Link href="/forums">
+          <Button variant="outline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Forums
+          </Button>
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-      {/* Forum header */}
-      <div className="border-b bg-card sticky top-0 z-10 shadow-sm">
+    <div className="flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
+      {/* Forum sub-header — sticks below the global nav (top-16 = 64px) */}
+      <div className="border-b bg-card/95 backdrop-blur-sm sticky top-16 z-40 shadow-sm flex-shrink-0">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/forums">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+            >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Hash className="h-4 w-4 text-primary" />
+          </div>
           <div className="flex-1 min-w-0">
             {forum ? (
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg font-semibold truncate">{forum.name}</h1>
+                <h1 className="text-base font-semibold truncate">
+                  {forum.name}
+                </h1>
                 {forum.programId ? (
-                  <Badge variant="secondary" className="text-xs"><Lock className="h-3 w-3 mr-1" />Program</Badge>
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <Lock className="h-3 w-3" />
+                    Program
+                  </Badge>
                 ) : forum.isOpenToAll ? (
-                  <Badge variant="outline" className="text-xs"><Globe className="h-3 w-3 mr-1" />Open</Badge>
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <Globe className="h-3 w-3" />
+                    Open
+                  </Badge>
                 ) : null}
               </div>
             ) : (
@@ -337,8 +390,15 @@ export default function ForumChatPage() {
             {forum && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                 <Users className="h-3 w-3" />
-                <span>{forum.memberCount} member{forum.memberCount !== 1 ? "s" : ""}</span>
-                {forum.description && <span className="ml-2 truncate hidden sm:inline">— {forum.description}</span>}
+                <span>
+                  {forum.memberCount} member
+                  {forum.memberCount !== 1 ? "s" : ""}
+                </span>
+                {forum.description && (
+                  <span className="ml-1 truncate hidden sm:inline">
+                    · {forum.description}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -349,27 +409,34 @@ export default function ForumChatPage() {
       {notMember ? (
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center max-w-md">
-            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
             <h2 className="text-xl font-semibold mb-2">Join to participate</h2>
             <p className="text-muted-foreground mb-6">
-              {forum?.name ? `Join ${forum.name}` : "Join this forum"} to view and send messages.
+              {forum?.name ? `Join ${forum.name}` : "Join this forum"} to view
+              and send messages.
             </p>
             <Button onClick={handleJoin}>Join Forum</Button>
           </div>
         </div>
       ) : (
         /* Chat area */
-        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-2 min-h-0">
+        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-2 min-h-0 overflow-hidden">
           <div
             ref={scrollAreaRef}
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto py-4 space-y-1"
-            style={{ maxHeight: "calc(100vh - 220px)" }}
           >
             {/* Load older */}
             {hasMore && (
               <div className="text-center mb-4">
-                <Button variant="outline" size="sm" onClick={loadOlder} disabled={loadingMore}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadOlder}
+                  disabled={loadingMore}
+                >
                   {loadingMore ? "Loading…" : "Load older messages"}
                 </Button>
               </div>
@@ -397,7 +464,8 @@ export default function ForumChatPage() {
               posts.map((post, idx) => {
                 const isOwn = post.user.id === currentUserId;
                 const canDelete = isOwn || isAdmin;
-                const showAvatar = idx === 0 || posts[idx - 1].user.id !== post.user.id;
+                const showAvatar =
+                  idx === 0 || posts[idx - 1].user.id !== post.user.id;
 
                 return (
                   <div
@@ -407,18 +475,37 @@ export default function ForumChatPage() {
                       isOwn && "flex-row-reverse"
                     )}
                   >
-                    <div className={cn("flex-shrink-0 w-8", !showAvatar && "invisible")}>
+                    <div
+                      className={cn(
+                        "flex-shrink-0 w-8",
+                        !showAvatar && "invisible"
+                      )}
+                    >
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
                           {initials(post.user.name)}
                         </AvatarFallback>
                       </Avatar>
                     </div>
-                    <div className={cn("flex-1 min-w-0 max-w-[75%]", isOwn && "flex flex-col items-end")}>
+                    <div
+                      className={cn(
+                        "flex-1 min-w-0 max-w-[75%]",
+                        isOwn && "flex flex-col items-end"
+                      )}
+                    >
                       {showAvatar && (
-                        <div className={cn("flex items-baseline gap-2 mb-0.5", isOwn && "flex-row-reverse")}>
-                          <span className="text-sm font-semibold">{isOwn ? "You" : post.user.name}</span>
-                          <span className="text-xs text-muted-foreground">{formatTime(post.createdAt)}</span>
+                        <div
+                          className={cn(
+                            "flex items-baseline gap-2 mb-0.5",
+                            isOwn && "flex-row-reverse"
+                          )}
+                        >
+                          <span className="text-sm font-semibold">
+                            {isOwn ? "You" : post.user.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatTime(post.createdAt)}
+                          </span>
                         </div>
                       )}
                       <div
@@ -433,10 +520,19 @@ export default function ForumChatPage() {
                       </div>
                     </div>
                     {canDelete && (
-                      <div className={cn("flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity self-center", isOwn && "order-first")}>
+                      <div
+                        className={cn(
+                          "flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity self-center",
+                          isOwn && "order-first"
+                        )}
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                            >
                               <MoreHorizontal className="h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -460,7 +556,7 @@ export default function ForumChatPage() {
           </div>
 
           {/* Message input */}
-          <div className="border-t pt-3 pb-4">
+          <div className="border-t pt-3 pb-4 flex-shrink-0">
             <div className="flex gap-2 items-end">
               <Textarea
                 value={message}

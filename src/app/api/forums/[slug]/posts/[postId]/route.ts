@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // DELETE /api/forums/[slug]/posts/[postId] - Soft-delete a post (author or admin)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string; postId: string }> }
+  { params }: { params: Promise<{ slug: string; postId: string }> },
 ) {
   try {
     const session = await auth();
@@ -19,7 +19,9 @@ export async function DELETE(
 
     const { slug, postId } = await params;
     const userId = (session.user as any).id as string;
-    const isAdmin = ["admin", "super_admin"].includes((session.user as any).role);
+    const isAdmin = ["admin", "super_admin"].includes(
+      (session.user as any).role,
+    );
 
     const ds = await getDataSource();
     const forumRepo = ds.getRepository(Forum);
@@ -30,7 +32,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Forum not found" }, { status: 404 });
     }
 
-    const post = await postRepo.findOne({ where: { id: postId, forumId: forum.id } });
+    const post = await postRepo.findOne({
+      where: { id: postId, forumId: forum.id },
+    });
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
@@ -44,6 +48,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[DELETE /api/forums/[slug]/posts/[postId]]", error);
-    return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete post" },
+      { status: 500 },
+    );
   }
 }

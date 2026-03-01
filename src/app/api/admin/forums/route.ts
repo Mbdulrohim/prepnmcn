@@ -11,7 +11,10 @@ export const runtime = "nodejs";
 export async function GET() {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -20,7 +23,9 @@ export async function GET() {
     const memberRepo = ds.getRepository(ForumMember);
     const postRepo = ds.getRepository(ForumPost);
 
-    const forums = await forumRepo.find({ order: { isPinned: "DESC", createdAt: "ASC" } });
+    const forums = await forumRepo.find({
+      order: { isPinned: "DESC", createdAt: "ASC" },
+    });
 
     const forumIds = forums.length > 0 ? forums.map((f) => f.id) : null;
 
@@ -46,8 +51,12 @@ export async function GET() {
         .getRawMany();
     }
 
-    const memberCountMap = new Map(memberCounts.map((r) => [r.forumId, parseInt(r.count)]));
-    const postCountMap = new Map(postCounts.map((r) => [r.forumId, parseInt(r.count)]));
+    const memberCountMap = new Map(
+      memberCounts.map((r) => [r.forumId, parseInt(r.count)]),
+    );
+    const postCountMap = new Map(
+      postCounts.map((r) => [r.forumId, parseInt(r.count)]),
+    );
 
     const result = forums.map((f) => ({
       id: f.id,
@@ -67,7 +76,10 @@ export async function GET() {
     return NextResponse.json({ success: true, forums: result });
   } catch (error) {
     console.error("[GET /api/admin/forums]", error);
-    return NextResponse.json({ error: "Failed to fetch forums" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch forums" },
+      { status: 500 },
+    );
   }
 }
 
@@ -75,15 +87,29 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session || !["admin", "super_admin"].includes((session.user as any)?.role)) {
+    if (
+      !session ||
+      !["admin", "super_admin"].includes((session.user as any)?.role)
+    ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await req.json();
-    const { name, slug, description, programId, isOpenToAll, isPinned, metadata } = body;
+    const {
+      name,
+      slug,
+      description,
+      programId,
+      isOpenToAll,
+      isPinned,
+      metadata,
+    } = body;
 
     if (!name || !slug) {
-      return NextResponse.json({ error: "name and slug are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "name and slug are required" },
+        { status: 400 },
+      );
     }
 
     // Sanitize slug
@@ -98,7 +124,10 @@ export async function POST(req: NextRequest) {
 
     const exists = await forumRepo.findOne({ where: { slug: cleanSlug } });
     if (exists) {
-      return NextResponse.json({ error: "A forum with this slug already exists" }, { status: 409 });
+      return NextResponse.json(
+        { error: "A forum with this slug already exists" },
+        { status: 409 },
+      );
     }
 
     const userId = (session.user as any).id as string;
@@ -118,6 +147,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, forum: saved }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/admin/forums]", error);
-    return NextResponse.json({ error: "Failed to create forum" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create forum" },
+      { status: 500 },
+    );
   }
 }

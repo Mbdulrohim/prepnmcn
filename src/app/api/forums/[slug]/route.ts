@@ -3,14 +3,17 @@ import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Forum } from "@/entities/Forum";
 import { ForumMember } from "@/entities/ForumMember";
-import { UserProgramEnrollment, EnrollmentStatus } from "@/entities/UserProgramEnrollment";
+import {
+  UserProgramEnrollment,
+  EnrollmentStatus,
+} from "@/entities/UserProgramEnrollment";
 
 export const runtime = "nodejs";
 
 // GET /api/forums/[slug] - Get forum details + access check
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const session = await auth();
@@ -20,7 +23,9 @@ export async function GET(
 
     const { slug } = await params;
     const userId = (session.user as any).id as string;
-    const isAdmin = ["admin", "super_admin"].includes((session.user as any).role);
+    const isAdmin = ["admin", "super_admin"].includes(
+      (session.user as any).role,
+    );
 
     const ds = await getDataSource();
     const forumRepo = ds.getRepository(Forum);
@@ -38,7 +43,9 @@ export async function GET(
         where: { userId, status: EnrollmentStatus.ACTIVE },
         select: ["programId"],
       });
-      const activeProgramIds = activeEnrollments.map((e) => e.programId as string);
+      const activeProgramIds = activeEnrollments.map(
+        (e) => e.programId as string,
+      );
 
       const hasAccess =
         forum.isOpenToAll ||
@@ -50,8 +57,12 @@ export async function GET(
       }
     }
 
-    const membership = await memberRepo.findOne({ where: { forumId: forum.id, userId } });
-    const memberCount = await memberRepo.count({ where: { forumId: forum.id } });
+    const membership = await memberRepo.findOne({
+      where: { forumId: forum.id, userId },
+    });
+    const memberCount = await memberRepo.count({
+      where: { forumId: forum.id },
+    });
 
     return NextResponse.json({
       success: true,
@@ -71,6 +82,9 @@ export async function GET(
     });
   } catch (error) {
     console.error("[GET /api/forums/[slug]]", error);
-    return NextResponse.json({ error: "Failed to fetch forum" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch forum" },
+      { status: 500 },
+    );
   }
 }
