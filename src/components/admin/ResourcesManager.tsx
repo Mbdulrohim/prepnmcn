@@ -48,6 +48,7 @@ import {
   Plus,
   Download,
   Eye,
+  EyeOff,
   Trash2,
   BookOpen,
   DollarSign,
@@ -74,6 +75,7 @@ interface Resource {
   contentText: string;
   isFree: boolean;
   isGlobal: boolean;
+  isHidden: boolean;
   fileUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -130,6 +132,8 @@ export default function ResourcesManager() {
   });
   const [shareSlugInput, setShareSlugInput] = useState("");
   const [isSavingShare, setIsSavingShare] = useState(false);
+  const [selectedVisibility, setSelectedVisibility] = useState("all");
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -147,7 +151,7 @@ export default function ResourcesManager() {
 
   useEffect(() => {
     filterResources();
-  }, [resources, searchTerm, selectedType, selectedProgramFilter]);
+  }, [resources, searchTerm, selectedType, selectedProgramFilter, selectedVisibility]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -222,6 +226,14 @@ export default function ResourcesManager() {
         filtered = filtered.filter((resource) => resource.isFree);
       } else if (selectedType === "premium") {
         filtered = filtered.filter((resource) => !resource.isFree);
+      }
+    }
+
+    if (selectedVisibility && selectedVisibility !== "all") {
+      if (selectedVisibility === "visible") {
+        filtered = filtered.filter((resource) => !resource.isHidden);
+      } else if (selectedVisibility === "hidden") {
+        filtered = filtered.filter((resource) => resource.isHidden);
       }
     }
 
@@ -474,6 +486,85 @@ export default function ResourcesManager() {
     setSearchTerm("");
     setSelectedType("all");
     setSelectedProgramFilter("all");
+    setSelectedVisibility("all");
+  };
+
+  const handleToggleVisibility = async (resource: Resource) => {
+    try {
+      const response = await fetch(`/api/admin/resources/${resource.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggleVisibility" }),
+      });
+
+      if (response.ok) {
+        const updatedResource = await response.json();
+        setResources(
+          resources.map((r) => (r.id === resource.id ? updatedResource : r)),
+        );
+        toast.success(
+          updatedResource.isHidden
+            ? `"${resource.name}" is now hidden from students`
+            : `"${resource.name}" is now visible to students`,
+        );
+      } else {
+        toast.error("Failed to update resource visibility");
+      }
+    } catch (error) {
+      console.error("Error toggling visibility:", error);
+      toast.error("Failed to update resource visibility");
+    }
+  };
+
+  const handleBulkVisibility = async (hide: boolean) => {
+    if (selectedResources.size === 0) {
+      toast.error("Please select at least one resource.");
+      return;
+    }
+
+    const action = hide ? "hide" : "unhide";
+    if (
+      !confirm(
+        `Are you sure you want to ${action} ${selectedResources.size} resource(s)?`,
+      )
+    )
+      return;
+
+    setIsBulkUpdating(true);
+    try {
+      const response = await fetch("/api/admin/resources/bulk-visibility", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resourceIds: Array.from(selectedResources),
+          isHidden: hide,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        setSelectedResources(new Set());
+        fetchResources();
+      } else {
+        toast.error("Failed to update resource visibility");
+      }
+    } catch (error) {
+      console.error("Error bulk updating visibility:", error);
+      toast.error("Failed to update resource visibility");
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  const selectAllFiltered = () => {
+    const newSelected = new Set(selectedResources);
+    filteredResources.forEach((r) => newSelected.add(r.id));
+    setSelectedResources(newSelected);
+  };
+
+  const deselectAll = () => {
+    setSelectedResources(new Set());
   };
 
   const getProgramBadge = (resource: Resource) => {
@@ -770,7 +861,7 @@ export default function ResourcesManager() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <Label htmlFor="search">Search Resources</Label>
               <Input
@@ -790,6 +881,22 @@ export default function ResourcesManager() {
                   <SelectItem value="all">All types</SelectItem>
                   <SelectItem value="free">Free Resources</SelectItem>
                   <SelectItem value="premium">Premium Resources</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="visibility-filter">Visibility</Label>
+              <Select
+                value={selectedVisibility}
+                onValueChange={setSelectedVisibility}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="visible">Visible to students</SelectItem>
+                  <SelectItem value="hidden">Hidden from students</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -937,6 +1044,51 @@ export default function ResourcesManager() {
         </CardContent>
       </Card>
 
+      {/* Bulk Actions Bar */}
+      {selectedResources.size > 0 && (
+        <Card className="border-primary bg-primary/5">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-sm font-medium">
+                {selectedResources.size} resource(s) selected
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={selectAllFiltered}
+                >
+                  Select All Filtered ({filteredResources.length})
+                </Button>
+                <Button variant="outline" size="sm" onClick={deselectAll}>
+                  Deselect All
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleBulkVisibility(false)}
+                  disabled={isBulkUpdating}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  {isBulkUpdating ? "Updating..." : "Unhide Selected"}
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleBulkVisibility(true)}
+                  disabled={isBulkUpdating}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  <EyeOff className="h-4 w-4 mr-1" />
+                  {isBulkUpdating ? "Updating..." : "Hide Selected"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Resources Table */}
       <Card>
         <CardHeader>
@@ -967,6 +1119,7 @@ export default function ResourcesManager() {
                 <TableHead>Name</TableHead>
                 <TableHead>Program</TableHead>
                 <TableHead>Type</TableHead>
+                <TableHead>Visibility</TableHead>
                 <TableHead>Content Preview</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Actions</TableHead>
@@ -979,6 +1132,7 @@ export default function ResourcesManager() {
                   data-state={
                     selectedResources.has(resource.id) ? "selected" : undefined
                   }
+                  className={resource.isHidden ? "opacity-60" : ""}
                   onClick={() => toggleResourceSelection(resource.id)}
                 >
                   <TableCell>
@@ -994,6 +1148,28 @@ export default function ResourcesManager() {
                   <TableCell>
                     <Badge variant={resource.isFree ? "secondary" : "default"}>
                       {resource.isFree ? "Free" : "Premium"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={resource.isHidden ? "outline" : "default"}
+                      className={
+                        resource.isHidden
+                          ? "text-orange-600 border-orange-300 bg-orange-50"
+                          : "bg-green-600 text-white"
+                      }
+                    >
+                      {resource.isHidden ? (
+                        <>
+                          <EyeOff className="h-3 w-3 mr-1" />
+                          Hidden
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="h-3 w-3 mr-1" />
+                          Visible
+                        </>
+                      )}
                     </Badge>
                   </TableCell>
                   <TableCell className="max-w-xs">
@@ -1040,6 +1216,30 @@ export default function ResourcesManager() {
                         }}
                       >
                         <Download className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleVisibility(resource);
+                        }}
+                        className={
+                          resource.isHidden
+                            ? "text-orange-600 hover:text-orange-700"
+                            : "text-green-600 hover:text-green-700"
+                        }
+                        title={
+                          resource.isHidden
+                            ? "Unhide (make visible to students)"
+                            : "Hide (hide from students)"
+                        }
+                      >
+                        {resource.isHidden ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                       <Button
                         variant="ghost"

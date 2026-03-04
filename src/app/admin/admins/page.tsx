@@ -163,26 +163,38 @@ export default function AdminsPage() {
   ) => {
     // Find the admin to check their role
     const admin = admins.find((a) => a.id === adminId);
-    if (action === "remove" && admin?.role === "super_admin") {
-      toast.error("Cannot remove the super admin.");
+
+    if ((action === "remove" || action === "demote") && admin?.role === "super_admin") {
+      toast.error("Cannot remove or demote the super admin.");
       return;
     }
 
-    if (action === "demote") {
+    if (action === "demote" || action === "remove") {
+      const confirmMsg =
+        action === "remove"
+          ? `Are you sure you want to remove ${adminEmail} as an admin? They will be demoted to a regular user.`
+          : `Are you sure you want to demote ${adminEmail} to a regular user?`;
+
+      if (!confirm(confirmMsg)) return;
+
       try {
         const response = await fetch(`/api/admin/users/${adminId}/demote`, {
           method: "POST",
         });
 
         if (response.ok) {
-          toast.success(`Admin ${adminEmail} has been demoted to user.`);
+          toast.success(
+            action === "remove"
+              ? `${adminEmail} has been removed as admin.`
+              : `Admin ${adminEmail} has been demoted to user.`
+          );
           fetchAdmins(); // Refresh the list
         } else {
           const errorData = await response.json();
-          toast.error(errorData.message || "Failed to demote admin.");
+          toast.error(errorData.message || "Failed to update admin.");
         }
       } catch (error) {
-        toast.error("An error occurred while demoting the admin.");
+        toast.error("An error occurred while updating the admin.");
       }
       return;
     }

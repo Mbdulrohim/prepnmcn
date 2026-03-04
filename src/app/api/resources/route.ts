@@ -51,17 +51,20 @@ export async function GET(request: Request) {
       .createQueryBuilder("resource")
       .leftJoinAndSelect("resource.program", "program");
 
+    // Always exclude hidden resources from student view
+    qb.where("resource.isHidden = false");
+
     // Filter by user's enrolled programs or show free resources
     const enrolledProgramIds = activeEnrollments.map((e: any) => e.programId);
 
     if (enrolledProgramIds.length > 0) {
-      qb.where(
+      qb.andWhere(
         "(resource.isFree = true OR resource.programId IN (:...programIds) OR resource.isGlobal = true OR resource.programId IS NULL)",
         { programIds: enrolledProgramIds }
       );
     } else {
       // Legacy users see all resources
-      qb.where("resource.isFree = true OR resource.programId IS NULL");
+      qb.andWhere("resource.isFree = true OR resource.programId IS NULL");
     }
 
     // Apply program filter if specified

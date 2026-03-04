@@ -32,7 +32,7 @@ export async function GET(
       relations: ["program"],
     });
 
-    if (!resource) {
+    if (!resource || resource.isHidden) {
       return NextResponse.json(
         { success: false, error: "Resource not found or sharing is disabled" },
         { status: 404 },

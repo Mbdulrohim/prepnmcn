@@ -101,15 +101,28 @@ export async function PATCH(
       );
     }
 
-    // Toggle the isFree status
-    resource.isFree = !resource.isFree;
+    // Check for JSON body to determine what to toggle
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      // No body or invalid JSON — default to toggling isFree
+    }
+
+    if (body.action === "toggleVisibility") {
+      resource.isHidden = !resource.isHidden;
+    } else {
+      // Default: toggle the isFree status
+      resource.isFree = !resource.isFree;
+    }
+
     await resourceRepo.save(resource);
 
     return NextResponse.json(resource, { status: 200 });
   } catch (error) {
-    console.error("Error toggling resource type:", error);
+    console.error("Error updating resource:", error);
     return NextResponse.json(
-      { message: "Failed to update resource type" },
+      { message: "Failed to update resource" },
       { status: 500 }
     );
   }

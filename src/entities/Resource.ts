@@ -52,4 +52,8 @@ export class Resource {
 
   @Column({ type: "varchar", length: 100, unique: true, nullable: true })
   shareSlug?: string;
+
+  // Visibility control - hidden resources are not shown to students
+  @Column({ type: "boolean", default: false })
+  isHidden!: boolean;
 }

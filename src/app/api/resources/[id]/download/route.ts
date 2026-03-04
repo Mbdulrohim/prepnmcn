@@ -29,6 +29,16 @@ export async function GET(
       );
     }
 
+    // Block download of hidden resources for non-admin users
+    const userRole = (session?.user as any)?.role;
+    const isAdmin = userRole === "admin" || userRole === "super_admin";
+    if (resource.isHidden && !isAdmin) {
+      return NextResponse.json(
+        { message: "Resource not available" },
+        { status: 404 }
+      );
+    }
+
     if (!resource.isFree && (session?.user as any)?.role !== "admin") {
       return NextResponse.json(
         { message: "This is a paid resource" },
