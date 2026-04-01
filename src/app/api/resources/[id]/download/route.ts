@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDataSource } from "@/lib/database";
 import { Resource } from "@/entities/Resource";
+import { User } from "@/entities/User";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { auth } from "@/lib/auth";
 import { s3Client, BUCKET_NAME } from "@/lib/s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { getUserActiveEnrollments } from "@/lib/enrollmentHelpers";
 
 export const runtime = "nodejs"; // Force Node.js runtime
 
@@ -16,10 +18,21 @@ export async function GET(
   try {
     const { id } = await params;
     const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Authentication required" }, { status: 401 });
+    }
+
     const resourceId = parseInt(id, 10);
+    if (Number.isNaN(resourceId)) {
+      return NextResponse.json({ message: "Invalid resource ID" }, { status: 400 });
+    }
+
+    const userRole = (session.user as any)?.role;
+    const isAdmin = userRole === "admin" || userRole === "super_admin";
 
     const AppDataSource = await getDataSource();
     const resourceRepo = AppDataSource.getRepository(Resource);
+    const userRepo = AppDataSource.getRepository(User);
     const resource = await resourceRepo.findOne({ where: { id: resourceId } });
 
     if (!resource) {
@@ -30,8 +43,6 @@ export async function GET(
     }
 
     // Block download of hidden resources for non-admin users
-    const userRole = (session?.user as any)?.role;
-    const isAdmin = userRole === "admin" || userRole === "super_admin";
     if (resource.isHidden && !isAdmin) {
       return NextResponse.json(
         { message: "Resource not available" },
@@ -39,11 +50,37 @@ export async function GET(
       );
     }
 
-    if (!resource.isFree && (session?.user as any)?.role !== "admin") {
-      return NextResponse.json(
-        { message: "This is a paid resource" },
-        { status: 403 }
-      );
+    if (!isAdmin) {
+      const activeEnrollments = await getUserActiveEnrollments(session.user.id);
+      const enrolledProgramIds = activeEnrollments.map((e) => e.programId);
+
+      // Backward compatibility for legacy premium users.
+      const user = await userRepo.findOne({ where: { id: session.user.id } });
+      const hasLegacyPremium =
+        user?.isPremium &&
+        (!user.premiumExpiresAt || new Date() <= new Date(user.premiumExpiresAt));
+
+      if (activeEnrollments.length === 0 && !hasLegacyPremium) {
+        return NextResponse.json(
+          { message: "Active program enrollment required to access resources" },
+          { status: 403 }
+        );
+      }
+
+      const hasAccess =
+        enrolledProgramIds.length > 0
+          ? resource.isFree ||
+            resource.isGlobal ||
+            !resource.programId ||
+            enrolledProgramIds.includes(resource.programId)
+          : resource.isFree || !resource.programId;
+
+      if (!hasAccess) {
+        return NextResponse.json(
+          { message: "You do not have access to this resource" },
+          { status: 403 }
+        );
+      }
     }
 
     // If the resource has a fileUrl, it's an S3 key - generate a fresh pre-signed URL

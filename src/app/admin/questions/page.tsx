@@ -326,6 +326,39 @@ export default function QuestionsAdminPage() {
     }
   };
 
+  const handleDeleteAllQuestions = async () => {
+    if (!selectedExamId) return;
+
+    if (
+      !confirm(
+        "Are you sure you want to delete ALL questions for this exam? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/questions?examId=${selectedExamId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("All questions deleted successfully!");
+        setQuestions([]);
+        await fetchQuestions();
+      } else {
+        toast.error(
+          "Failed to delete questions: " + (data.error || "Unknown error")
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting all questions:", error);
+      toast.error("Failed to delete all questions. Please try again.");
+    }
+  };
+
   const handleBulkUpload = async () => {
     if (!selectedExamId) {
       toast.error("Please select an exam first");
@@ -573,17 +606,19 @@ export default function QuestionsAdminPage() {
                       </Button>
                     </div>
                   </div>
-                  {/* Add Question Button */}
-                  <Dialog
-                    open={showCreateModal}
-                    onOpenChange={setShowCreateModal}
-                  >
-                    <DialogTrigger asChild>
-                      <Button className="w-full sm:w-auto">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Question
-                      </Button>
-                    </DialogTrigger>
+                  {/* Action Buttons */}
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
+                    <Dialog
+                      open={showCreateModal}
+                      onOpenChange={setShowCreateModal}
+                    >
+                      <DialogTrigger asChild>
+                        <Button className="w-full sm:w-auto">
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add Question
+                        </Button>
+                      </DialogTrigger>
+
                     <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>
@@ -778,6 +813,19 @@ export default function QuestionsAdminPage() {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
+                  
+                  {/* Delete All Button */}
+                  {questions.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteAllQuestions}
+                      className="w-full sm:w-auto"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete All
+                    </Button>
+                  )}
+                  </div>
                 </div>
               </div>
             </CardHeader>

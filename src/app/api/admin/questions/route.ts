@@ -89,3 +89,37 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const examId = searchParams.get("examId");
+
+    if (!examId) {
+      return NextResponse.json(
+        { success: false, error: "Exam ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const dataSource = await getDataSource();
+    const result = await dataSource
+      .createQueryBuilder()
+      .delete()
+      .from(Question)
+      .where("examId = :examId", { examId })
+      .execute();
+
+    return NextResponse.json({
+      success: true,
+      message: `Deleted ${result.affected || 0} questions`,
+      affected: result.affected,
+    });
+  } catch (error) {
+    console.error("Error deleting questions:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to delete questions" },
+      { status: 500 }
+    );
+  }
+}

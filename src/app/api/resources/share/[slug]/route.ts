@@ -50,8 +50,7 @@ export async function GET(
         programName: resource.program?.name || null,
         programCode: (resource.program as any)?.code || null,
         createdAt: resource.createdAt,
-        // Include download URL for authenticated users
-        fileUrl: resource.fileUrl,
+        downloadUrl: `/api/resources/${resource.id}/download`,
       },
     });
   } catch (error) {

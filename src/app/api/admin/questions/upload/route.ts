@@ -198,8 +198,9 @@ function parseQuestionsFromText(
   let expectingQuestionText = false;
 
   for (const line of lines) {
-    // Check for question start: "Question X:" format
-    const questionMatch = line.match(/^Question\s+(\d+):?$/i);
+    // Check for question start: "Question X." or "Question X:" format
+    // Also captures question text if it stays on the same line
+    const questionMatch = line.match(/^Question\s+(\d+)[.:]?\s*(.*)$/i);
     if (questionMatch) {
       // Save previous question if exists
       if (currentQuestion) {
@@ -209,7 +210,7 @@ function parseQuestionsFromText(
       // Start new question
       currentQuestion = {
         examId,
-        question: "", // Will be filled by next line(s)
+        question: questionMatch[2] ? questionMatch[2].trim() : "",
         type: QuestionType.MULTIPLE_CHOICE,
         marks: 1,
         order: questionCounter++,

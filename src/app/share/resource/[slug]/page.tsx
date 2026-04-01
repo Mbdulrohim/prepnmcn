@@ -26,7 +26,7 @@ interface SharedResource {
   programName: string | null;
   programCode: string | null;
   createdAt: string;
-  fileUrl: string;
+  downloadUrl: string;
 }
 
 export default function SharedResourcePage() {
@@ -68,7 +68,7 @@ export default function SharedResourcePage() {
   };
 
   const handleDownload = () => {
-    if (!resource?.fileUrl) {
+    if (!resource?.downloadUrl) {
       toast.error("File not available for download");
       return;
     }
@@ -76,7 +76,7 @@ export default function SharedResourcePage() {
     setIsDownloading(true);
     try {
       const a = document.createElement("a");
-      a.href = resource.fileUrl;
+      a.href = resource.downloadUrl;
       a.download = `${resource.name}.pdf`;
       a.target = "_blank";
       document.body.appendChild(a);
@@ -178,7 +178,7 @@ export default function SharedResourcePage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               onClick={handleDownload}
-              disabled={isDownloading || !resource.fileUrl}
+              disabled={isDownloading || !resource.downloadUrl}
               className="flex-1 max-w-xs"
             >
               {isDownloading ? (
@@ -199,7 +199,7 @@ export default function SharedResourcePage() {
             </Button>
           </div>
 
-          {!resource.fileUrl && (
+          {!resource.downloadUrl && (
             <div className="flex items-center gap-2 justify-center text-sm text-amber-600 bg-amber-50 rounded-lg p-3">
               <Lock className="h-4 w-4" />
               <span>File not available. Contact an administrator.</span>
