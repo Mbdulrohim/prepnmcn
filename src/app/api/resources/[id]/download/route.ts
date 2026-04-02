@@ -13,18 +13,24 @@ export const runtime = "nodejs"; // Force Node.js runtime
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ message: "Authentication required" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Authentication required" },
+        { status: 401 },
+      );
     }
 
     const resourceId = parseInt(id, 10);
     if (Number.isNaN(resourceId)) {
-      return NextResponse.json({ message: "Invalid resource ID" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid resource ID" },
+        { status: 400 },
+      );
     }
 
     const userRole = (session.user as any)?.role;
@@ -38,7 +44,7 @@ export async function GET(
     if (!resource) {
       return NextResponse.json(
         { message: "Resource not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -46,7 +52,7 @@ export async function GET(
     if (resource.isHidden && !isAdmin) {
       return NextResponse.json(
         { message: "Resource not available" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -58,27 +64,30 @@ export async function GET(
       const user = await userRepo.findOne({ where: { id: session.user.id } });
       const hasLegacyPremium =
         user?.isPremium &&
-        (!user.premiumExpiresAt || new Date() <= new Date(user.premiumExpiresAt));
+        (!user.premiumExpiresAt ||
+          new Date() <= new Date(user.premiumExpiresAt));
 
       if (activeEnrollments.length === 0 && !hasLegacyPremium) {
         return NextResponse.json(
           { message: "Active program enrollment required to access resources" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
+      // isFree controls payment, not cross-program access.
+      // Enrolled users may only access resources from their own program,
+      // or resources that are global / have no program assignment.
       const hasAccess =
         enrolledProgramIds.length > 0
-          ? resource.isFree ||
-            resource.isGlobal ||
+          ? resource.isGlobal ||
             !resource.programId ||
             enrolledProgramIds.includes(resource.programId)
-          : resource.isFree || !resource.programId;
+          : !resource.programId;
 
       if (!hasAccess) {
         return NextResponse.json(
           { message: "You do not have access to this resource" },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -115,7 +124,7 @@ export async function GET(
         console.error("Error generating pre-signed URL:", s3Error);
         return NextResponse.json(
           { message: "Error accessing file. Please try again." },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -178,7 +187,7 @@ export async function GET(
     console.error("Error generating PDF:", error);
     return NextResponse.json(
       { message: "Error generating PDF" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

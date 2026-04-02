@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDataSource } from "@/lib/database";
 import { Resource } from "@/entities/Resource";
+import { User } from "@/entities/User";
+import { getUserActiveEnrollments } from "@/lib/enrollmentHelpers";
 
 export const runtime = "nodejs";
 
@@ -37,6 +39,46 @@ export async function GET(
         { success: false, error: "Resource not found or sharing is disabled" },
         { status: 404 },
       );
+    }
+
+    const userRole = (session.user as any)?.role;
+    const isAdmin = userRole === "admin" || userRole === "super_admin";
+
+    if (!isAdmin) {
+      const dataSource2 = await getDataSource();
+      const userRepo = dataSource2.getRepository(User);
+      const activeEnrollments = await getUserActiveEnrollments(session.user.id);
+      const enrolledProgramIds = activeEnrollments.map((e) => e.programId);
+
+      const user = await userRepo.findOne({ where: { id: session.user.id } });
+      const hasLegacyPremium =
+        user?.isPremium &&
+        (!user.premiumExpiresAt ||
+          new Date() <= new Date(user.premiumExpiresAt));
+
+      if (activeEnrollments.length === 0 && !hasLegacyPremium) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Active program enrollment required to access resources",
+          },
+          { status: 403 },
+        );
+      }
+
+      const hasAccess =
+        enrolledProgramIds.length > 0
+          ? resource.isGlobal ||
+            !resource.programId ||
+            enrolledProgramIds.includes(resource.programId)
+          : !resource.programId;
+
+      if (!hasAccess) {
+        return NextResponse.json(
+          { success: false, error: "You do not have access to this resource" },
+          { status: 403 },
+        );
+      }
     }
 
     return NextResponse.json({

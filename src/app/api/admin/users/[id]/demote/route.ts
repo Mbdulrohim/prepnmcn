@@ -24,6 +24,17 @@ export async function POST(
       return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });
     }
 
+    const callerRole = (session.user as any)?.role;
+    const callerId = (session.user as any)?.id;
+
+    // Prevent self-demotion
+    if (userId === callerId) {
+      return NextResponse.json(
+        { message: "You cannot demote yourself" },
+        { status: 403 }
+      );
+    }
+
     const AppDataSource = await getDataSource();
     const userRepo = AppDataSource.getRepository(User);
 
@@ -32,10 +43,10 @@ export async function POST(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Prevent demoting super admin
-    if (user.role === "super_admin") {
+    // Only super_admin can demote another super_admin
+    if (user.role === "super_admin" && callerRole !== "super_admin") {
       return NextResponse.json(
-        { message: "Cannot demote super admin" },
+        { message: "Only a super admin can demote another super admin" },
         { status: 403 }
       );
     }
@@ -45,7 +56,7 @@ export async function POST(
     await userRepo.save(user);
 
     return NextResponse.json({
-      message: "Admin demoted to user successfully",
+      message: "User has been demoted to regular user successfully",
       user: {
         id: user.id,
         name: user.name,

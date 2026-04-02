@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "Authentication required" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -22,9 +22,8 @@ export async function GET(request: Request) {
     const user = await userRepo.findOne({ where: { id: session.user.id } });
 
     // Check if user has any active program enrollment
-    const { getUserActiveEnrollments } = await import(
-      "@/lib/enrollmentHelpers"
-    );
+    const { getUserActiveEnrollments } =
+      await import("@/lib/enrollmentHelpers");
     const activeEnrollments = await getUserActiveEnrollments(session.user.id);
 
     // Fallback to legacy premium check for backward compatibility
@@ -35,7 +34,7 @@ export async function GET(request: Request) {
     if (activeEnrollments.length === 0 && !hasLegacyPremium) {
       return NextResponse.json(
         { error: "Active program enrollment required to access resources" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -58,13 +57,16 @@ export async function GET(request: Request) {
     const enrolledProgramIds = activeEnrollments.map((e: any) => e.programId);
 
     if (enrolledProgramIds.length > 0) {
+      // A resource is visible when it has no program restriction (isGlobal or no programId)
+      // OR the student is enrolled in the resource's specific program.
+      // isFree only controls payment — it does NOT grant cross-program access.
       qb.andWhere(
-        "(resource.isFree = true OR resource.programId IN (:...programIds) OR resource.isGlobal = true OR resource.programId IS NULL)",
-        { programIds: enrolledProgramIds }
+        "(resource.programId IN (:...programIds) OR resource.isGlobal = true OR resource.programId IS NULL)",
+        { programIds: enrolledProgramIds },
       );
     } else {
-      // Legacy users see all resources
-      qb.andWhere("resource.isFree = true OR resource.programId IS NULL");
+      // Legacy premium users: show only unscoped resources (no programId)
+      qb.andWhere("resource.programId IS NULL");
     }
 
     // Apply program filter if specified
@@ -81,7 +83,7 @@ export async function GET(request: Request) {
       const like = `%${search}%`;
       qb.andWhere(
         "(resource.name ILIKE :like OR resource.contentText ILIKE :like)",
-        { like }
+        { like },
       );
     }
 
@@ -105,7 +107,7 @@ export async function GET(request: Request) {
     console.error("Error fetching resources:", error);
     return NextResponse.json(
       { message: "Error fetching resources" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
