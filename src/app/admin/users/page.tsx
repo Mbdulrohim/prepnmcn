@@ -375,30 +375,30 @@ export default function UsersPage() {
         toast.error("Failed to promote user");
       }
     } else if (action === "Demote to User") {
-    if (
-      !confirm(
-        "Are you sure you want to remove all admin privileges from this user?",
-      )
-    ) {
-      return;
-    }
-    try {
-      const response = await fetch(`/api/admin/users/${userId}/demote`, {
-        method: "POST",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        toast.success(data.message);
-        fetchUsers();
-      } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to demote user");
+      if (
+        !confirm(
+          "Are you sure you want to remove all admin privileges from this user?",
+        )
+      ) {
+        return;
       }
-    } catch (error) {
-      console.error("Failed to demote user:", error);
-      toast.error("Failed to demote user");
-    }
-  } else if (action === "Deactivate" || action === "Activate") {
+      try {
+        const response = await fetch(`/api/admin/users/${userId}/demote`, {
+          method: "POST",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          toast.success(data.message);
+          fetchUsers();
+        } else {
+          const error = await response.json();
+          toast.error(error.message || "Failed to demote user");
+        }
+      } catch (error) {
+        console.error("Failed to demote user:", error);
+        toast.error("Failed to demote user");
+      }
+    } else if (action === "Deactivate" || action === "Activate") {
       try {
         const response = await fetch(`/api/admin/users/${userId}`, {
           method: "PATCH",

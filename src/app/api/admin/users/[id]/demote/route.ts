@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   try {
@@ -31,7 +31,7 @@ export async function POST(
     if (userId === callerId) {
       return NextResponse.json(
         { message: "You cannot demote yourself" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -47,7 +47,7 @@ export async function POST(
     if (user.role === "super_admin" && callerRole !== "super_admin") {
       return NextResponse.json(
         { message: "Only a super admin can demote another super admin" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -68,7 +68,7 @@ export async function POST(
     console.error("Error demoting user:", error);
     return NextResponse.json(
       { message: "Error demoting user" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -30,6 +30,7 @@ import {
   Star,
   CheckCircle,
   Lock,
+  GraduationCap,
 } from "lucide-react";
 import ExamTable from "@/components/ExamTable";
 import { toast } from "sonner";
@@ -53,6 +54,13 @@ interface Exam {
     id: string;
     name: string;
   };
+  programId?: string | null;
+  program?: {
+    id: string;
+    name: string;
+    code: string;
+  } | null;
+  isGlobal?: boolean;
 }
 
 interface Enrollment {
@@ -73,6 +81,7 @@ export default function ExamsPage() {
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
+  const [enrollmentRequired, setEnrollmentRequired] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -105,18 +114,18 @@ export default function ExamsPage() {
 
         if (data.success && data.data.status === "success") {
           toast.success(
-            "Payment successful! You are now enrolled in the exam."
+            "Payment successful! You are now enrolled in the exam.",
           );
           fetchEnrollments(); // Refresh enrollments
           // Clean up URL
           window.history.replaceState(
             {},
             document.title,
-            window.location.pathname
+            window.location.pathname,
           );
         } else {
           toast.error(
-            "Payment verification failed. Please contact support if you were charged."
+            "Payment verification failed. Please contact support if you were charged.",
           );
         }
       } catch (error) {
@@ -129,10 +138,14 @@ export default function ExamsPage() {
   const fetchExams = async () => {
     try {
       const response = await fetch("/api/exams");
+      if (response.status === 403) {
+        setEnrollmentRequired(true);
+        setExams([]);
+        return;
+      }
       const data = await response.json();
 
       if (data.success) {
-        // Only show published exams
         setExams(data.data.filter((exam: Exam) => exam.status === "published"));
       } else {
         console.error("Failed to fetch exams:", data.error);
@@ -250,10 +263,10 @@ export default function ExamsPage() {
   };
 
   const uniqueSubjects = [...new Set(exams.map((exam) => exam.subject))].filter(
-    Boolean
+    Boolean,
   );
   const uniqueTypes = [...new Set(exams.map((exam) => exam.type))].filter(
-    Boolean
+    Boolean,
   );
 
   if (loading) {
@@ -262,6 +275,34 @@ export default function ExamsPage() {
         <div className="text-center">
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground">Loading exams...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (enrollmentRequired) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-6">
+            Available Exams
+          </h1>
+          <Card className="p-6 sm:p-10 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="bg-yellow-100 p-3 sm:p-4 rounded-full">
+                <Lock className="h-8 w-8 sm:h-12 sm:w-12 text-yellow-600" />
+              </div>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">
+              Program Enrollment Required
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">
+              You need an active program enrollment to access assessments.
+            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Contact your administrator to enroll you in a program.
+            </p>
+          </Card>
         </div>
       </div>
     );

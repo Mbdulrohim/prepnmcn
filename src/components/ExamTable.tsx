@@ -47,6 +47,7 @@ export default function ExamTable({
         <TableHeader>
           <TableRow>
             <TableHead>Exam</TableHead>
+            <TableHead>Program</TableHead>
             <TableHead>Subject</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Price</TableHead>
@@ -63,6 +64,19 @@ export default function ExamTable({
                     {new Date(exam.createdAt).toLocaleDateString()}
                   </span>
                 </div>
+              </TableCell>
+              <TableCell>
+                {exam.program?.code ? (
+                  <Badge variant="outline" className="text-[11px]">
+                    {exam.program.code}
+                  </Badge>
+                ) : exam.isGlobal ? (
+                  <Badge variant="secondary" className="text-[11px]">
+                    All Programs
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">—</span>
+                )}
               </TableCell>
               <TableCell>{exam.subject}</TableCell>
               <TableCell>{exam.type}</TableCell>
