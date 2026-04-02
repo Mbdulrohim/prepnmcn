@@ -11,7 +11,7 @@ export async function GET() {
 
     // Fetch all exams with their related data
     const exams = await dataSource.getRepository(Exam).find({
-      relations: ["institution", "package", "examQuestions"],
+      relations: ["institution", "package", "examQuestions", "program"],
       where: { isActive: true },
       order: { createdAt: "DESC" },
     });
@@ -34,24 +34,33 @@ export async function GET() {
       allowPreview: exam.allowPreview,
       maxAttempts: exam.maxAttempts,
       allowMultipleAttempts: exam.allowMultipleAttempts,
+      programId: exam.programId || null,
+      isGlobal: exam.isGlobal,
+      program: exam.program
+        ? {
+            id: exam.program.id,
+            name: (exam.program as any).name,
+            code: (exam.program as any).code,
+          }
+        : null,
       createdAt: exam.createdAt.toISOString().split("T")[0], // Format as YYYY-MM-DD
     }));
 
     // Calculate stats
     const totalExams = transformedExams.length;
     const publishedExams = transformedExams.filter(
-      (exam) => exam.status === "published"
+      (exam) => exam.status === "published",
     ).length;
     const draftExams = transformedExams.filter(
-      (exam) => exam.status === "draft"
+      (exam) => exam.status === "draft",
     ).length;
     const avgDuration =
       totalExams > 0
         ? Math.round(
             transformedExams.reduce(
               (sum, exam) => sum + (exam.duration || 0),
-              0
-            ) / totalExams
+              0,
+            ) / totalExams,
           )
         : 0;
 
@@ -71,7 +80,7 @@ export async function GET() {
     console.error("Error fetching exams:", error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch exams" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -100,6 +109,8 @@ export async function POST(request: NextRequest) {
           ...data,
           type: examType,
           institutionId: data.institutionId || null,
+          programId: data.programId || null,
+          isGlobal: !!data.isGlobal,
           startAt: data.startAt ? new Date(data.startAt) : null,
           endAt: data.endAt ? new Date(data.endAt) : null,
           allowPreview: !!data.allowPreview,
@@ -110,7 +121,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json(
           { success: false, error: "Invalid type" },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -122,7 +133,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating exam item:", error);
     return NextResponse.json(
       { success: false, error: "Failed to create exam item" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

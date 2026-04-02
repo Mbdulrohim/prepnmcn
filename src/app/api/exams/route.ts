@@ -64,15 +64,15 @@ export async function GET(request: NextRequest) {
       .andWhere("exam.isActive = true");
 
     if (enrolledProgramIds.length > 0) {
-      // Show exams belonging to the student's enrolled programs, or global/unscoped exams.
-      // isGlobal and no programId = visible to all enrolled users.
+      // Show exams belonging to the student's enrolled programs, or globally-marked exams.
+      // Unclassified (programId IS NULL, isGlobal = false) exams are admin-only until classified.
       qb.andWhere(
-        "(exam.programId IN (:...programIds) OR exam.isGlobal = true OR exam.programId IS NULL)",
+        "(exam.programId IN (:...programIds) OR exam.isGlobal = true)",
         { programIds: enrolledProgramIds },
       );
     } else {
-      // Legacy premium: show only unscoped exams
-      qb.andWhere("exam.programId IS NULL");
+      // Legacy premium: show only globally-marked exams
+      qb.andWhere("exam.isGlobal = true");
     }
 
     const exams = await qb.orderBy("exam.createdAt", "DESC").getMany();

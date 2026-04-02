@@ -133,8 +133,11 @@ export default function ExamsAdminPage() {
     allowPreview: false,
     maxAttempts: 3,
     allowMultipleAttempts: false,
+    programId: "",
+    isGlobal: false,
   });
   const [institutions, setInstitutions] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
 
   const resetForm = () => {
     setCreateForm({
@@ -154,6 +157,8 @@ export default function ExamsAdminPage() {
       allowPreview: false,
       maxAttempts: 3,
       allowMultipleAttempts: false,
+      programId: "",
+      isGlobal: false,
     });
     setEditingExam(null);
   };
@@ -200,6 +205,18 @@ export default function ExamsAdminPage() {
     }
   };
 
+  const fetchPrograms = async () => {
+    try {
+      const response = await fetch("/api/admin/programs");
+      const data = await response.json();
+      if (data.success) {
+        setPrograms(data.programs || []);
+      }
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+    }
+  };
+
   const handleCreateExam = async () => {
     try {
       setCreatingExam(true);
@@ -230,6 +247,8 @@ export default function ExamsAdminPage() {
           allowMultipleAttempts: createForm.allowMultipleAttempts,
           institutionId: createForm.institutionId,
           status: createForm.status,
+          programId: createForm.programId || null,
+          isGlobal: createForm.isGlobal,
         }),
       });
 
@@ -253,12 +272,14 @@ export default function ExamsAdminPage() {
           allowPreview: false,
           maxAttempts: 3,
           allowMultipleAttempts: false,
+          programId: "",
+          isGlobal: false,
         });
         fetchExams();
         toast.success("Exam created successfully!");
       } else {
         toast.error(
-          "Failed to create exam: " + (data.error || "Unknown error")
+          "Failed to create exam: " + (data.error || "Unknown error"),
         );
       }
     } catch (error) {
@@ -292,6 +313,8 @@ export default function ExamsAdminPage() {
       allowPreview: (exam as any)?.allowPreview || false,
       maxAttempts: (exam as any)?.maxAttempts || 3,
       allowMultipleAttempts: (exam as any)?.allowMultipleAttempts || false,
+      programId: (exam as any)?.programId || "",
+      isGlobal: !!(exam as any)?.isGlobal,
     });
     setShowCreateModal(true);
   };
@@ -330,7 +353,7 @@ export default function ExamsAdminPage() {
         await fetchExams();
       } else {
         toast.error(
-          "Failed to update exam: " + (data.error || "Unknown error")
+          "Failed to update exam: " + (data.error || "Unknown error"),
         );
       }
     } catch (error) {
@@ -354,7 +377,7 @@ export default function ExamsAdminPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ note: publishNote }),
-        }
+        },
       );
       const data = await resp.json();
       if (data.success) {
@@ -385,7 +408,7 @@ export default function ExamsAdminPage() {
         await fetchExams();
       } else {
         toast.error(
-          "Failed to delete exam: " + (data.error || "Unknown error")
+          "Failed to delete exam: " + (data.error || "Unknown error"),
         );
       }
     } catch (error) {
@@ -422,7 +445,7 @@ export default function ExamsAdminPage() {
   const filteredExams = exams.filter(
     (exam) =>
       exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      exam.subject.toLowerCase().includes(searchTerm.toLowerCase())
+      exam.subject.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getStatusBadge = (status: string) => {
@@ -467,6 +490,9 @@ export default function ExamsAdminPage() {
     allowPreview?: boolean;
     maxAttempts?: number;
     allowMultipleAttempts?: boolean;
+    programId?: string | null;
+    isGlobal?: boolean;
+    program?: { id: string; name: string; code: string } | null;
   }
 
   return (
@@ -483,6 +509,7 @@ export default function ExamsAdminPage() {
             <Button
               onClick={() => {
                 fetchInstitutions();
+                fetchPrograms();
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -690,6 +717,39 @@ export default function ExamsAdminPage() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="program" className="text-right">
+                  Program
+                </Label>
+                <Select
+                  value={createForm.programId || "none"}
+                  onValueChange={(value) =>
+                    setCreateForm({
+                      ...createForm,
+                      programId: value === "none" ? "" : value,
+                      isGlobal: value === "global",
+                    })
+                  }
+                  disabled={creatingExam || updatingExam}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select program" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      Unclassified (admin only)
+                    </SelectItem>
+                    <SelectItem value="global">
+                      All Programs (Global)
+                    </SelectItem>
+                    {programs.map((program) => (
+                      <SelectItem key={program.id} value={program.id}>
+                        {program.code} — {program.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="status" className="text-right">
                   Status
                 </Label>
@@ -791,10 +851,10 @@ export default function ExamsAdminPage() {
                 {creatingExam
                   ? "Creating..."
                   : updatingExam
-                  ? "Updating..."
-                  : editingExam
-                  ? "Update Exam"
-                  : "Create Exam"}
+                    ? "Updating..."
+                    : editingExam
+                      ? "Update Exam"
+                      : "Create Exam"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -862,9 +922,9 @@ export default function ExamsAdminPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
+                <TableHead>Program</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Level</TableHead>
                 <TableHead>Duration</TableHead>
                 <TableHead>Questions</TableHead>
                 <TableHead>Status</TableHead>
@@ -876,11 +936,23 @@ export default function ExamsAdminPage() {
               {filteredExams.map((exam) => (
                 <TableRow key={exam.id}>
                   <TableCell className="font-medium">{exam.title}</TableCell>
+                  <TableCell>
+                    {exam.program?.code ? (
+                      <Badge variant="outline" className="text-[11px]">
+                        {exam.program.code}
+                      </Badge>
+                    ) : exam.isGlobal ? (
+                      <Badge variant="secondary" className="text-[11px]">
+                        All Programs
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
                   <TableCell>{exam.subject}</TableCell>
                   <TableCell className="capitalize">
                     {formatExamType(exam.type)}
                   </TableCell>
-                  <TableCell>{exam.level} Level</TableCell>
                   <TableCell>{exam.duration} min</TableCell>
                   <TableCell>{exam.totalQuestions}</TableCell>
                   <TableCell>{getStatusBadge(exam.status)}</TableCell>
@@ -911,7 +983,7 @@ export default function ExamsAdminPage() {
                             setVersionsOpen(true);
                             try {
                               const resp = await fetch(
-                                `/api/admin/exams/${exam.id}/versions`
+                                `/api/admin/exams/${exam.id}/versions`,
                               );
                               const data = await resp.json();
                               if (data.success) setExamVersions(data.data);
@@ -923,7 +995,13 @@ export default function ExamsAdminPage() {
                           <BookOpen className="mr-2 h-4 w-4" />
                           Versions
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEditExam(exam)}>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            fetchInstitutions();
+                            fetchPrograms();
+                            handleEditExam(exam);
+                          }}
+                        >
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>

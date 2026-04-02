@@ -4,7 +4,7 @@ import { Exam } from "@/entities/Exam";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -19,7 +19,7 @@ export async function GET(
     if (!exam) {
       return NextResponse.json(
         { success: false, error: "Exam not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -39,14 +39,14 @@ export async function GET(
     console.error("Error fetching exam:", error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch exam" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -62,7 +62,7 @@ export async function PUT(
     if (!existingExam) {
       return NextResponse.json(
         { success: false, error: "Exam not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -119,6 +119,14 @@ export async function PUT(
       data.allowMultipleAttempts !== undefined
         ? Boolean(data.allowMultipleAttempts)
         : existingExam.allowMultipleAttempts;
+    existingExam.programId =
+      data.programId !== undefined
+        ? data.programId || null
+        : existingExam.programId;
+    existingExam.isGlobal =
+      data.isGlobal !== undefined
+        ? Boolean(data.isGlobal)
+        : existingExam.isGlobal;
     existingExam.updatedAt = new Date();
 
     const updatedExam = await examRepository.save(existingExam);
@@ -131,14 +139,14 @@ export async function PUT(
     console.error("Error updating exam:", error);
     return NextResponse.json(
       { success: false, error: "Failed to update exam" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -152,7 +160,7 @@ export async function PATCH(
     if (!existingExam) {
       return NextResponse.json(
         { success: false, error: "Exam not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -201,14 +209,14 @@ export async function PATCH(
     console.error("Error patching exam:", error);
     return NextResponse.json(
       { success: false, error: "Failed to patch exam" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -223,7 +231,7 @@ export async function DELETE(
     if (!existingExam) {
       return NextResponse.json(
         { success: false, error: "Exam not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -242,7 +250,7 @@ export async function DELETE(
     console.error("Error deleting exam:", error);
     return NextResponse.json(
       { success: false, error: "Failed to delete exam" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
