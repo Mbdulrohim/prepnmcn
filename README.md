@@ -108,7 +108,7 @@ Also add these from `.env.example` when used in your deployment:
 - AWS_SECRET_ACCESS_KEY
 - AWS_S3_BUCKET_NAME
 
-Important: the Worker name in dashboard must match `name` in `wrangler.jsonc` (`oprep`). If you choose another Worker name in UI, update `wrangler.jsonc` to match before deploying.
+Important: the Worker name in dashboard must match `name` in `wrangler.jsonc` (`prepnmcn`). If you choose another Worker name in UI, update `wrangler.jsonc` to match before deploying.
 
 ### Commands
 
