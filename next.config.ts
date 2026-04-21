@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
   // Disable webpack optimizations that can cause cyclic dependency issues
@@ -12,9 +13,17 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  // Move problematic packages to server external packages to avoid bundling issues
-  serverExternalPackages: ["typeorm", "reflect-metadata", "@types/node"],
+  // Keep Node/workerd-specific packages external so runtime-specific exports resolve correctly.
+  serverExternalPackages: [
+    "typeorm",
+    "reflect-metadata",
+    "@types/node",
+    "pg",
+    "pg-cloudflare",
+  ],
   turbopack: {},
 };
+
+initOpenNextCloudflareForDev();
 
 export default nextConfig;

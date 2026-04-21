@@ -45,5 +45,11 @@ next-env.d.ts
 
 /uploads
 
+# Cloudflare / OpenNext build artifacts
+.open-next
+.wrangler
+.dev.vars
+cloudflare-env.d.ts
+
 dev/
 docs

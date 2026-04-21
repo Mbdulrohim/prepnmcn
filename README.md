@@ -69,3 +69,68 @@ Admins can manage website content through the `/admin/website` interface. This i
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deploy on Cloudflare Workers
+
+This project is configured for Cloudflare Workers using OpenNext.
+
+### Deploy from Cloudflare Dashboard (GitHub repo)
+
+Use this flow if you want to deploy by importing this repository directly in Cloudflare UI.
+
+1. In Cloudflare dashboard, open **Workers & Pages**.
+2. Click **Create application**.
+3. Click **Import a repository** and select this GitHub repo.
+4. In build settings, use exactly:
+
+```text
+Build command: npx @opennextjs/cloudflare build
+Deploy command: npx @opennextjs/cloudflare deploy
+Root directory: /
+```
+
+5. Set environment variables/secrets in Cloudflare for your production app.
+
+Required (minimum):
+- DATABASE_URL
+- NEXTAUTH_SECRET
+- NEXTAUTH_URL
+
+Also add these from `.env.example` when used in your deployment:
+- JWT_SECRET
+- SMTP_HOST
+- SMTP_PORT
+- SMTP_USER
+- SMTP_PASS
+- SMTP_FROM
+- AWS_REGION
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_S3_BUCKET_NAME
+
+Important: the Worker name in dashboard must match `name` in `wrangler.jsonc` (`oprep`). If you choose another Worker name in UI, update `wrangler.jsonc` to match before deploying.
+
+### Commands
+
+- Build worker bundle only:
+
+```bash
+pnpm cf:build
+```
+
+- Build and deploy to Cloudflare:
+
+```bash
+pnpm cf:deploy
+```
+
+- Generate Worker environment type definitions:
+
+```bash
+pnpm cf:typegen
+```
+
+### Notes
+
+- `wrangler.jsonc` uses `nodejs_compat` for Node APIs required by this app.
+- This app currently uses a Node/Postgres + TypeORM setup; ensure your Cloudflare environment can reach your Postgres database.
