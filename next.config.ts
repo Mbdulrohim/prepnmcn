@@ -24,6 +24,8 @@ const nextConfig: NextConfig = {
   turbopack: {},
 };
 
-initOpenNextCloudflareForDev();
+if (process.env.NODE_ENV === "development" && !process.env.VERCEL) {
+  initOpenNextCloudflareForDev();
+}
 
 export default nextConfig;
