@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "NODE_OPTIONS='--no-deprecation' next build",
-    "build:ci": "NODE_OPTIONS='--max-old-space-size=6144 --no-deprecation' NEXT_DISABLE_ESLINT=1 next build",
+    "build": "NODE_OPTIONS='--no-deprecation' next build --webpack",
+    "build:ci": "NODE_OPTIONS='--max-old-space-size=6144 --no-deprecation' NEXT_DISABLE_ESLINT=1 next build --webpack",
     "start": "next start",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
