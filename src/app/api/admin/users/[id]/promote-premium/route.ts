@@ -9,6 +9,10 @@ import {
   PaymentMethod,
 } from "@/entities/UserProgramEnrollment";
 import { canManageProgram, isSuperAdmin } from "@/lib/programPermissions";
+import {
+  calculatePremiumExpiry,
+  syncLegacyPremiumState,
+} from "@/lib/premiumAccess";
 
 export const runtime = "nodejs";
 
@@ -73,15 +77,10 @@ export async function POST(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Calculate expiration date
-    const now = new Date();
-    const expiresAt = new Date(now);
-
-    if (durationMonths) {
-      expiresAt.setMonth(expiresAt.getMonth() + durationMonths);
-    } else {
-      expiresAt.setDate(expiresAt.getDate() + durationDays);
-    }
+    const expiresAt = calculatePremiumExpiry({
+      durationDays,
+      durationMonths,
+    });
 
     // Create or reactivate program enrollment
     const enrollmentRepo = dataSource.getRepository(UserProgramEnrollment);
@@ -115,12 +114,7 @@ export async function POST(
 
     await enrollmentRepo.save(enrollment);
 
-    // Also sync the legacy isPremium flag for backward compatibility
-    user.isPremium = true;
-    if (!user.premiumExpiresAt || new Date(user.premiumExpiresAt) < expiresAt) {
-      user.premiumExpiresAt = expiresAt;
-    }
-    await userRepo.save(user);
+    const syncedUser = await syncLegacyPremiumState(dataSource, user.id);
 
     return NextResponse.json({
       message: `User granted premium access for ${program.name} (${durationMonths ? `${durationMonths} month(s)` : `${durationDays} day(s)`})`,
@@ -136,8 +130,8 @@ export async function POST(
         id: user.id,
         name: user.name,
         email: user.email,
-        isPremium: user.isPremium,
-        premiumExpiresAt: user.premiumExpiresAt,
+        isPremium: syncedUser?.isPremium ?? user.isPremium,
+        premiumExpiresAt: syncedUser?.premiumExpiresAt ?? user.premiumExpiresAt,
       },
     });
   } catch (error) {
@@ -209,16 +203,7 @@ export async function DELETE(
         await enrollmentRepo.save(enrollment);
       }
 
-      // Check if user has any remaining active enrollments
-      const remainingActive = await enrollmentRepo.count({
-        where: { userId, status: EnrollmentStatus.ACTIVE },
-      });
-
-      if (remainingActive === 0) {
-        user.isPremium = false;
-        user.premiumExpiresAt = null;
-        await userRepo.save(user);
-      }
+      const syncedUser = await syncLegacyPremiumState(dataSource, user.id);
 
       return NextResponse.json({
         message: "Program premium access revoked",
@@ -226,7 +211,9 @@ export async function DELETE(
           id: user.id,
           name: user.name,
           email: user.email,
-          isPremium: user.isPremium,
+          isPremium: syncedUser?.isPremium ?? user.isPremium,
+          premiumExpiresAt:
+            syncedUser?.premiumExpiresAt ?? user.premiumExpiresAt,
         },
       });
     } else {
@@ -253,9 +240,7 @@ export async function DELETE(
         await enrollmentRepo.save(enrollment);
       }
 
-      user.isPremium = false;
-      user.premiumExpiresAt = null;
-      await userRepo.save(user);
+      const syncedUser = await syncLegacyPremiumState(dataSource, user.id);
 
       return NextResponse.json({
         message: "All premium access revoked",
@@ -263,8 +248,9 @@ export async function DELETE(
           id: user.id,
           name: user.name,
           email: user.email,
-          isPremium: user.isPremium,
-          premiumExpiresAt: user.premiumExpiresAt,
+          isPremium: syncedUser?.isPremium ?? user.isPremium,
+          premiumExpiresAt:
+            syncedUser?.premiumExpiresAt ?? user.premiumExpiresAt,
         },
       });
     }

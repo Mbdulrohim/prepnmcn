@@ -122,6 +122,12 @@ export default function UsersPage() {
     "days" | "months"
   >("days");
   const [premiumDuration, setPremiumDuration] = useState("30");
+  const [bulkProgramId, setBulkProgramId] = useState("");
+  const [bulkDurationType, setBulkDurationType] = useState<"days" | "months">(
+    "days",
+  );
+  const [bulkDuration, setBulkDuration] = useState("30");
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -149,6 +155,10 @@ export default function UsersPage() {
         if (data.programs) {
           setPrograms(data.programs);
           setManagedProgramIds(data.programs.map((p: any) => p.id));
+          setBulkProgramId(
+            (currentProgramId) =>
+              currentProgramId || data.programs[0]?.id || "",
+          );
         }
       }
     } catch (error) {
@@ -242,6 +252,35 @@ export default function UsersPage() {
     setPremiumDuration("30");
   };
 
+  const selectedBulkProgram = programs.find(
+    (program) => program.id === bulkProgramId,
+  );
+
+  const bulkProgramStats = users.reduce(
+    (stats, user) => {
+      const enrollment = user.programEnrollments?.find(
+        (item) => item.programId === bulkProgramId,
+      );
+
+      if (!enrollment) {
+        return stats;
+      }
+
+      stats.registered += 1;
+
+      if (enrollment.status === "active") {
+        stats.active += 1;
+      } else if (enrollment.status === "pending_approval") {
+        stats.pending += 1;
+      } else {
+        stats.other += 1;
+      }
+
+      return stats;
+    },
+    { registered: 0, active: 0, pending: 0, other: 0 },
+  );
+
   const handleGrantPremium = async () => {
     if (!premiumProgramId || !premiumDuration) {
       toast.error("Please select a program and duration");
@@ -308,6 +347,97 @@ export default function UsersPage() {
       }
     } catch (error) {
       toast.error("Failed to revoke premium access");
+    }
+  };
+
+  const handleBulkGrantProgramAccess = async () => {
+    if (!bulkProgramId || !bulkDuration) {
+      toast.error("Please select a program and duration");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Grant ${selectedBulkProgram?.code || "this"} access to all ${bulkProgramStats.registered} registered users?`,
+      )
+    ) {
+      return;
+    }
+
+    setIsBulkUpdating(true);
+
+    try {
+      const body: Record<string, number> = {};
+      if (bulkDurationType === "days") {
+        body.durationDays = parseInt(bulkDuration);
+      } else {
+        body.durationMonths = parseInt(bulkDuration);
+      }
+
+      const response = await fetch(
+        `/api/admin/programs/${bulkProgramId}/premium-access`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Failed to grant bulk program access");
+        return;
+      }
+
+      toast.success(data.message);
+      await Promise.all([fetchUsers(), fetchPrograms()]);
+    } catch (error) {
+      console.error("Failed to grant bulk program access:", error);
+      toast.error("Failed to grant bulk program access");
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  const handleBulkRevokeProgramAccess = async () => {
+    if (!bulkProgramId) {
+      toast.error("Please select a program");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Revoke ${selectedBulkProgram?.code || "this"} access for all ${bulkProgramStats.active} active users?`,
+      )
+    ) {
+      return;
+    }
+
+    setIsBulkUpdating(true);
+
+    try {
+      const response = await fetch(
+        `/api/admin/programs/${bulkProgramId}/premium-access`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Failed to revoke bulk program access");
+        return;
+      }
+
+      toast.success(data.message);
+      await Promise.all([fetchUsers(), fetchPrograms()]);
+    } catch (error) {
+      console.error("Failed to revoke bulk program access:", error);
+      toast.error("Failed to revoke bulk program access");
+    } finally {
+      setIsBulkUpdating(false);
     }
   };
 
@@ -717,6 +847,123 @@ export default function UsersPage() {
                 Clear Filters
               </Button>
             </div>
+          </div>
+
+          <div className="mb-6 rounded-lg border border-dashed bg-muted/20 p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div className="space-y-2 xl:max-w-xl">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold">Bulk Program Access</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Grant or revoke access for everyone already registered in a
+                  specific program.
+                </p>
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <Badge variant="secondary">
+                    {bulkProgramStats.registered} Registered
+                  </Badge>
+                  <Badge variant="secondary">
+                    {bulkProgramStats.active} Active
+                  </Badge>
+                  <Badge variant="secondary">
+                    {bulkProgramStats.pending} Pending
+                  </Badge>
+                  <Badge variant="secondary">
+                    {bulkProgramStats.other} Revoked/Expired
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(16rem,1fr)_minmax(16rem,1fr)_auto] xl:items-end">
+                <div className="space-y-2">
+                  <Label>Program</Label>
+                  <Select
+                    value={bulkProgramId}
+                    onValueChange={setBulkProgramId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select program" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {programs.map((program) => (
+                        <SelectItem key={program.id} value={program.id}>
+                          {program.code} - {program.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>
+                    Access Duration for Grant (
+                    {bulkDurationType === "days" ? "days" : "months"})
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={bulkDurationType}
+                      onValueChange={(value) =>
+                        setBulkDurationType(value as "days" | "months")
+                      }
+                    >
+                      <SelectTrigger className="w-28">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="days">Days</SelectItem>
+                        <SelectItem value="months">Months</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={bulkDuration}
+                      onChange={(e) => setBulkDuration(e.target.value)}
+                      placeholder="30"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 sm:flex-row xl:flex-col">
+                  <Button
+                    onClick={handleBulkGrantProgramAccess}
+                    disabled={
+                      !bulkProgramId ||
+                      !bulkProgramStats.registered ||
+                      isBulkUpdating
+                    }
+                    className="sm:min-w-40"
+                  >
+                    <Star className="mr-2 h-4 w-4" />
+                    {isBulkUpdating ? "Working..." : "Grant All Access"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleBulkRevokeProgramAccess}
+                    disabled={
+                      !bulkProgramId ||
+                      !bulkProgramStats.active ||
+                      isBulkUpdating
+                    }
+                    className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:text-orange-800 sm:min-w-40"
+                  >
+                    <UserX className="mr-2 h-4 w-4" />
+                    Revoke All Access
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {selectedBulkProgram ? (
+              <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                {selectedBulkProgram.code} currently has{" "}
+                {bulkProgramStats.registered} registered user
+                {bulkProgramStats.registered === 1 ? "" : "s"} in this list.
+              </div>
+            ) : null}
           </div>
 
           {/* Users Table */}
