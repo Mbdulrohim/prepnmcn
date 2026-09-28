@@ -2,21 +2,38 @@ import Link from "next/link";
 
 import { Facebook, Instagram, Linkedin, Mail, X } from "lucide-react";
 
+import { CONTACT_EMAIL } from "@/lib/faqs";
+
 export default function SiteFooter() {
   const facebook = process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK || "#";
   const instagram = process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM || "#";
   const linkedin = process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN || "#";
   const x = process.env.NEXT_PUBLIC_SOCIAL_X || "#";
-  const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@prepnmcn.com";
+  const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL || CONTACT_EMAIL;
 
   return (
-    <footer className="border-t border-border bg-background py-8">
+    <footer className="border-t border-rule bg-paper py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} O'Prep — Built for every Nigerian
-            professional exam student.
+            © {new Date().getFullYear()} OPREP · Online Professional Readiness
+            and Exam Preparation
           </div>
+
+          <nav className="flex items-center gap-6 text-sm">
+            <Link
+              href="/about"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              About
+            </Link>
+            <Link
+              href="/faq"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              FAQs
+            </Link>
+          </nav>
 
           <div className="flex items-center gap-4">
             <a

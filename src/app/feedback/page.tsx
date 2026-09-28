@@ -45,7 +45,7 @@ export default function Feedback() {
           Share Your Feedback
         </h1>
         <p className="text-xl text-gray-600 mb-12">
-          Help us improve O'Prep by sharing your thoughts and suggestions.
+          Help us improve OPREP by sharing your thoughts and suggestions.
         </p>
 
         {!isAuthenticated ? (
@@ -65,7 +65,7 @@ export default function Feedback() {
               </Button>
             </FeedbackDialog>
             <p className="text-sm text-gray-500">
-              Your feedback helps us make O'Prep better for everyone.
+              Your feedback helps us make OPREP better for everyone.
             </p>
           </div>
         )}

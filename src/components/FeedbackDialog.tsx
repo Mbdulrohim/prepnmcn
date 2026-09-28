@@ -85,7 +85,7 @@ export default function FeedbackDialog({
             Share Your Feedback
           </DialogTitle>
           <DialogDescription>
-            Help us improve O'Prep by sharing your thoughts and suggestions.
+            Help us improve OPREP by sharing your thoughts and suggestions.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -93,7 +93,7 @@ export default function FeedbackDialog({
             <Label htmlFor="feedback-message">Your Feedback</Label>
             <Textarea
               id="feedback-message"
-              placeholder="Tell us what you think about O'Prep..."
+              placeholder="Tell us what you think about OPREP..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => {

@@ -67,13 +67,13 @@ export async function POST(
     try {
       await sendFeedbackEmail({
         to: userDetails.email,
-        subject: "Response to Your Feedback - O'Prep",
+        subject: "Response to Your Feedback - OPREP",
         html: wrapEmailTemplate({
           preheader: "We've responded to your feedback",
           body: `
             ${emailHeading("Response to Your Feedback")}
             ${emailParagraph(`Hi <strong>${userDetails.name}</strong>,`)}
-            ${emailParagraph("Thank you for your feedback on O'Prep. We've received your message:")}
+            ${emailParagraph("Thank you for your feedback on OPREP. We've received your message:")}
             ${quoteBlock(feedback.message)}
             ${emailParagraph("<strong>Our Response:</strong>")}
             ${infoBlock(response.replace(/\n/g, "<br>"))}

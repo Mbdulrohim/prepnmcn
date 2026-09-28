@@ -97,7 +97,7 @@ export default function SharedResourcePage() {
       try {
         await navigator.share({
           title: resource?.name || "Shared Resource",
-          text: `Check out this study resource on O'Prep: ${resource?.name}`,
+          text: `Check out this study resource on OPREP: ${resource?.name}`,
           url: shareUrl,
         });
       } catch {

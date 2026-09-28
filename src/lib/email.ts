@@ -149,18 +149,18 @@ export async function sendVerificationEmail(email: string, code: string) {
       await import("./email-template");
 
     const htmlBody = wrapEmailTemplate({
-      preheader: `Your O'Prep login code is ${code}`,
+      preheader: `Your OPREP login code is ${code}`,
       body: `
-        ${emailParagraph("Use the code below to sign in to your <strong>O'Prep</strong> account:")}
+        ${emailParagraph("Use the code below to sign in to your <strong>OPREP</strong> account:")}
         ${codeBlock(code)}
         ${emailParagraph("This code will expire in <strong>10 minutes</strong> for your security.")}
         ${emailParagraph("If you didn't request this code, you can safely ignore this email.")}
       `,
     });
 
-    const textBody = `Your O'Prep login code is: ${code}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, you can safely ignore this email.`;
+    const textBody = `Your OPREP login code is: ${code}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, you can safely ignore this email.`;
 
-    const from = `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${
+    const from = `"${process.env.LOGIN_CODE_SENDER_NAME || "OPREP Login"}" <${
       process.env.LOGIN_CODE_FROM_EMAIL ||
       process.env.SMTP_FROM_EMAIL ||
       "noreply@prepnmcn.com"
@@ -169,7 +169,7 @@ export async function sendVerificationEmail(email: string, code: string) {
     return await queueEmail({
       from,
       to: email,
-      subject: "Your O'Prep Login Code",
+      subject: "Your OPREP Login Code",
       html: htmlBody,
       text: textBody,
     });
@@ -212,7 +212,7 @@ export async function sendLoginCodeEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.LOGIN_CODE_SENDER_NAME || "O'Prep Login"}" <${
+  const from = `"${process.env.LOGIN_CODE_SENDER_NAME || "OPREP Login"}" <${
     process.env.LOGIN_CODE_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
   }>`;
 
@@ -228,7 +228,7 @@ export async function sendLoginNotificationEmail(options: {
   html: string;
 }) {
   const from = `"${
-    process.env.LOGIN_NOTIFICATION_SENDER_NAME || "O'Prep Security"
+    process.env.LOGIN_NOTIFICATION_SENDER_NAME || "OPREP Security"
   }" <${
     process.env.LOGIN_NOTIFICATION_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
   }>`;
@@ -244,7 +244,7 @@ export async function sendFeedbackEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.FEEDBACK_SENDER_NAME || "O'Prep Feedback"}" <${
+  const from = `"${process.env.FEEDBACK_SENDER_NAME || "OPREP Feedback"}" <${
     process.env.FEEDBACK_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
   }>`;
 
@@ -260,7 +260,7 @@ export async function sendAdminNotificationEmail(options: {
   html: string;
 }) {
   const from = `"${
-    process.env.ADMIN_NOTIFICATION_SENDER_NAME || "O'Prep Admin"
+    process.env.ADMIN_NOTIFICATION_SENDER_NAME || "OPREP Admin"
   }" <${
     process.env.ADMIN_NOTIFICATION_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
   }>`;
@@ -276,7 +276,7 @@ export async function sendWelcomeEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.WELCOME_SENDER_NAME || "O'Prep Team"}" <${
+  const from = `"${process.env.WELCOME_SENDER_NAME || "OPREP Team"}" <${
     process.env.WELCOME_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
   }>`;
 
@@ -292,7 +292,7 @@ export async function sendReminderEmail(options: {
   html: string;
 }) {
   const from = `"${
-    process.env.REMINDER_SENDER_NAME || "O'Prep Study Buddy"
+    process.env.REMINDER_SENDER_NAME || "OPREP Study Buddy"
   }" <${process.env.REMINDER_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
 
   return sendEmail({
@@ -307,7 +307,7 @@ export async function sendAchievementEmail(options: {
   html: string;
 }) {
   const from = `"${
-    process.env.ACHIEVEMENT_SENDER_NAME || "O'Prep Achievements"
+    process.env.ACHIEVEMENT_SENDER_NAME || "OPREP Achievements"
   }" <${process.env.ACHIEVEMENT_FROM_EMAIL || process.env.SMTP_FROM_EMAIL}>`;
 
   return sendEmail({
@@ -321,7 +321,7 @@ export async function sendNewsletterEmail(options: {
   subject: string;
   html: string;
 }) {
-  const from = `"${process.env.NEWSLETTER_SENDER_NAME || "O'Prep Updates"}" <${
+  const from = `"${process.env.NEWSLETTER_SENDER_NAME || "OPREP Updates"}" <${
     process.env.NEWSLETTER_FROM_EMAIL || process.env.SMTP_FROM_EMAIL
   }>`;
 

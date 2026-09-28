@@ -62,7 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
             await sendLoginNotificationEmail({
               to: user.email,
-              subject: "New Login to Your O'Prep Account",
+              subject: "New Login to Your OPREP Account",
               html: `
                 <!DOCTYPE html>
                 <html lang="en">
@@ -106,7 +106,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 <body>
                   <div class="container">
                     <h1 style="text-align: center; color: #333; margin-bottom: 10px;">Security Alert</h1>
-                    <p style="text-align: center; color: #666; margin-bottom: 30px;">New login to your O'Prep account</p>
+                    <p style="text-align: center; color: #666; margin-bottom: 30px;">New login to your OPREP account</p>
 
                     <div class="alert">
                       <h3 style="margin-top: 0; color: #856404;">New Login Detected</h3>
@@ -129,10 +129,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     </p>
 
                     <div class="footer">
-                      <p>This is an automated security notification from O'Prep.</p>
+                      <p>This is an automated security notification from OPREP.</p>
                       <p>Questions? Contact us at <a href="mailto:security@prepnmcn.com" style="color: #007bff;">security@prepnmcn.com</a></p>
                       <p style="margin-top: 10px; font-size: 12px; color: #999;">
-                        © 2025 O'Prep. All rights reserved.
+                        © 2025 OPREP. All rights reserved.
                       </p>
                     </div>
                   </div>

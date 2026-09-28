@@ -107,7 +107,7 @@ export default function AdminLayout({
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="font-semibold group-data-[collapsible=icon]:hidden">
-                      O/Prep Admin
+                      OPREP Admin
                     </span>
                     <span className="text-xs group-data-[collapsible=icon]:hidden">
                       Management Console
