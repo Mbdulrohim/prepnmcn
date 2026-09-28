@@ -16,7 +16,14 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PrepDynamicText from "@/components/PrepDynamicText";
 import ParticleButton from "@/components/kokonutui/particle-button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Facebook, Instagram, Linkedin, Mail, Twitter } from "lucide-react";
+import { CONTACT_EMAIL, faqs } from "@/lib/faqs";
 
 interface Testimonial {
   id: string;
@@ -142,21 +149,36 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 px-6 md:px-12 lg:px-20 bg-muted/40">
+      <section
+        id="about"
+        className="scroll-mt-20 py-20 px-6 md:px-12 lg:px-20 bg-muted/40"
+      >
         <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
             <Badge variant="secondary" className="w-fit">
-              About O'Prep
+              About OPREP
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              We exist to help every Nigerian professional exam student thrive
-              from admission to certification.
+              Online Professional Readiness and Exam Preparation.
             </h2>
             <p className="text-lg text-muted-foreground">
-              Built by a team of educators, clinicians, and product thinkers,
-              O'Prep fuses evidence-backed study systems with intuitive
-              technology. We prioritise accountability, collaboration, and
-              support so learners can focus on the work that matters.
+              OPREP is a structured learning platform that helps nursing and
+              midwifery students prepare for their professional licensing
+              examinations. We turn the approved NMCN curriculum into a clear
+              study system — study plans, lecture notes, CBT practice
+              questions, assessments, brainstorming sessions, and mock
+              examinations — so you know what to study, when to study it, and
+              how to prepare consistently.
+            </p>
+            <p className="text-muted-foreground">
+              Classes run online, with WhatsApp as our primary medium, so
+              students from institutions across Nigeria can take part wherever
+              they are.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              OPREP is an independent educational platform and is not
+              affiliated with, endorsed by, or a partner of the Nursing and
+              Midwifery Council of Nigeria (NMCN).
             </p>
             <div className="grid gap-6 sm:grid-cols-2">
               <Card className="border-primary/20">
@@ -249,6 +271,62 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      <section
+        id="faq"
+        className="scroll-mt-20 py-20 px-6 md:px-12 lg:px-20 border-t"
+      >
+        <div className="max-w-3xl mx-auto space-y-10">
+          <div className="space-y-4 text-center">
+            <Badge variant="secondary" className="w-fit mx-auto">
+              FAQs
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              Frequently asked questions
+            </h2>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={faq.question} value={`faq-${index}`}>
+                <AccordionTrigger className="text-base">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="space-y-3 text-muted-foreground leading-relaxed">
+                  {faq.answer.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                  {faq.list && (
+                    <ul className="list-disc pl-5 space-y-1">
+                      {faq.list.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {faq.footnote && <p>{faq.footnote}</p>}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+          <Card className="border-primary/20 text-center">
+            <CardHeader>
+              <CardTitle>Still have a question?</CardTitle>
+              <CardDescription>
+                We'd be happy to help. Send us a message through our official
+                social media pages or email us, and a member of our team will
+                respond as soon as possible.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter className="justify-center">
+              <Button asChild>
+                <a href={`mailto:${CONTACT_EMAIL}`}>
+                  <Mail className="mr-2 h-4 w-4" />
+                  {CONTACT_EMAIL}
+                </a>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }
