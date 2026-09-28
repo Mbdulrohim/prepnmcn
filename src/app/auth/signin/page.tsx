@@ -17,8 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function SignIn() {
@@ -241,27 +239,25 @@ export default function SignIn() {
             </div>
 
             {/* Step Indicators */}
-            <div className="flex items-center justify-center space-x-2">
-              <Badge
-                variant={step >= 1 ? "default" : "secondary"}
-                className="w-8 h-8 rounded-full p-0 flex items-center justify-center"
-              >
-                1
-              </Badge>
-              <Separator className="w-8" />
-              <Badge
-                variant={step >= 2 ? "default" : "secondary"}
-                className="w-8 h-8 rounded-full p-0 flex items-center justify-center"
-              >
-                2
-              </Badge>
-              <Separator className="w-8" />
-              <Badge
-                variant={step >= 3 ? "default" : "secondary"}
-                className="w-8 h-8 rounded-full p-0 flex items-center justify-center"
-              >
-                3
-              </Badge>
+            <div className="flex items-center justify-center gap-2">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="flex items-center gap-2">
+                  {n > 1 && (
+                    <span
+                      className={`h-px w-8 ${step >= n ? "bg-primary" : "bg-border"}`}
+                    />
+                  )}
+                  <span
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+                      step >= n
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {n}
+                  </span>
+                </div>
+              ))}
             </div>
           </CardHeader>
 

@@ -35,12 +35,12 @@ export const benefits = [
     description: "Check your progress and find weak spots early.",
   },
   {
-    title: "Daily brainstorming sessions",
-    description: "Work through topics together with your cohort.",
-  },
-  {
     title: "Mock examinations",
     description: "Rehearse under exam conditions before the real thing.",
+  },
+  {
+    title: "Daily brainstorming sessions",
+    description: "Work through topics together with your cohort.",
   },
   {
     title: "Academic support",

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function FaqPage() {
   return (
     <div className="min-h-screen bg-background">
-      <FaqSection />
+      <FaqSection as="h1" />
     </div>
   );
 }
