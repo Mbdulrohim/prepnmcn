@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageCircle, X, Send, Bot, User, Loader2 } from "lucide-react";
@@ -23,7 +24,16 @@ interface UserContext {
   recentAttemptsCount: number;
 }
 
+// Public pages where the study assistant is not shown.
+const PUBLIC_PATHS = ["/", "/about", "/faq", "/auth/signin", "/auth/register"];
+
 export default function FloatingChat() {
+  const pathname = usePathname();
+  if (PUBLIC_PATHS.includes(pathname)) return null;
+  return <FloatingChatWidget />;
+}
+
+function FloatingChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
