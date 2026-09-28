@@ -56,6 +56,11 @@ export default function Header() {
     { name: "Forums", href: "/forums", icon: MessageSquare },
   ];
 
+  const publicLinks = [
+    { name: "About", href: "/about" },
+    { name: "FAQs", href: "/faq" },
+  ];
+
   const isActive = (href: string) => pathname === href;
 
   if (loading) {
@@ -290,6 +295,19 @@ export default function Header() {
               </>
             ) : (
               <div className="flex items-center gap-3">
+                {publicLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive(link.href)
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
                 <Button variant="ghost" asChild>
                   <Link href="/auth/signin">Sign In</Link>
                 </Button>
@@ -508,6 +526,16 @@ export default function Header() {
                 </>
               ) : (
                 <div className="px-3 py-2 space-y-2">
+                  {publicLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent"
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
                   <Button
                     variant="ghost"
                     className="w-full justify-start"

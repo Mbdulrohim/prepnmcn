@@ -22,13 +22,13 @@ export default function SiteFooter() {
 
           <nav className="flex items-center gap-6 text-sm">
             <Link
-              href="/#about"
+              href="/about"
               className="text-muted-foreground hover:text-foreground"
             >
               About
             </Link>
             <Link
-              href="/#faq"
+              href="/faq"
               className="text-muted-foreground hover:text-foreground"
             >
               FAQs
