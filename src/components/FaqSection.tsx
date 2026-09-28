@@ -1,12 +1,9 @@
-import { Mail } from "lucide-react";
-
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { CONTACT_EMAIL, faqs } from "@/lib/faqs";
 
 export default function FaqSection({
@@ -19,45 +16,48 @@ export default function FaqSection({
   return (
     <section
       id="faq"
-      className={`scroll-mt-20 py-20 md:py-28 px-4 sm:px-6 lg:px-8 ${className}`}
+      className={`scroll-mt-16 px-4 sm:px-6 lg:px-8 py-20 md:py-28 ${className}`}
     >
-      <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-              FAQs
+      <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <Heading className="font-serif text-4xl leading-tight tracking-[-0.01em] md:text-5xl">
+            Frequently asked questions
+          </Heading>
+          <div className="mt-8 max-w-sm border-t border-rule pt-6">
+            <p className="font-medium">Still have a question?</p>
+            <p className="mt-2 leading-relaxed text-muted-foreground">
+              Send us a message through our official social media pages or
+              email us, and a member of our team will respond as soon as
+              possible.
             </p>
-            <Heading className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-              Frequently asked questions
-            </Heading>
-          </div>
-          <div className="rounded-2xl border bg-muted/40 p-6 space-y-4">
-            <p className="font-semibold">Still have a question?</p>
-            <p className="text-sm text-muted-foreground">
-              We'd be happy to help. Send us a message through our official
-              social media pages or email us, and a member of our team will
-              respond as soon as possible.
-            </p>
-            <Button variant="outline" className="bg-background" asChild>
-              <a href={`mailto:${CONTACT_EMAIL}`}>
-                <Mail className="mr-2 h-4 w-4" />
-                {CONTACT_EMAIL}
-              </a>
-            </Button>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="mt-4 inline-block font-medium text-brand underline decoration-brand/30 underline-offset-[6px] hover:decoration-brand"
+            >
+              {CONTACT_EMAIL}
+            </a>
           </div>
         </div>
-        <Accordion type="single" collapsible className="w-full border-t">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full border-t border-foreground/80"
+        >
           {faqs.map((faq, index) => (
-            <AccordionItem key={faq.question} value={`faq-${index}`}>
-              <AccordionTrigger className="py-5 text-base font-semibold hover:no-underline hover:text-primary">
+            <AccordionItem
+              key={faq.question}
+              value={`faq-${index}`}
+              className="border-rule"
+            >
+              <AccordionTrigger className="py-6 text-lg font-medium hover:no-underline hover:text-brand [&>svg]:size-5">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="space-y-3 pb-5 text-base text-muted-foreground leading-relaxed">
+              <AccordionContent className="max-w-2xl space-y-3 pb-6 text-base leading-relaxed text-muted-foreground">
                 {faq.answer.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
                 {faq.list && (
-                  <ul className="list-disc pl-5 space-y-1">
+                  <ul className="list-disc space-y-1 pl-5 marker:text-brand">
                     {faq.list.map((item) => (
                       <li key={item}>{item}</li>
                     ))}

@@ -3,7 +3,7 @@
  * All outgoing emails should use this wrapper for brand consistency.
  */
 
-const BRAND_NAME = "O'Prep";
+const BRAND_NAME = "OPREP";
 const BRAND_COLOR = "#1e40af";
 const BRAND_URL = "https://prepnmcn.com";
 const SUPPORT_EMAIL = "hello@prepnmcn.com";

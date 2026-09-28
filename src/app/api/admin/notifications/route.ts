@@ -235,7 +235,7 @@ export async function POST(request: NextRequest) {
                 : emailParagraph(emailBody.replace(/\n/g, "<br>")),
             }),
             from: `"${
-              process.env.ADMIN_NOTIFICATION_SENDER_NAME || "O'Prep Admin"
+              process.env.ADMIN_NOTIFICATION_SENDER_NAME || "OPREP Admin"
             }" <${
               process.env.ADMIN_NOTIFICATION_FROM_EMAIL ||
               process.env.SMTP_FROM_EMAIL ||

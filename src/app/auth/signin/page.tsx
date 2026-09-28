@@ -218,7 +218,7 @@ export default function SignIn() {
               <div className="mx-auto w-16 h-16 bg-card rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                 <Image
                   src="/preplogo.png"
-                  alt="O'Prep"
+                  alt="OPREP"
                   width={40}
                   height={40}
                 />
@@ -226,7 +226,7 @@ export default function SignIn() {
               <CardTitle className="text-2xl font-bold">
                 Welcome to{" "}
                 <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                  O'Prep
+                  OPREP
                 </span>
               </CardTitle>
               <CardDescription className="text-sm">

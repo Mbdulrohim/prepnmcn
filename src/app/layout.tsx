@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -8,20 +8,28 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+});
+
 export const metadata: Metadata = {
-  title: "O/Prep - Exam Preparation Platform",
+  title: "OPREP - Online Professional Readiness and Exam Preparation",
   description:
-    "Your ultimate exam preparation platform. Master your exams with O/Prep's comprehensive study tools and resources.",
+    "Structured preparation for nursing and midwifery licensing examinations (RN, RM, RPHN): study plans, lecture notes, CBT practice, assessments and mock exams.",
   keywords: [
-    "exam preparation",
-    "study planner",
-    "O/Prep",
-    "online learning",
-    "test preparation",
+    "OPREP",
+    "NMCN exam preparation",
+    "nursing licensing exam",
+    "midwifery licensing exam",
+    "RN RM RPHN",
+    "CBT practice questions",
   ],
-  authors: [{ name: "O/Prep Team" }],
-  creator: "O/Prep",
-  publisher: "O/Prep",
+  authors: [{ name: "OPREP Team" }],
+  creator: "OPREP",
+  publisher: "OPREP",
   viewport: {
     width: "device-width",
     initialScale: 1,
@@ -34,17 +42,17 @@ export const metadata: Metadata = {
     apple: "/preplogo.png",
   },
   openGraph: {
-    title: "O/Prep - Exam Preparation Platform",
+    title: "OPREP - Online Professional Readiness and Exam Preparation",
     description:
-      "Master your exams with O/Prep's comprehensive study platform.",
+      "Structured preparation for nursing and midwifery licensing examinations.",
     url: "new.",
-    siteName: "O/Prep",
+    siteName: "OPREP",
     images: [
       {
         url: "/preplogo.png",
         width: 1200,
         height: 630,
-        alt: "O/Prep Logo",
+        alt: "OPREP Logo",
       },
     ],
     locale: "en_US",
@@ -52,9 +60,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "O'Prep - Exam Preparation Platform",
+    title: "OPREP - Online Professional Readiness and Exam Preparation",
     description:
-      "Master your exams with O'Prep's comprehensive study platform.",
+      "Structured preparation for nursing and midwifery licensing examinations.",
     images: ["/preplogo.png"],
   },
   robots: {
@@ -91,7 +99,9 @@ export default function RootLayout({
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
         />
       </head>
-      <body className={`${dmSans.variable} font-sans antialiased`}>
+      <body
+        className={`${dmSans.variable} ${fraunces.variable} font-sans antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

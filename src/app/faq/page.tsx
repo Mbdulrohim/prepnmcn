@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function FaqPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-paper text-foreground">
       <FaqSection as="h1" />
     </div>
   );

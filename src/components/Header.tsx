@@ -63,18 +63,28 @@ export default function Header() {
 
   const isActive = (href: string) => pathname === href;
 
+  // Public marketing pages sit on the warm "paper" background.
+  const isMarketingPage = ["/", "/about", "/faq"].includes(pathname);
+  const headerClass = `${
+    isMarketingPage ? "bg-paper border-rule" : "bg-background border-border"
+  } border-b sticky top-0 z-50`;
+
+  const logo = (
+    <Link
+      href="/"
+      className="flex items-center gap-2.5 text-foreground hover:text-brand transition-colors"
+    >
+      <Image src="/preplogo.png" alt="" width={32} height={32} />
+      <span className="text-lg font-bold tracking-[0.08em]">OPREP</span>
+    </Link>
+  );
+
   if (loading) {
     return (
-      <header className="bg-background border-b border-border sticky top-0 z-50">
+      <header className={headerClass}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link
-              href="/"
-              className="flex items-center gap-3 text-xl font-bold text-foreground hover:text-primary transition-colors"
-            >
-              <Image src="/preplogo.png" alt="O/Prep" width={32} height={32} />
-              <span className="hidden sm:block">O/Prep</span>
-            </Link>
+            {logo}
             <div className="w-8 h-8 bg-muted rounded-full animate-pulse"></div>
           </div>
         </div>
@@ -83,17 +93,10 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50">
+    <header className={headerClass}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-3 text-xl font-bold text-foreground hover:text-primary transition-colors"
-          >
-            <Image src="/preplogo.png" alt="O/Prep" width={32} height={32} />
-            <span className="hidden sm:block">O/Prep</span>
-          </Link>
+          {logo}
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
@@ -294,26 +297,32 @@ export default function Header() {
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
                 {publicLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 text-sm font-medium transition-colors ${
                       isActive(link.href)
-                        ? "text-primary"
+                        ? "text-brand"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {link.name}
                   </Link>
                 ))}
-                <Button variant="ghost" asChild>
-                  <Link href="/auth/signin">Sign In</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/auth/signin">Get Started</Link>
-                </Button>
+                <Link
+                  href="/auth/signin"
+                  className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/auth/signin"
+                  className="ml-2 inline-flex h-10 items-center rounded-md bg-brand px-4 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand/90"
+                >
+                  Join OPREP
+                </Link>
               </div>
             )}
           </nav>
@@ -329,7 +338,9 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-background">
+          <div
+            className={`md:hidden border-t ${isMarketingPage ? "border-rule bg-paper" : "border-border bg-background"}`}
+          >
             <div className="px-2 pt-2 pb-3 space-y-1">
               {user ? (
                 <>
@@ -548,12 +559,15 @@ export default function Header() {
                       Sign In
                     </Link>
                   </Button>
-                  <Button className="w-full" asChild>
+                  <Button
+                    className="w-full h-11 rounded-md bg-brand text-brand-foreground hover:bg-brand/90"
+                    asChild
+                  >
                     <Link
                       href="/auth/signin"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Get Started
+                      Join OPREP
                     </Link>
                   </Button>
                 </div>

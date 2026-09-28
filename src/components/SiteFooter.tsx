@@ -12,12 +12,12 @@ export default function SiteFooter() {
   const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL || CONTACT_EMAIL;
 
   return (
-    <footer className="border-t border-border bg-background py-8">
+    <footer className="border-t border-rule bg-paper py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} O'Prep — Built for every Nigerian
-            professional exam student.
+            © {new Date().getFullYear()} OPREP · Online Professional Readiness
+            and Exam Preparation
           </div>
 
           <nav className="flex items-center gap-6 text-sm">

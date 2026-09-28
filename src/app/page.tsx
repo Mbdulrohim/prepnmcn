@@ -2,23 +2,9 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import {
-  ArrowRight,
-  BookOpen,
-  CalendarCheck,
-  Check,
-  ClipboardCheck,
-  FileText,
-  GraduationCap,
-  LifeBuoy,
-  Lightbulb,
-  MessageCircle,
-  MonitorCheck,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCheck } from "lucide-react";
 import FaqSection from "@/components/FaqSection";
+import { CONTACT_EMAIL } from "@/lib/faqs";
 import { benefits, programs, steps } from "@/lib/site-content";
 
 interface Testimonial {
@@ -29,54 +15,85 @@ interface Testimonial {
   isActive: boolean;
 }
 
-// Same order as `benefits` in site-content.
-const benefitIcons = [
-  BookOpen,
-  FileText,
-  MonitorCheck,
-  ClipboardCheck,
-  CalendarCheck,
-  Lightbulb,
-  LifeBuoy,
-  Users,
+const primaryButton =
+  "inline-flex h-12 items-center justify-center gap-2 rounded-md bg-brand px-6 text-[15px] font-medium text-brand-foreground transition-colors hover:bg-brand/90";
+
+const sampleThread = [
+  {
+    from: "tutor",
+    text: "Good morning, RN cohort. Today's study guide: Pharmacology, drug calculations. The notes are in the group files.",
+    time: "7:02",
+  },
+  {
+    from: "tutor",
+    text: "Brainstorming session tonight at 8pm. Bring your questions.",
+    time: "7:03",
+  },
+  {
+    from: "student",
+    text: "Please can we go over IV drip rates again?",
+    time: "9:41",
+  },
+  {
+    from: "tutor",
+    text: "Yes, we'll start with that tonight.",
+    time: "9:45",
+  },
+  {
+    from: "tutor",
+    text: "Reminder: this week's assessment opens on Saturday.",
+    time: "18:30",
+  },
 ];
 
-const sampleWeek = [
-  { day: "Mon", task: "Lecture notes", topic: "Medical-Surgical Nursing", done: true },
-  { day: "Tue", task: "CBT practice", topic: "Timed question set", done: true },
-  { day: "Wed", task: "Brainstorming", topic: "Group session", done: true },
-  { day: "Thu", task: "Lecture notes", topic: "Pharmacology", current: true },
-  { day: "Fri", task: "CBT practice", topic: "Timed question set" },
-  { day: "Sat", task: "Weekly assessment", topic: "This week's topics" },
-];
-
-function SectionHeading({
-  eyebrow,
-  title,
-  description,
-  align = "center",
-}: {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  align?: "center" | "left";
-}) {
+function CohortThread() {
   return (
-    <div
-      className={`space-y-4 ${align === "center" ? "text-center max-w-2xl mx-auto" : "max-w-xl"}`}
-    >
-      <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-        {eyebrow}
-      </p>
-      <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground text-balance">
-        {title}
-      </h2>
-      {description && (
-        <p className="text-lg text-muted-foreground text-pretty">
-          {description}
-        </p>
-      )}
-    </div>
+    <figure className="w-full max-w-[400px] mx-auto">
+      <div className="overflow-hidden rounded-xl border border-rule shadow-[0_24px_60px_-30px_rgba(22,22,95,0.35)]">
+        <div className="flex items-center gap-3 bg-band px-4 py-3 text-white">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">
+            RN
+          </span>
+          <div className="leading-tight">
+            <p className="text-sm font-medium">OPREP · RN Cohort</p>
+            <p className="text-xs text-white/60">Tutors and students</p>
+          </div>
+        </div>
+        <div className="space-y-2 bg-[#efeae2] px-3 py-4 dark:bg-[#0b141a]">
+          {sampleThread.map((message, index) => {
+            const mine = message.from === "student";
+            return (
+              <div
+                key={index}
+                className={`flex ${mine ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-lg px-3 py-2 text-[13.5px] leading-snug shadow-sm ${
+                    mine
+                      ? "bg-[#d9fdd3] text-neutral-900 dark:bg-[#005c4b] dark:text-white"
+                      : "bg-white text-neutral-900 dark:bg-[#202c33] dark:text-white"
+                  }`}
+                >
+                  {!mine && index === 0 && (
+                    <p className="mb-0.5 text-xs font-semibold text-brand">
+                      OPREP Tutor
+                    </p>
+                  )}
+                  <p>{message.text}</p>
+                  <p className="mt-1 flex items-center justify-end gap-1 text-[11px] text-neutral-500 dark:text-white/50">
+                    {message.time}
+                    {mine && <CheckCheck className="h-3.5 w-3.5 text-sky-500" />}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+        An example day in an OPREP cohort
+      </figcaption>
+    </figure>
   );
 }
 
@@ -99,255 +116,116 @@ export default function Home() {
     fetchTestimonials();
   }, []);
 
-  const [featured, ...otherBenefits] = benefits;
-  const FeaturedIcon = benefitIcons[0];
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-paper text-foreground">
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-secondary),transparent_60%)] opacity-60"
-        />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 md:pt-24 md:pb-28 grid gap-14 lg:grid-cols-[1.1fr_0.9fr] items-center">
-          <div className="space-y-8 text-center lg:text-left">
-            <p className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-4 py-1.5 text-sm text-muted-foreground">
-              <span className="h-2 w-2 rounded-full bg-primary" />
-              For RN, RM and RPHN students
+      <section className="px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto grid gap-14 pt-14 pb-16 md:pt-20 md:pb-24 lg:grid-cols-[1.25fr_1fr] lg:items-center">
+          <div>
+            <p className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-px w-8 bg-brand" />
+              Online Professional Readiness and Exam Preparation
             </p>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-foreground text-balance">
-              Prepare for your licensing exam with a plan,{" "}
-              <span className="text-primary">not panic.</span>
+            <h1 className="mt-6 font-serif text-[2.6rem] leading-[1.05] tracking-[-0.02em] sm:text-6xl lg:text-[4.4rem]">
+              Prepare for your licensing exam,{" "}
+              <em className="text-brand">one planned week at a time.</em>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 text-pretty">
-              OPREP turns the approved NMCN curriculum into a structured study
-              system, so you know what to study, when to study it, and how to
-              prepare consistently.
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              OPREP helps nursing and midwifery students prepare for the RN,
+              RM and RPHN examinations. We turn the approved NMCN curriculum
+              into a study plan you follow with your cohort, with notes, CBT
+              practice, assessments and mock exams along the way.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <Button size="lg" className="h-12 px-7 text-base" asChild>
-                <Link href="/auth/signin">
-                  Get started
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-12 px-7 text-base bg-background/80"
-                asChild
+            <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <Link href="/auth/signin" className={primaryButton}>
+                Join OPREP
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="inline-flex h-12 items-center justify-center px-2 text-[15px] font-medium underline decoration-rule underline-offset-[6px] hover:decoration-brand"
               >
-                <Link href="#how-it-works">How it works</Link>
-              </Button>
+                See how it works
+              </Link>
             </div>
           </div>
+          <CohortThread />
+        </div>
 
-          {/* Sample study week */}
-          <div className="relative mx-auto w-full max-w-md">
-            <div className="rounded-2xl border bg-card shadow-xl shadow-primary/5">
-              <div className="flex items-center justify-between border-b px-5 py-4">
-                <div>
-                  <p className="font-semibold">Your study week</p>
-                  <p className="text-sm text-muted-foreground">
-                    Every day has a job.
-                  </p>
-                </div>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  RN cohort
+        {/* Key facts */}
+        <dl className="max-w-6xl mx-auto grid border-t border-rule sm:grid-cols-3">
+          {[
+            { term: "RN · RM · RPHN", detail: "Programs for three licensing exams" },
+            { term: "NMCN curriculum", detail: "Every lecture note is built from it" },
+            { term: "One payment", detail: "Access for the length of your cohort" },
+          ].map((fact, index) => (
+            <div
+              key={fact.term}
+              className={`py-6 sm:px-6 ${index > 0 ? "border-t border-rule sm:border-t-0 sm:border-l" : "sm:pl-0"}`}
+            >
+              <dt className="font-serif text-xl">{fact.term}</dt>
+              <dd className="mt-1 text-sm text-muted-foreground">
+                {fact.detail}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {/* What a cohort includes */}
+      <section className="px-4 sm:px-6 lg:px-8 py-20 md:py-28 border-t border-rule">
+        <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <h2 className="font-serif text-4xl leading-tight tracking-[-0.01em] md:text-5xl">
+              What your registration includes
+            </h2>
+            <p className="mt-5 max-w-sm text-lg leading-relaxed text-muted-foreground">
+              A one-time payment covers everything below for the duration of
+              your cohort.
+            </p>
+          </div>
+          <ol className="border-t border-foreground/80">
+            {benefits.map((benefit, index) => (
+              <li
+                key={benefit.title}
+                className="grid grid-cols-[3rem_1fr] gap-x-4 border-b border-rule py-6 sm:grid-cols-[3.5rem_1fr_1.2fr] sm:items-baseline"
+              >
+                <span className="font-serif text-lg text-brand">
+                  {String(index + 1).padStart(2, "0")}
                 </span>
-              </div>
-              <ul className="divide-y">
-                {sampleWeek.map((item) => (
-                  <li
-                    key={item.day}
-                    className={`flex items-center gap-4 px-5 py-3 ${item.current ? "bg-primary/5" : ""}`}
-                  >
-                    <span className="w-9 text-sm font-semibold text-muted-foreground">
-                      {item.day}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {item.task}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {item.topic}
-                      </p>
-                    </div>
-                    {item.done ? (
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <Check className="h-3.5 w-3.5" />
-                      </span>
-                    ) : item.current ? (
-                      <span className="rounded-full border border-primary px-2 py-0.5 text-xs font-medium text-primary">
-                        Today
-                      </span>
-                    ) : (
-                      <span className="h-6 w-6 rounded-full border-2 border-dashed" />
-                    )}
-                  </li>
-                ))}
-              </ul>
-              <div className="border-t px-5 py-4 space-y-2">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>This week</span>
-                  <span>3 of 6 done</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted">
-                  <div className="h-2 w-1/2 rounded-full bg-primary" />
-                </div>
-              </div>
-            </div>
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              Example study week
-            </p>
-          </div>
-        </div>
-
-        {/* Trust strip */}
-        <div className="relative border-y bg-muted/40">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 grid gap-4 sm:grid-cols-3 text-sm">
-            {[
-              { icon: GraduationCap, text: "Built on the approved NMCN curriculum" },
-              { icon: MessageCircle, text: "Online, with WhatsApp as our main medium" },
-              { icon: ShieldCheck, text: "One-time payment per cohort" },
-            ].map(({ icon: Icon, text }) => (
-              <div
-                key={text}
-                className="flex items-center justify-center sm:justify-start gap-3 text-muted-foreground"
-              >
-                <Icon className="h-5 w-5 shrink-0 text-primary" />
-                {text}
-              </div>
+                <p className="text-lg font-medium">{benefit.title}</p>
+                <p className="col-start-2 mt-1 text-muted-foreground sm:col-start-3 sm:mt-0">
+                  {benefit.description}
+                </p>
+              </li>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* The problem */}
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-2 lg:gap-16 items-center">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground text-balance">
-            Lectures. Clinical postings. Assignments. Semester exams.{" "}
-            <span className="text-muted-foreground">
-              And a licensing exam at the end of it all.
-            </span>
-          </h2>
-          <div className="space-y-5 text-lg text-muted-foreground text-pretty">
-            <p>
-              Preparing for professional examinations is overwhelming when
-              everything else is competing for your time. Too many students end
-              up relying on last-minute reading.
-            </p>
-            <p>
-              OPREP gives you a structure to follow from day one: what to
-              study, when to study it, and regular checks to show you where you
-              stand, so your preparation is steady instead of rushed.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* What you get */}
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-muted/40 border-y">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <SectionHeading
-            eyebrow="What you get"
-            title="Everything you need, in one registration"
-            description="A one-time payment gives you access to all of this for the duration of your cohort."
-          />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="sm:col-span-2 rounded-2xl bg-primary p-8 text-primary-foreground flex flex-col justify-between gap-8">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/15">
-                <FeaturedIcon className="h-6 w-6" />
-              </span>
-              <div className="space-y-3">
-                <p className="text-2xl md:text-3xl font-bold">
-                  {featured.title}
-                </p>
-                <p className="text-primary-foreground/80 text-lg max-w-md">
-                  The whole curriculum, broken into a plan you can follow week
-                  by week, so you always know what's next.
-                </p>
-              </div>
-            </div>
-            {otherBenefits.map((benefit, index) => {
-              const Icon = benefitIcons[index + 1];
-              return (
-                <div
-                  key={benefit.title}
-                  className="rounded-2xl border bg-card p-6 space-y-3"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <p className="font-semibold">{benefit.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {benefit.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Programs */}
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <SectionHeading
-            eyebrow="Who it's for"
-            title="A program for your licensing exam"
-          />
-          <div className="grid gap-4 md:grid-cols-3">
-            {programs.map((program) => (
-              <div
-                key={program.code}
-                className="group rounded-2xl border bg-card p-8 space-y-4 transition-colors hover:border-primary/40"
-              >
-                <p className="text-5xl font-bold tracking-tight text-primary">
-                  {program.code}
-                </p>
-                <div className="space-y-1">
-                  <p className="text-lg font-semibold">{program.title}</p>
-                  <p className="text-muted-foreground">{program.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-muted-foreground">
-            We also develop programs for internship preparation and other
-            healthcare career readiness initiatives.
-          </p>
+          </ol>
         </div>
       </section>
 
       {/* How it works */}
       <section
         id="how-it-works"
-        className="scroll-mt-20 py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-muted/40 border-y"
+        className="scroll-mt-16 bg-band px-4 sm:px-6 lg:px-8 py-20 md:py-28 text-white"
       >
-        <div className="max-w-6xl mx-auto space-y-14">
-          <SectionHeading
-            eyebrow="How it works"
-            title="From registration to exam day"
-            description="Classes run online, so you can join from any institution in Nigeria."
-          />
-          <ol className="relative grid gap-10 md:grid-cols-4 md:gap-6">
-            <div
-              aria-hidden
-              className="hidden md:block absolute top-6 left-[12.5%] right-[12.5%] h-px bg-border"
-            />
+        <div className="max-w-6xl mx-auto">
+          <div className="grid gap-6 lg:grid-cols-2 lg:items-end">
+            <h2 className="font-serif text-4xl leading-tight tracking-[-0.01em] md:text-5xl">
+              From registration to exam day
+            </h2>
+            <p className="max-w-md text-lg leading-relaxed text-white/70 lg:justify-self-end">
+              Classes run online, with WhatsApp as our main medium, so you can
+              join from any institution in Nigeria.
+            </p>
+          </div>
+          <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             {steps.map((step, index) => (
-              <li
-                key={step.title}
-                className="relative flex flex-col items-center text-center gap-4"
-              >
-                <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground ring-8 ring-muted">
+              <li key={step.title} className="border-t border-white/25 pt-6">
+                <span className="font-serif text-5xl text-white/40">
                   {index + 1}
                 </span>
-                <p className="font-semibold text-lg">{step.title}</p>
-                <p className="text-sm text-muted-foreground max-w-60">
+                <p className="mt-4 text-lg font-medium">{step.title}</p>
+                <p className="mt-2 leading-relaxed text-white/70">
                   {step.description}
                 </p>
               </li>
@@ -356,75 +234,87 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About */}
+      {/* Programs */}
+      <section className="px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-serif text-4xl leading-tight tracking-[-0.01em] md:text-5xl">
+            Who OPREP is for
+          </h2>
+          <div className="mt-12 grid border-t border-foreground/80 md:grid-cols-3">
+            {programs.map((program, index) => (
+              <div
+                key={program.code}
+                className={`py-8 md:px-8 ${index === 0 ? "md:pl-0" : "border-t border-rule md:border-t-0 md:border-l"}`}
+              >
+                <p className="font-serif text-6xl tracking-[-0.02em] text-brand">
+                  {program.code}
+                </p>
+                <p className="mt-5 text-lg font-medium">{program.title}</p>
+                <p className="mt-1 text-muted-foreground">
+                  {program.description}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 border-t border-rule pt-6 text-muted-foreground">
+            We also develop programs for internship preparation and other
+            healthcare career readiness initiatives.
+          </p>
+        </div>
+      </section>
+
+      {/* Our position */}
       <section
         id="about"
-        className="scroll-mt-20 py-20 md:py-28 px-4 sm:px-6 lg:px-8"
+        className="scroll-mt-16 px-4 sm:px-6 lg:px-8 py-20 md:py-28 border-t border-rule"
       >
-        <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-          <div className="space-y-6">
-            <SectionHeading
-              align="left"
-              eyebrow="About OPREP"
-              title="Online Professional Readiness and Exam Preparation"
-              description="A structured learning platform that helps nursing and midwifery students prepare for their professional licensing examinations."
-            />
-            <Button variant="outline" asChild>
-              <Link href="/about">
-                More about us
-                <ArrowRight className="ml-2 h-4 w-4" />
+        <div className="max-w-4xl mx-auto">
+          <blockquote className="font-serif text-3xl leading-snug tracking-[-0.01em] md:text-[2.75rem] md:leading-[1.2]">
+            “Success depends on your commitment, consistency and
+            participation. <span className="text-brand">We provide the
+            structure, the learning resources and the support.</span>”
+          </blockquote>
+          <div className="mt-10 grid gap-8 border-t border-rule pt-8 sm:grid-cols-2">
+            <p className="text-muted-foreground leading-relaxed">
+              OPREP is an independent educational platform. We are not
+              affiliated with, endorsed by, or a partner of the Nursing and
+              Midwifery Council of Nigeria (NMCN). Our resources are developed
+              from the approved NMCN curriculum.
+            </p>
+            <div className="sm:justify-self-end">
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 font-medium text-brand underline decoration-brand/30 underline-offset-[6px] hover:decoration-brand"
+              >
+                Read more about OPREP
+                <ArrowRight className="h-4 w-4" />
               </Link>
-            </Button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border bg-card p-6 space-y-2">
-              <p className="font-semibold">You put in the work</p>
-              <p className="text-sm text-muted-foreground">
-                We don't promise results. Success depends on your commitment
-                and consistency. We give you the structure, resources, and
-                support.
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-card p-6 space-y-2">
-              <p className="font-semibold">Your access is yours</p>
-              <p className="text-sm text-muted-foreground">
-                Registration gives you personal access for the duration of your
-                cohort. Materials aren't for sharing.
-              </p>
-            </div>
-            <div className="sm:col-span-2 rounded-2xl border border-dashed p-6 flex gap-4">
-              <ShieldCheck className="h-6 w-6 shrink-0 text-primary" />
-              <p className="text-sm text-muted-foreground">
-                OPREP is an independent educational platform. We are not
-                affiliated with, endorsed by, or a partner of the Nursing and
-                Midwifery Council of Nigeria (NMCN).
-              </p>
             </div>
           </div>
         </div>
       </section>
 
       {testimonials.length > 0 && (
-        <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-muted/40 border-y">
-          <div className="max-w-6xl mx-auto space-y-12">
-            <SectionHeading
-              eyebrow="Student stories"
-              title="From students who've prepared with us"
-            />
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <section className="px-4 sm:px-6 lg:px-8 py-20 md:py-28 border-t border-rule">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="font-serif text-4xl leading-tight md:text-5xl">
+              From our students
+            </h2>
+            <div className="mt-12 grid gap-x-10 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((testimonial) => (
                 <figure
                   key={testimonial.id}
-                  className="rounded-2xl border bg-card p-6 flex flex-col justify-between gap-6"
+                  className="border-t border-foreground/80 pt-6"
                 >
-                  <blockquote className="text-muted-foreground leading-relaxed">
+                  <blockquote className="font-serif text-xl leading-snug">
                     “{testimonial.quote}”
                   </blockquote>
-                  <figcaption>
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {testimonial.role}
-                    </p>
+                  <figcaption className="mt-5 text-sm">
+                    <span className="font-medium">{testimonial.name}</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {testimonial.role}
+                    </span>
                   </figcaption>
                 </figure>
               ))}
@@ -433,29 +323,26 @@ export default function Home() {
         </section>
       )}
 
-      <FaqSection className="border-t" />
+      <FaqSection className="border-t border-rule" />
 
-      {/* Closing call to action */}
-      <section className="px-4 sm:px-6 lg:px-8 pb-20 md:pb-28">
-        <div className="max-w-6xl mx-auto rounded-3xl bg-primary px-6 py-14 md:px-16 md:py-20 text-center text-primary-foreground space-y-6">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-balance">
-            Start preparing the structured way.
+      {/* Closing */}
+      <section className="px-4 sm:px-6 lg:px-8 pb-24">
+        <div className="max-w-6xl mx-auto border-t border-foreground/80 pt-14 grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+          <h2 className="font-serif text-4xl leading-tight tracking-[-0.01em] md:text-6xl">
+            Start preparing <em className="text-brand">properly.</em>
           </h2>
-          <p className="text-lg text-primary-foreground/80 max-w-xl mx-auto">
-            Join a cohort and get a study plan, lecture notes, CBT practice,
-            assessments and mock exams in one place.
-          </p>
-          <Button
-            size="lg"
-            variant="secondary"
-            className="h-12 px-7 text-base"
-            asChild
-          >
-            <Link href="/auth/signin">
-              Get started
-              <ArrowRight className="ml-2 h-4 w-4" />
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center lg:justify-end">
+            <Link href="/auth/signin" className={primaryButton}>
+              Join OPREP
+              <ArrowRight className="h-4 w-4" />
             </Link>
-          </Button>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="inline-flex h-12 items-center justify-center px-2 text-[15px] font-medium underline decoration-rule underline-offset-[6px] hover:decoration-brand"
+            >
+              {CONTACT_EMAIL}
+            </a>
+          </div>
         </div>
       </section>
     </div>
